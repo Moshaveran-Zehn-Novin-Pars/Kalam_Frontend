@@ -1,6 +1,9 @@
 "use client"
 
 import { ShoppingCart } from "lucide-react"
+import Button from "@/components/ui/Button"
+import { useCartStore } from "@/store/cartStore"
+import { toast } from "sonner"
 
 type Product = {
     id: number
@@ -14,33 +17,37 @@ type Props = {
 }
 
 export default function ProductCard({ product }: Props) {
+    const addToCart = useCartStore((state) => state.addToCart)
+
+    const handleAdd = () => {
+        addToCart(product)
+        toast.success("محصول به سبد اضافه شد 🛒")
+    }
+
     return (
-        <div className="border rounded-2xl p-4 shadow-sm hover:shadow-xl transition duration-300">
+        <div className="border rounded-2xl p-4 shadow-sm hover:shadow-xl transition">
 
             {/* تصویر */}
-            <div className="w-full h-48 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden">
-                <img
-                    src={product.image}
-                    alt={product.title}
-                    className="object-contain h-full"
-                />
+            <div className="h-48 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden">
+                <img src={product.image} className="h-full object-contain" />
             </div>
 
             {/* عنوان */}
-            <h2 className="mt-4 font-semibold text-lg line-clamp-1">
+            <h2 className="mt-4 font-semibold text-lg">
                 {product.title}
             </h2>
 
             {/* قیمت */}
-            <p className="text-gray-600 mt-2">تومان{product.price}</p>
+            <p className="text-gray-600 mt-2">
+                ${product.price}
+            </p>
 
             {/* دکمه */}
-            <button
-                className="mt-4 w-full flex items-center justify-center gap-2 bg-black text-white py-2 rounded-xl hover:bg-gray-800 transition"
-            >
-                <ShoppingCart size={18} />
-                افزودن
-            </button>
+            <Button
+                label="افزودن به سبد"
+                icon={<ShoppingCart size={18} />}
+                onClick={handleAdd}
+            />
         </div>
     )
 }
