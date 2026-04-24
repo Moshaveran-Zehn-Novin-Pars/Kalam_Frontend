@@ -7,18 +7,16 @@ export default function FeatureBox({ title, description, icon }: Props) {
     return (
         <div className="flex flex-col items-center text-center gap-3 p-4">
 
-            {/* آیکون */}
-            <div className="w-14 h-14 flex items-center justify-center rounded-full bg-[var(--accent)] text-white text-xl">
+            <div className="md:w-[70px] w-[40px] md:h-[70px] h-[40px]
+            flex items-center justify-center rounded-full bg-[#E5F2E9] text-[#417F56]">
                 {icon}
             </div>
 
-            {/* عنوان */}
-            <h3 className="font-semibold text-lg">
+            <h3 className="font-semibold md:text-[20px] text-[12px]">
                 {title}
             </h3>
 
-            {/* توضیحات */}
-            <p className="text-sm text-gray-500 leading-relaxed max-w-[200px]">
+            <p className="text-[14px] text-[#505050] max-w-[300px] hidden md:block">
                 {description}
             </p>
         </div>
