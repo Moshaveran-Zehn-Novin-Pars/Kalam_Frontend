@@ -5,33 +5,28 @@ type Props = {
     title: string
     description: string
     image: string
-    color: string
+
+    bgColor?: string
+    borderColor?: string
 }
 
 export default function CategoryCard({
                                          title,
                                          description,
                                          image,
-                                         color,
+                                         bgColor = "#FFFFFF",
+                                         borderColor = "#51A46B",
                                      }: Props) {
     return (
         <div
-            className="flex w-[384px] h-[192px] rounded-[20px] border-2 overflow-hidden"
-            style={{ borderColor: color }}
+            className="flex flex-row justify-around items-center max-w-[95%]  md:max-w-[33%] md:w-[384px] h-[192px] p-2 rounded-[20px] border-2 overflow-hidden"
+            style={{
+                backgroundColor: bgColor,
+                borderColor: borderColor,
+            }}
         >
-            {/* تصویر (40%) */}
-            <div className="w-[40%] h-full bg-gray-100 flex items-center justify-center">
-                <img
-                    src={image}
-                    alt={title}
-                    className="h-full w-full object-cover"
-                />
-            </div>
 
-            {/* محتوا (60%) */}
-            <div className="w-[60%] p-4 flex flex-col justify-between text-right">
-
-                {/* متن */}
+            <div className="w-[60%] p-4 flex flex-col justify-start gap-2 text-right">
                 <div>
                     <h3 className="text-[20px] font-semibold leading-none">
                         {title}
@@ -42,13 +37,22 @@ export default function CategoryCard({
                     </p>
                 </div>
 
-                {/* دکمه */}
+                {/* 🟢 BUTTON */}
                 <div className="mt-2">
                     <Button
-                        label="صفحه محصولات"
-                        variant="outline"
+                        label="مشاهده محصولات"
+                        variant="greenOutline"
+                        href="/products"
                     />
                 </div>
+            </div>
+
+            <div className="w-[40%] h-2/3 ">
+                <img
+                    src={image}
+                    alt={title}
+                    className="h-full w-full object-cover"
+                />
             </div>
         </div>
     )

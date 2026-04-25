@@ -4,9 +4,9 @@ import {Truck, ShieldCheck, RefreshCw, PanelsTopLeft} from "lucide-react"
 
 export default function Banner() {
     return (
-        <section className="relative w-full py-16">
+        <section className="relative w-full py-24">
 
-            <div className="absolute inset-0 -z-10">
+            <div className="absolute inset-0 -z-10 opacity-85">
                 <Image
                     src="/images/banner-bg.svg"
                     alt="bg"
