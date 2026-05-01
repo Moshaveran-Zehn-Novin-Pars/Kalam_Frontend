@@ -1,55 +1,59 @@
+"use client";
+import CategoryCard from "@/components/shared/CategoryCard/CategoryCard";
+import Banner from "@/components/shared/banner/Banner";
+import ProductCard from "@/components/shared/ProductCard/ProductCard";
+import { productService, Product } from "@/services/product/productService";
+import {Category, categoryService} from "@/services/category/categoryService";
 import Button from "@/components/ui/Button"
-import CategoryCard from "@/features/category/components/CategoryCard";
-import FeatureBox from "@/components/shared/FeatureBox"
-import { Truck, ShieldCheck, RefreshCw } from "lucide-react"
-export default function Home() {
-  return (
-    //   <Header /> {/* استفاده از کامپوننت Header */}
-    // <main>
-    //     <HeroSection data={homepageData.hero} /> {/* استفاده از کامپوننت HeroSection با داده‌هایش */}
-    //     <FeaturesGrid features={homepageData.features} /> {/* استفاده از کامپوننت FeaturesGrid */}
-    //     {/* ... سایر بخش‌های صفحه اصلی */}
-    // </main>
-    // <Footer /> {/* استفاده از کامپوننت Footer */}
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-        <main
-            className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
 
-            <div className="p-10 flex gap-6">
-                <CategoryCard
-                    id={1}
-                    title="میوه تازه"
-                    description="خرید انواع میوه با کیفیت بالا"
-                    image="https://elementiranco.com/wp-content/uploads/2026/03/toot-farangi-1.webp"
-                    color="#f59e0b"
-                />
-            </div>
+export default async function ProductsPage() {
+    // فراخوانی سرویس به صورت مستقیم در سرور (Next.js Server Components)
+    const products: Product[] = await productService.getAllProducts();
+    const categories: Category[] = await categoryService.getAllCategories();
 
-            <Button label="مشاهده" variant="outline"/>
+    return (
+        <div className="flex flex-col font-sans dark:bg-black">
+            <main className="flex flex-col">
+                <Banner></Banner>
 
-            <Button label="در حال بارگذاری" loading/>
+                <div className="flex flex-col gap-4 text-right">
+                    <h2 className="font-semibold text-[24px] text-center">همه‌چیز برای آشپزی، مهمانی و زندگی
+                        روزمره‌</h2>
 
-            <div className="flex gap-10 p-10 justify-center">
+                    <div className="flex flex-col md:flex-row justify-center items-center gap-6">
+                        {categories.map((item) => (
+                            <CategoryCard
+                                key={item.id}
+                                id={item.id}
+                                description={item.description}
+                                image={item.image}
+                                title={item.title}
+                                bgColor={item.bgColor}
+                                borderColor={item.borderColor}
+                            />
+                        ))}
 
-                <FeatureBox
-                    icon={<Truck/>}
-                    title="ارسال سریع"
-                    description="تحویل سریع در کمترین زمان ممکن"
-                />
+                    </div>
+                </div>
 
-                <FeatureBox
-                    icon={<ShieldCheck/>}
-                    title="ضمانت کیفیت"
-                    description="در صورت مشکل امکان مرجوعی دارید"
-                />
 
-                <FeatureBox
-                    icon={<RefreshCw/>}
-                    title="بازگشت کالا"
-                    description="تا ۷ روز امکان بازگشت"
-                />
-            </div>
-        </main>
-    </div>
-  );
+                {products.map((item) => (
+                    <ProductCard
+                        key={item.id}
+                        id={item.id}
+                        imageUrl={item.imageUrl}
+                        productName={item.productName}
+                        unit={item.unit}
+                        price={item.price}
+                        addToCartHandler={() => console.log("افزوده شد:", item.id)}
+                    />
+                ))}
+
+                {/*<Button label="مشاهده" variant="outline"/>*/}
+
+                {/*<Button label="در حال بارگذاری" loading/>*/}
+
+            </main>
+        </div>
+    );
 }
