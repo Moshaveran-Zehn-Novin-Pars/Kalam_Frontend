@@ -42,7 +42,6 @@ export default function ProductCard({ product }: Props) {
                 ${product.price}
             </p>
 
-            {/* دکمه */}
             <Button
                 label="افزودن به سبد"
                 icon={<ShoppingCart size={18} />}
