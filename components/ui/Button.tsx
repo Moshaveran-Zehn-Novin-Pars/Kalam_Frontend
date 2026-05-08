@@ -1,94 +1,41 @@
-"use client"
-
+import * as React from "react"
 import { cn } from "@/lib/utils"
-import { Loader2 } from "lucide-react"
-import Link from "next/link"
-import React from "react"
 
-type Variant =
-    | "primary"
-    | "outline"
-    | "ghost"
-    | "greenOutline" // 👈 همونی که گفتی
 
-type Size = "sm" | "md" | "lg"
-
-type Props = {
-    label: string
-    icon?: React.ReactNode
-    variant?: Variant
-    size?: Size
-    loading?: boolean
-    disabled?: boolean
-    onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void
-    href?: string
-    target?: "_self" | "_blank"
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+    variant?: "default" | "outline" | "ghost" | "destructive"
+    size?: "sm" | "md" | "lg" | "icon"
+    asChild?: boolean
 }
 
-/* 🎯 variants آماده */
-const variants: Record<Variant, string> = {
-    primary: "bg-[#51A46B] text-white border border-[#51A46B]",
-    outline:
-        "bg-transparent text-[#51A46B] border border-[#51A46B] hover:bg-[#51A46B] hover:text-white",
-    ghost: "bg-transparent text-black",
-
-    /* 💎 preset مورد نیاز تو */
-    greenOutline:
-        "bg-transparent text-[#51A46B] border border-[#51A46B]",
+const variants = {
+    default:     "bg-[#51A46B] text-white hover:bg-[#417F56]",
+    outline:     "border border-[#51A46B] text-[#51A46B] bg-transparent hover:bg-[#E5F2E9]",
+    ghost:       "bg-transparent text-[#505050] hover:bg-[#F5F5F5]",
+    destructive: "bg-red-500 text-white hover:bg-red-600",
+}
+const sizes = {
+    sm:   "h-8 px-3 text-sm rounded-[8px]",
+    md:   "h-10 px-4 text-[15px] rounded-[10px]",
+    lg:   "h-12 px-6 text-[16px] rounded-[10px]",
+    icon: "h-10 w-10 rounded-[10px]",
 }
 
-/* 🎯 sizes */
-const sizes: Record<Size, string> = {
-    sm: "px-3 py-1 text-[14px]",
-    md: "px-4 py-2 text-[16px]", // 👈 همونی که گفتی
-    lg: "px-6 py-3 text-[18px]",
-}
-
-export default function Button({
-                                   label,
-                                   icon,
-                                   variant = "primary",
-                                   size = "md",
-                                   loading = false,
-                                   disabled = false,
-                                   onClick,
-                                   href,
-                                   target = "_self",
-                               }: Props) {
-    const isDisabled = disabled || loading
-
-    const className = cn(
-        "inline-flex items-center justify-center gap-2 rounded-xl transition-all",
-        variants[variant],
-        sizes[size],
-        isDisabled && "opacity-50 cursor-not-allowed"
-    )
-
-    const content = (
-        <>
-            {loading ? (
-                <Loader2 className="animate-spin" size={18} />
-            ) : (
-                icon && <span className="flex items-center">{icon}</span>
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+    ({ className, variant = "default", size = "md", children, ...props }, ref) => (
+        <button
+            ref={ref}
+            className={cn(
+                "inline-flex items-center justify-center font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed",
+                variants[variant],
+                sizes[size],
+                className
             )}
-
-            <span>{label}</span>
-        </>
-    )
-
-    /* لینک */
-    if (href && !isDisabled) {
-        return (
-            <Link href={href} target={target}>
-                <span className={className}>{content}</span>
-            </Link>
-        )
-    }
-
-    /* دکمه */
-    return (
-        <button onClick={onClick} disabled={isDisabled} className={className}>
-            {content}
+            {...props}
+        >
+            {children}
         </button>
     )
-}
+)
+Button.displayName = "Button"
+export { Button }
