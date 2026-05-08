@@ -1,60 +1,90 @@
-import { create } from "zustand"
+import { create } from 'zustand'
+import type { Product, LocalCartItem } from '@/types'
 
-type Product = {
-    id: number
-    title: string
-    price: number
-    image: string
-}
+// ============================================
+// CART STORE
+// Manages local cart state (client-side)
+// Synced with backend via cartService on demand
+// ============================================
 
-type CartItem = Product & {
-    quantity: number
-}
-
-type CartStore = {
-    items: CartItem[]
-
-    addToCart: (product: Product) => void
-    removeFromCart: (id: number) => void
+interface CartStore {
+    items: LocalCartItem[]
     isOpen: boolean
+    isSyncing: boolean
+
+    // UI
     openCart: () => void
     closeCart: () => void
+
+    // Cart actions (local-first, then sync with backend)
+    addItem: (product: Product, quantity?: number) => void
+    updateItem: (productId: string, quantity: number) => void
+    removeItem: (productId: string) => void
+    clearCart: () => void
+
+    // Computed
+    totalItems: () => number
+    totalPrice: () => number
+
+    // Sync from backend (called after login or on mount)
+    hydrateFromBackend: (items: LocalCartItem[]) => void
+    setIsSyncing: (v: boolean) => void
 }
 
-
-export const useCartStore = create<CartStore>((set) => ({
+export const useCartStore = create<CartStore>((set, get) => ({
     items: [],
-
-    // 🆕 UI state
     isOpen: false,
-
-    removeFromCart: (id: number) =>
-        set((state) => ({
-            items: state.items.filter((i) => i.id !== id),
-        })),
+    isSyncing: false,
 
     openCart: () => set({ isOpen: true }),
     closeCart: () => set({ isOpen: false }),
 
-
-
-    // 🛍️ logic
-    addToCart: (product) =>
+    addItem: (product, quantity = 1) =>
         set((state) => {
-            const existing = state.items.find((i) => i.id === product.id)
+            const existing = state.items.find((i) => i.productId === product.id)
+            const minQty = parseFloat(product.minOrderQty)
+            const actualQty = Math.max(quantity, minQty)
 
             if (existing) {
                 return {
                     items: state.items.map((i) =>
-                        i.id === product.id
-                            ? { ...i, quantity: i.quantity + 1 }
+                        i.productId === product.id
+                            ? { ...i, quantity: i.quantity + actualQty }
                             : i
                     ),
                 }
             }
 
             return {
-                items: [...state.items, { ...product, quantity: 1 }],
+                items: [...state.items, { productId: product.id, product, quantity: actualQty }],
             }
         }),
+
+    updateItem: (productId, quantity) =>
+        set((state) => ({
+            items: quantity <= 0
+                ? state.items.filter((i) => i.productId !== productId)
+                : state.items.map((i) =>
+                    i.productId === productId ? { ...i, quantity } : i
+                ),
+        })),
+
+    removeItem: (productId) =>
+        set((state) => ({
+            items: state.items.filter((i) => i.productId !== productId),
+        })),
+
+    clearCart: () => set({ items: [] }),
+
+    totalItems: () =>
+        get().items.reduce((sum, item) => sum + item.quantity, 0),
+
+    totalPrice: () =>
+        get().items.reduce(
+            (sum, item) => sum + item.quantity * parseFloat(item.product.pricePerUnit),
+            0
+        ),
+
+    hydrateFromBackend: (items) => set({ items }),
+    setIsSyncing: (v) => set({ isSyncing: v }),
 }))

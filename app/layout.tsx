@@ -1,8 +1,9 @@
 import "./globals.css";
 import localFont from "next/font/local"
-import {Toaster} from "sonner"
+import { Toaster } from "sonner"
 import Header from "@/components/shared/Header"
 import Footer from "@/components/shared/Footer"
+import AuthProvider from "@/components/shared/AuthProvider"
 
 const iranSans = localFont({
     src: [
@@ -18,20 +19,28 @@ const iranSans = localFont({
     variable: "--font-iran",
 })
 
+export const metadata = {
+    title: 'کلم | پلتفرم B2B میوه و تره‌بار',
+    description: 'اولین پلتفرم عمده‌فروشی میوه و تره‌بار ایران',
+}
+
 export default function RootLayout({
                                        children,
                                    }: Readonly<{
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="fa" className={iranSans.variable}>
-        <body className="font-sans">
-        <Header/>
-        {children}
-        <Footer/>
-        <Toaster position="top-center"/>
+        <html lang="fa" dir="rtl" className={iranSans.variable}>
+        <body className="font-sans bg-white text-neutral-12">
+        <AuthProvider>
+            <Header />
+            <main className="min-h-screen">
+                {children}
+            </main>
+            <Footer />
+        </AuthProvider>
+        <Toaster position="top-center" richColors />
         </body>
         </html>
     );
 }
-
