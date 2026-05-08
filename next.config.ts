@@ -1,7 +1,17 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
-  /* config options here */
-};
+    // Run dev server on port 3001
+    // (use: next dev --port 3001 OR set here)
+    images: {
+        remotePatterns: [
+            {
+                protocol: 'http',
+                hostname: 'localhost',
+                port: '3000',
+            },
+        ],
+    },
+}
 
-export default nextConfig;
+export default nextConfig

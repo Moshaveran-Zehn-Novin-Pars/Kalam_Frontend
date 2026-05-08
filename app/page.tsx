@@ -1,59 +1,94 @@
-"use client";
-import CategoryCard from "@/components/shared/CategoryCard/CategoryCard";
-import Banner from "@/components/shared/banner/Banner";
-import ProductCard from "@/components/shared/ProductCard/ProductCard";
-import { productService, Product } from "@/services/product/productService";
-import {Category, categoryService} from "@/services/category/categoryService";
-import Button from "@/components/ui/Button"
+import CategoryCard from "@/components/shared/CategoryCard/CategoryCard"
+import Banner from "@/components/shared/banner/Banner"
+import ProductCard from "@/components/shared/ProductCard/ProductCard"
+import type { Product } from "@/types"
+import type { Category } from "@/types"
 
-export default async function ProductsPage() {
-    // فراخوانی سرویس به صورت مستقیم در سرور (Next.js Server Components)
-    const products: Product[] = await productService.getAllProducts();
-    const categories: Category[] = await categoryService.getAllCategories();
+// ============================================
+// Landing Page - Server Component (no "use client")
+// Fetches data from backend; fallback to empty on error
+// ============================================
+
+async function getProducts(): Promise<Product[]> {
+    try {
+        const res = await fetch(
+            `${process.env.API_URL || 'http://localhost:3000'}/api/v1/products?pageSize=12&status=ACTIVE`,
+            { next: { revalidate: 60 } }
+        )
+        if (!res.ok) return []
+        const json = await res.json()
+        return json?.data?.items ?? []
+    } catch {
+        return []
+    }
+}
+
+async function getCategories(): Promise<Category[]> {
+    try {
+        const res = await fetch(
+            `${process.env.API_URL || 'http://localhost:3000'}/api/v1/categories`,
+            { next: { revalidate: 300 } }
+        )
+        if (!res.ok) return []
+        const json = await res.json()
+        return json?.data ?? []
+    } catch {
+        return []
+    }
+}
+
+export default async function LandingPage() {
+    const [products, categories] = await Promise.all([
+        getProducts(),
+        getCategories(),
+    ])
 
     return (
-        <div className="flex flex-col font-sans dark:bg-black">
-            <main className="flex flex-col">
-                <Banner></Banner>
+        <div className="flex flex-col">
+            <Banner />
 
-                <div className="flex flex-col gap-4 text-right">
-                    <h2 className="font-semibold text-[24px] text-center">همه‌چیز برای آشپزی، مهمانی و زندگی
-                        روزمره‌</h2>
+            {/* Category Section */}
+            <section className="px-6 py-8">
+                <h2 className="font-semibold text-[24px] text-center mb-6">
+                    همه‌چیز برای آشپزی، مهمانی و زندگی روزمره‌
+                </h2>
 
+                {categories.length > 0 ? (
                     <div className="flex flex-col md:flex-row justify-center items-center gap-6">
-                        {categories.map((item) => (
+                        {categories.map((cat) => (
                             <CategoryCard
-                                key={item.id}
-                                id={item.id}
-                                description={item.description}
-                                image={item.image}
-                                title={item.title}
-                                bgColor={item.bgColor}
-                                borderColor={item.borderColor}
+                                key={cat.id}
+                                id={cat.id}
+                                title={cat.name}
+                                description=""
+                                image={cat.imageUrl ?? ""}
+                                bgColor="#E5F2E9"
+                                borderColor="#51A46B"
                             />
                         ))}
-
                     </div>
-                </div>
+                ) : null}
+            </section>
 
-
-                {products.map((item) => (
-                    <ProductCard
-                        key={item.id}
-                        id={item.id}
-                        imageUrl={item.imageUrl}
-                        productName={item.productName}
-                        unit={item.unit}
-                        price={item.price}
-                        addToCartHandler={() => console.log("افزوده شد:", item.id)}
-                    />
-                ))}
-
-                {/*<Button label="مشاهده" variant="outline"/>*/}
-
-                {/*<Button label="در حال بارگذاری" loading/>*/}
-
-            </main>
+            {/* Products Section */}
+            {products.length > 0 && (
+                <section className="px-6 py-4">
+                    <h2 className="font-semibold text-[24px] text-center mb-6">محصولات</h2>
+                    <div className="flex flex-wrap justify-center gap-4">
+                        {products.map((product) => (
+                            <ProductCard
+                                key={product.id}
+                                id={product.id}
+                                imageUrl={product.images?.[0]?.url ?? "/images/placeholder.png"}
+                                productName={product.name}
+                                unit={product.unit}
+                                price={parseFloat(product.pricePerUnit)}
+                                addToCartHandler={() => {}}
+                            />
+                        ))}
+                    </div>
+                </section>
+            )}
         </div>
-    );
+    )
 }
