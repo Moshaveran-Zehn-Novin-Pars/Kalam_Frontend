@@ -1,8 +1,3 @@
-
 export default function AddressesPage() {
-    return (
-        <div className="p-10">
-            <b className='text-center'>AddressesPage</b>
-        </div>
-    )
+    return <div className="p-10">آدرس‌های من</div>
 }
