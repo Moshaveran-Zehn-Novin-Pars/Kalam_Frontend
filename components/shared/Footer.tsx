@@ -2,87 +2,82 @@ import Link from "next/link"
 
 export default function Footer() {
     return (
-        <footer className="relative overflow-hidden" style={{ background: "#E8F5EC" }}>
-            {/* تصویر کلم سفید - background */}
+        <footer className="bg-[#DDEEE2] pt-20 pb-10 relative overflow-hidden mt-10" dir="rtl">
+            {/* Background cauliflower */}
             <div
-                className="absolute inset-0 opacity-20 pointer-events-none bg-center bg-no-repeat bg-cover"
+                className="absolute inset-0 opacity-30 mix-blend-color-burn pointer-events-none bg-center bg-cover bg-no-repeat"
                 style={{ backgroundImage: "url('/images/footer-cauliflower.png')" }}
             />
 
-            <div className="relative z-10 w-[90%] md:w-4/5 mx-auto py-14">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+            <div className="max-w-7xl mx-auto px-4 relative z-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 mb-16">
 
-                    {/* راست: برند */}
-                    <div className="flex flex-col items-end gap-5 text-right">
-                        <span className="text-[40px] font-bold text-[#51A46B]">کلم</span>
-                        <p className="text-[14px] text-[#505050] leading-[1.9] max-w-[280px]">
-                            در کَلَم سعی داریم با فراهم کردن دسترسی آسان به تازه‌ترین محصولات و ایجاد یک فرآیند خرید شفاف و راحت، نیازهای روزمره شما را در تهیه میوه و سبزیجات برآورده کنیم. از انتخاب باکیفیت‌ترین اقلام تا بسته‌بندی و تحویل، تمام مراحل با دقت و توجه انجام می‌شود تا تجربه‌ای قابل اعتماد برای شما شکل بگیرد.
+                    {/* ستون برند */}
+                    <div className="lg:col-span-5 space-y-6">
+                        <img src="/logo.svg" alt="کلم" className="h-10 w-auto" />
+                        <p className="text-[#505050] text-sm leading-loose max-w-md">
+                            در کلم سعی داریم با فراهم کردن دسترسی آسان به تازه‌ترین محصولات و ایجاد یک فرآیند خرید شفاف و راحت، نیازهای روزمره شما را در تهیه میوه و سبزیجات برآورده کنیم. از انتخاب باکیفیت‌ترین اقلام تا بسته‌بندی و تحویل، تمام مراحل با دقت و توجه انجام می‌شود تا تجربه‌ای قابل اعتماد برای شما شکل بگیرد.
                         </p>
-                        <div className="text-right">
-                            <p className="text-[13px] text-[#505050]">تلفن پشتیبانی:</p>
-                            <p className="text-[16px] font-bold text-[#212121] mt-1" dir="ltr">۰۲۱-۲۴۴۴</p>
+                        <div className="text-[#505050] text-sm font-medium bg-white/50 px-4 py-2 rounded-lg w-fit">
+                            تلفن پشتیبانی: <span className="font-bold text-[#212121]" dir="ltr">۰۲۱ - ۲۴۴۴</span>
                         </div>
-
-                        {/* social icons - دقیق مثل Figma */}
-                        <div className="flex gap-3">
-                            {/* Instagram */}
-                            <a href="#" aria-label="اینستاگرام"
-                               className="w-9 h-9 rounded-full border border-[#C8DDD0] bg-white/60 flex items-center justify-center
-                           text-[#505050] hover:text-[#51A46B] hover:border-[#51A46B] transition-colors">
-                                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                                    <rect x="2" y="2" width="20" height="20" rx="5"/>
-                                    <circle cx="12" cy="12" r="4"/>
-                                    <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
-                                </svg>
-                            </a>
-                            {/* Telegram */}
-                            <a href="#" aria-label="تلگرام"
-                               className="w-9 h-9 rounded-full border border-[#C8DDD0] bg-white/60 flex items-center justify-center
-                           text-[#505050] hover:text-[#51A46B] hover:border-[#51A46B] transition-colors">
-                                <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248-1.97 9.269c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.28 14.087l-2.95-.924c-.642-.204-.654-.642.136-.954l11.52-4.44c.537-.194 1.006.131.576 1.48z"/>
-                                </svg>
-                            </a>
-                            {/* LinkedIn */}
-                            <a href="#" aria-label="لینکدین"
-                               className="w-9 h-9 rounded-full border border-[#C8DDD0] bg-white/60 flex items-center justify-center
-                           text-[#505050] hover:text-[#51A46B] hover:border-[#51A46B] transition-colors">
-                                <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/>
-                                    <circle cx="4" cy="4" r="2"/>
-                                </svg>
-                            </a>
+                        <div className="flex gap-4">
+                            {[
+                                { label: "اینستاگرام", icon: (
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                                            <rect x="2" y="2" width="20" height="20" rx="5"/>
+                                            <circle cx="12" cy="12" r="4"/>
+                                            <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+                                        </svg>
+                                    )},
+                                { label: "تلگرام", icon: (
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248-1.97 9.269c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.28 14.087l-2.95-.924c-.642-.204-.654-.642.136-.954l11.52-4.44c.537-.194 1.006.131.576 1.48z"/>
+                                        </svg>
+                                    )},
+                                { label: "لینکدین", icon: (
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/>
+                                            <circle cx="4" cy="4" r="2"/>
+                                        </svg>
+                                    )},
+                            ].map((s) => (
+                                <a key={s.label} href="#" aria-label={s.label}
+                                   className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-[#505050] hover:text-[#51A46B] hover:shadow-md transition">
+                                    {s.icon}
+                                </a>
+                            ))}
                         </div>
                     </div>
 
-                    {/* وسط: درباره‌ی کلم */}
-                    <div className="flex flex-col items-end gap-3 text-right">
-                        <h4 className="text-[16px] font-bold text-[#212121] border-b border-[#C8DDD0] pb-3 w-full">
-                            درباره‌ی کلم
-                        </h4>
-                        <Link href="/contact" className="text-[15px] text-[#505050] hover:text-[#51A46B] transition-colors">تماس با ما</Link>
-                        <Link href="/about" className="text-[15px] text-[#505050] hover:text-[#51A46B] transition-colors">درباره‌ی ما</Link>
+                    {/* ستون محصولات */}
+                    <div className="lg:col-span-2">
+                        <h4 className="font-bold text-[#212121] text-lg mb-6">محصولات</h4>
+                        <ul className="space-y-4 text-[#505050] text-sm font-medium">
+                            {[["فروشگاه","/products"],["میوه","/products?category=fruits"],["صیفی‌جات","/products?category=vegetables"],["سبزیجات","/products?category=greens"]].map(([label, href]) => (
+                                <li key={label}>
+                                    <Link href={href} className="hover:text-[#51A46B] transition">{label}</Link>
+                                </li>
+                            ))}
+                        </ul>
                     </div>
 
-                    {/* چپ: محصولات */}
-                    <div className="flex flex-col items-end gap-3 text-right">
-                        <h4 className="text-[16px] font-bold text-[#212121] border-b border-[#C8DDD0] pb-3 w-full">
-                            محصولات
-                        </h4>
-                        <Link href="/products" className="text-[15px] text-[#505050] hover:text-[#51A46B] transition-colors">فروشگاه</Link>
-                        <Link href="/products?category=fruits" className="text-[15px] text-[#505050] hover:text-[#51A46B] transition-colors">میوه</Link>
-                        <Link href="/products?category=greens" className="text-[15px] text-[#505050] hover:text-[#51A46B] transition-colors">صنفی‌جات</Link>
-                        <Link href="/products?category=vegetables" className="text-[15px] text-[#505050] hover:text-[#51A46B] transition-colors">سبزیجات</Link>
+                    {/* ستون درباره */}
+                    <div className="lg:col-span-2">
+                        <h4 className="font-bold text-[#212121] text-lg mb-6">درباره‌ی کلم</h4>
+                        <ul className="space-y-4 text-[#505050] text-sm font-medium">
+                            {[["تماس با ما","/contact"],["درباره‌ی ما","/about"]].map(([label, href]) => (
+                                <li key={label}>
+                                    <Link href={href} className="hover:text-[#51A46B] transition">{label}</Link>
+                                </li>
+                            ))}
+                        </ul>
                     </div>
-
                 </div>
-            </div>
 
-            {/* bottom bar */}
-            <div className="relative z-10 border-t border-[#C8DDD0]">
-                <div className="w-[90%] md:w-4/5 mx-auto py-5 flex items-center justify-between text-[13px] text-[#505050]">
-                    <span>طراحی و توسعه توسط تیم کلم</span>
-                    <span>© ۱۴۰۴ کلم</span>
+                <div className="border-t border-gray-300/50 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-[#505050]">
+                    <p>طراحی و توسعه توسط تیم کلم</p>
+                    <p>© ۱۴۰۴ کلم. تمامی حقوق محفوظ است.</p>
                 </div>
             </div>
         </footer>
