@@ -7,7 +7,7 @@ import { COOKIE_NAME, getApiUrl } from '@/lib/auth'
 
 // Routes that require authentication
 const PROTECTED_ROUTES = [
-    '/account',
+    // '/account',
     '/checkout',
     '/cart',
 ]

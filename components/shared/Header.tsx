@@ -1,28 +1,34 @@
 "use client"
 
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { ShoppingCart, Search, Menu, X } from "lucide-react"
 import Link from "next/link"
-import Image from "next/image"
+import { AnimatePresence, motion } from "framer-motion"
 import { useCartStore } from "@/store/cartStore"
 import { useAuthStore } from "@/store/authStore"
-import { useState } from "react"
-import { AnimatePresence, motion } from "framer-motion"
-import { useRouter } from "next/navigation"
 
 const NAV_LINKS = [
-    { href: "/", label: "صفحه اصلی" },
-    { href: "/products", label: "محصولات" },
-    { href: "#", label: "تماس با ما" },
-    { href: "#", label: "درباره ی ما" },
+    { href: "/",        label: "صفحه اصلی" },
+    { href: "/products", label: "محصولات"   },
+    { href: "/contact",  label: "تماس با ما" },
+    { href: "/about",    label: "درباره ما"  },
 ]
 
 export default function Header() {
-    const router = useRouter()
+    const router   = useRouter()
     const openCart = useCartStore((s) => s.openCart)
     const totalItems = useCartStore((s) => s.totalItems)
     const { user, isAuthenticated, logout } = useAuthStore()
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+    const [mobileOpen,  setMobileOpen]  = useState(false)
     const [showUserMenu, setShowUserMenu] = useState(false)
+
+    const dashboardHref =
+        user?.role === "ADMIN" || user?.role === "SUPPORT" ? "/admin"
+            : user?.role === "FARMER" ? "/farmer"
+                : user?.role === "DRIVER" ? "/driver"
+                    : "/account"
 
     const handleLogout = async () => {
         await logout()
@@ -30,224 +36,190 @@ export default function Header() {
         router.push("/")
     }
 
-    // Role-based dashboard link
-    const dashboardHref =
-        user?.role === "ADMIN" || user?.role === "SUPPORT"
-            ? "/admin"
-            : user?.role === "FARMER"
-                ? "/farmer"
-                : user?.role === "DRIVER"
-                    ? "/driver"
-                    : "/account"
-
     return (
         <>
-            <header className="flex justify-center py-4 bg-white border-b border-[#E9E8E3] sticky top-0 z-40">
-                <div className="w-[90%] md:w-4/5 flex items-center justify-between">
+            <header
+                className="bg-white sticky top-0 z-50 border-b border-[#E9E8E3]"
+                dir="rtl"
+            >
+                <div className="max-w-7xl mx-auto px-4 h-20 flex justify-between items-center">
 
-                    {/* Mobile: hamburger + logo */}
-                    <div className="flex items-center gap-3 md:hidden">
-                        <button onClick={() => setMobileMenuOpen(true)}>
-                            <Menu size={24} />
-                        </button>
+                    {/* Logo + Nav — کنار هم سمت راست */}
+                    <div className="flex items-center gap-8">
                         <Link href="/">
-                            <Image src="/logo.svg" alt="کلم" width={50} height={30} className="w-auto" />
+                            <img src="/logo.svg" alt="کلم" className="h-8 w-auto" />
                         </Link>
+
+                        <nav className="hidden md:flex items-center gap-8">
+                            {NAV_LINKS.map((link) => (
+                                <Link
+                                    key={link.href}
+                                    href={link.href}
+                                    className="text-[#212121] hover:text-[#51A46B] transition font-medium text-[18px]"
+                                >
+                                    {link.label}
+                                </Link>
+                            ))}
+                        </nav>
                     </div>
 
-                    {/* Desktop: nav links + logo */}
-                    <nav className="hidden md:flex gap-8 text-[18px] items-center">
-                        <Link href="/">
-                            <Image src="/logo.svg" alt="کلم" width={50} height={30} className="w-auto" />
-                        </Link>
-                        {NAV_LINKS.map((link) => (
-                            <Link
-                                key={link.href}
-                                href={link.href}
-                                className="text-black hover:text-primary transition-colors"
-                            >
-                                {link.label}
-                            </Link>
-                        ))}
-                    </nav>
-
-                    {/* Actions (right side) */}
-                    <div className="flex items-center gap-2 md:gap-3">
+                    {/* Actions */}
+                    <div className="flex items-center gap-3">
 
                         {/* Search */}
-                        <button className="w-[40px] h-[40px] md:w-[49px] md:h-[49px] border border-primary rounded-[10px] flex items-center justify-center hover:bg-primary-light transition-colors">
-                            <Search size={18} className="text-primary" />
+                        <button className="w-[49px] h-[49px] flex items-center justify-center border border-[#E9E8E3] rounded-xl hover:bg-[#F5F5F5] hover:border-[#51A46B] transition">
+                            <Search size={20} className="text-[#51A46B]" />
                         </button>
 
                         {/* Cart */}
                         <button
                             onClick={openCart}
-                            className="relative w-[40px] h-[40px] md:w-[49px] md:h-[49px] border border-primary rounded-[10px] flex items-center justify-center hover:bg-primary-light transition-colors"
+                            className="w-[49px] h-[49px] flex items-center justify-center border border-[#E9E8E3] rounded-xl hover:bg-[#F5F5F5] hover:border-[#51A46B] transition relative"
                         >
-                            <ShoppingCart size={18} className="text-primary" />
+                            <ShoppingCart size={20} className="text-[#51A46B]" />
                             {totalItems() > 0 && (
-                                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
+                                <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#51A46B] text-white text-[10px] font-bold flex items-center justify-center rounded-full">
                   {totalItems()}
                 </span>
                             )}
                         </button>
 
-                        {/* Auth: Guest */}
+                        {/* Guest */}
                         {!isAuthenticated && (
                             <Link
                                 href="/auth/login"
-                                className="flex items-center gap-2 border border-primary text-primary rounded-[10px] px-3 md:px-4 h-[40px] md:h-[49px] text-[16px] md:text-[18px] hover:bg-primary-light transition-colors"
+                                className="hidden sm:flex items-center gap-2 px-5 py-2.5 border border-[#51A46B] text-[#51A46B] rounded-xl hover:bg-[#51A46B] hover:text-white transition group font-medium text-[18px]"
                             >
-                                <span className="hidden md:inline">ورود / ثبت‌نام</span>
-                                <span className="md:hidden">ورود</span>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                     stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/>
+                                    <polyline points="10 17 15 12 10 7"/>
+                                    <line x1="15" y1="12" x2="3" y2="12"/>
+                                </svg>
+                                <span>ورود / ثبت‌نام</span>
                             </Link>
                         )}
 
-                        {/* Auth: Logged in */}
+                        {/* Logged in */}
                         {isAuthenticated && user && (
-                            <div className="relative">
-                                <button
-                                    onClick={() => setShowUserMenu((v) => !v)}
-                                    className="flex items-center gap-2 border border-primary rounded-[10px] px-3 h-[40px] md:h-[49px] hover:bg-primary-light transition-colors"
-                                >
-                                    {/* Avatar */}
-                                    {user.avatar ? (
-                                        <img
-                                            src={user.avatar}
-                                            alt={user.firstName ?? ""}
-                                            className="w-8 h-8 rounded-full object-cover"
-                                        />
-                                    ) : (
-                                        <div className="w-8 h-8 rounded-full bg-primary-light flex items-center justify-center text-primary font-bold text-sm">
-                                            {(user.firstName ?? user.phone)?.[0]}
-                                        </div>
-                                    )}
-                                    <span className="hidden md:inline text-[16px] text-black">
-                    سلام؛ {user.firstName ?? user.phone}
-                  </span>
+                            <>
+                                {/* سفارش سریع */}
+                                <button className="hidden sm:block bg-[#51A46B] text-white px-4 py-2.5 rounded-xl text-[18px] font-medium hover:bg-[#417F56] transition whitespace-nowrap">
+                                    سفارش سریع
                                 </button>
 
-                                {/* Dropdown */}
-                                <AnimatePresence>
-                                    {showUserMenu && (
-                                        <motion.div
-                                            initial={{ opacity: 0, y: -8 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: -8 }}
-                                            transition={{ duration: 0.15 }}
-                                            className="absolute left-0 top-[54px] bg-white border border-[#E9E8E3] rounded-[12px] shadow-card min-w-[160px] overflow-hidden z-50"
-                                        >
-                                            <Link
-                                                href={dashboardHref}
-                                                onClick={() => setShowUserMenu(false)}
-                                                className="block px-4 py-3 text-right text-[15px] hover:bg-primary-light transition-colors"
+                                {/* User avatar + dropdown */}
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setShowUserMenu((v) => !v)}
+                                        className="flex items-center gap-2 border border-[#E9E8E3] rounded-xl px-3 h-[49px] hover:border-[#51A46B] transition"
+                                    >
+                                        <div className="w-8 h-8 rounded-full bg-[#E5F2E9] flex items-center justify-center overflow-hidden">
+                                            {user.avatar
+                                                ? <img src={user.avatar} alt="" className="w-full h-full object-cover" />
+                                                : <span className="text-[#51A46B] font-bold text-sm">
+                            {(user.firstName ?? user.phone)?.[0]}
+                          </span>}
+                                        </div>
+                                        <span className="hidden md:inline text-[16px] text-[#212121]">
+                      سلام؛ {user.firstName ?? "کاربر"}
+                    </span>
+                                    </button>
+
+                                    <AnimatePresence>
+                                        {showUserMenu && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: -8 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: -8 }}
+                                                transition={{ duration: 0.15 }}
+                                                className="absolute left-0 top-[54px] bg-white border border-[#E9E8E3] rounded-[12px] shadow-lg min-w-[160px] overflow-hidden z-50"
                                             >
-                                                پنل کاربری
-                                            </Link>
-                                            <Link
-                                                href="/account/orders"
-                                                onClick={() => setShowUserMenu(false)}
-                                                className="block px-4 py-3 text-right text-[15px] hover:bg-primary-light transition-colors"
-                                            >
-                                                سفارش‌هایم
-                                            </Link>
-                                            <Link
-                                                href="/account/profile"
-                                                onClick={() => setShowUserMenu(false)}
-                                                className="block px-4 py-3 text-right text-[15px] hover:bg-primary-light transition-colors"
-                                            >
-                                                پروفایل
-                                            </Link>
-                                            <hr className="border-[#E9E8E3]" />
-                                            <button
-                                                onClick={handleLogout}
-                                                className="w-full text-right px-4 py-3 text-[15px] text-red-500 hover:bg-red-50 transition-colors"
-                                            >
-                                                خروج
-                                            </button>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                            </div>
+                                                <Link href={dashboardHref} onClick={() => setShowUserMenu(false)}
+                                                      className="block px-4 py-3 text-right text-[15px] hover:bg-[#E5F2E9] transition">
+                                                    پنل کاربری
+                                                </Link>
+                                                <Link href="/account/orders" onClick={() => setShowUserMenu(false)}
+                                                      className="block px-4 py-3 text-right text-[15px] hover:bg-[#E5F2E9] transition">
+                                                    سفارش‌هایم
+                                                </Link>
+                                                <Link href="/account/profile" onClick={() => setShowUserMenu(false)}
+                                                      className="block px-4 py-3 text-right text-[15px] hover:bg-[#E5F2E9] transition">
+                                                    پروفایل
+                                                </Link>
+                                                <hr className="border-[#E9E8E3]" />
+                                                <button onClick={handleLogout}
+                                                        className="w-full text-right px-4 py-3 text-[15px] text-red-500 hover:bg-red-50 transition">
+                                                    خروج
+                                                </button>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+                            </>
                         )}
+
+                        {/* Mobile hamburger */}
+                        <button
+                            onClick={() => setMobileOpen(true)}
+                            className="md:hidden w-10 h-10 flex items-center justify-center border border-[#E9E8E3] rounded-xl"
+                        >
+                            <Menu size={20} />
+                        </button>
                     </div>
                 </div>
             </header>
 
-            {/* Mobile menu overlay */}
+            {/* Mobile Menu */}
             <AnimatePresence>
-                {mobileMenuOpen && (
-                    <motion.div
-                        className="fixed inset-0 z-50"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.18 }}
-                    >
-                        <button
-                            className="absolute inset-0 bg-black/40"
-                            onClick={() => setMobileMenuOpen(false)}
-                            aria-label="بستن منو"
-                        />
+                {mobileOpen && (
+                    <motion.div className="fixed inset-0 z-50"
+                                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                        <button className="absolute inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
                         <motion.aside
-                            className="absolute right-0 top-0 w-64 h-full bg-white p-5 flex flex-col"
-                            initial={{ x: 24, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            exit={{ x: 24, opacity: 0 }}
+                            className="absolute right-0 top-0 w-72 h-full bg-white p-5 flex flex-col"
+                            dir="rtl"
+                            initial={{ x: 288, opacity: 0 }}
+                            animate={{ x: 0,   opacity: 1 }}
+                            exit={{ x: 288,    opacity: 0 }}
                             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                         >
-                            <button
-                                onClick={() => setMobileMenuOpen(false)}
-                                className="mb-6 self-start"
-                            >
-                                <X />
+                            <button onClick={() => setMobileOpen(false)} className="mb-6 self-start">
+                                <X size={22} />
                             </button>
 
-                            {/* User info in mobile */}
                             {isAuthenticated && user && (
                                 <div className="flex items-center gap-3 mb-6 pb-4 border-b border-[#E9E8E3]">
-                                    <div className="w-10 h-10 rounded-full bg-primary-light flex items-center justify-center text-primary font-bold">
+                                    <div className="w-10 h-10 rounded-full bg-[#E5F2E9] flex items-center justify-center text-[#51A46B] font-bold">
                                         {(user.firstName ?? user.phone)?.[0]}
                                     </div>
                                     <div>
-                                        <p className="text-[15px] font-bold">
-                                            {user.firstName ?? "کاربر"}
-                                        </p>
-                                        <p className="text-[13px] text-neutral-10">{user.phone}</p>
+                                        <p className="font-bold text-[15px]">{user.firstName ?? "کاربر"}</p>
+                                        <p className="text-[13px] text-[#505050]">{user.phone}</p>
                                     </div>
                                 </div>
                             )}
 
-                            <nav className="flex flex-col gap-4 text-right text-[17px]">
+                            <nav className="flex flex-col gap-4 text-right">
                                 {NAV_LINKS.map((link) => (
-                                    <Link
-                                        key={link.href}
-                                        href={link.href}
-                                        onClick={() => setMobileMenuOpen(false)}
-                                        className="hover:text-primary transition-colors"
-                                    >
+                                    <Link key={link.href} href={link.href}
+                                          onClick={() => setMobileOpen(false)}
+                                          className="text-[17px] text-[#212121] hover:text-[#51A46B] transition">
                                         {link.label}
                                     </Link>
                                 ))}
                             </nav>
 
                             <div className="mt-auto">
-                                {!isAuthenticated ? (
-                                    <Link
-                                        href="/auth/login"
-                                        onClick={() => setMobileMenuOpen(false)}
-                                        className="block text-center bg-primary text-white rounded-[10px] py-3 text-[16px]"
-                                    >
+                                {!isAuthenticated
+                                    ? <Link href="/auth/login" onClick={() => setMobileOpen(false)}
+                                            className="block text-center bg-[#51A46B] text-white rounded-xl py-3 text-[16px]">
                                         ورود / ثبت‌نام
                                     </Link>
-                                ) : (
-                                    <button
-                                        onClick={handleLogout}
-                                        className="w-full text-center text-red-500 border border-red-200 rounded-[10px] py-3 text-[16px]"
-                                    >
+                                    : <button onClick={handleLogout}
+                                              className="w-full text-center text-red-500 border border-red-200 rounded-xl py-3 text-[16px]">
                                         خروج از حساب
-                                    </button>
-                                )}
+                                    </button>}
                             </div>
                         </motion.aside>
                     </motion.div>
