@@ -1,46 +1,43 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import Image from "next/image"
-import Link from "next/link"
 import { toast } from "sonner"
 import { authService } from "@/services/auth.service"
 import { useAuthStore } from "@/store/authStore"
 import { toLatinDigits } from "@/lib/utils"
 
-
 type Step = "phone" | "otp"
 
-export default function LoginPage() {
+export default function LoginForm() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const redirect = searchParams.get("redirect") || "/"
-    const expired = searchParams.get("expired") === "1"
 
     const setSession = useAuthStore((s) => s.setSession)
 
     const [step, setStep] = useState<Step>("phone")
     const [phone, setPhone] = useState("")
-    const [otp, setOtp] = useState(["", "", "", "", "", ""])
+    const [otp, setOtp] = useState("")
     const [loading, setLoading] = useState(false)
     const [countdown, setCountdown] = useState(0)
 
-    const otpRefs = useRef<(HTMLInputElement | null)[]>([])
+    const otpInputRef = useRef<HTMLInputElement>(null)
 
-    // Show expiry message
-    useEffect(() => {
-        if (expired) toast.error("نشست شما منقضی شده. لطفاً دوباره وارد شوید.")
-    }, [expired])
-
-    // Countdown timer
     useEffect(() => {
         if (countdown <= 0) return
         const t = setTimeout(() => setCountdown((c) => c - 1), 1000)
         return () => clearTimeout(t)
     }, [countdown])
 
-    // ── Step 1: Send OTP ──────────────────────
+    // فرمت دهی زمان به شکل فارسی (مثلا ۱:۵۵)
+    const formatTimeFa = (seconds: number) => {
+        const m = Math.floor(seconds / 60)
+        const s = seconds % 60
+        const timeString = `${m}:${s < 10 ? "0" : ""}${s}`
+        return timeString.replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[parseInt(d)])
+    }
+
     const handleSendOtp = async () => {
         const cleaned = toLatinDigits(phone.trim())
         if (!/^09\d{9}$/.test(cleaned)) {
@@ -52,9 +49,9 @@ export default function LoginPage() {
         try {
             await authService.sendOtp(cleaned)
             setStep("otp")
-            setCountdown(120)
-            toast.success("کد تأیید ارسال شد")
-            setTimeout(() => otpRefs.current[0]?.focus(), 100)
+            setCountdown(115)
+            setOtp("")
+            setTimeout(() => otpInputRef.current?.focus(), 100)
         } catch (e: unknown) {
             const msg = e instanceof Error ? e.message : "خطا در ارسال کد"
             toast.error(msg)
@@ -63,188 +60,158 @@ export default function LoginPage() {
         }
     }
 
-    // ── OTP input handling ────────────────────
-    const handleOtpChange = (index: number, value: string) => {
-        const digit = toLatinDigits(value).replace(/\D/g, "").slice(-1)
-        const next = [...otp]
-        next[index] = digit
-        setOtp(next)
-        if (digit && index < 5) otpRefs.current[index + 1]?.focus()
-    }
-
-    const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
-        if (e.key === "Backspace" && !otp[index] && index > 0) {
-            otpRefs.current[index - 1]?.focus()
-        }
-    }
-
-    const handleOtpPaste = (e: React.ClipboardEvent) => {
-        const pasted = toLatinDigits(e.clipboardData.getData("text")).replace(/\D/g, "").slice(0, 6)
-        if (pasted.length === 6) {
-            setOtp(pasted.split(""))
-            otpRefs.current[5]?.focus()
-        }
-    }
-
-    // ── Step 2: Verify OTP ───────────────────
-    const handleVerifyOtp = async () => {
-        const code = otp.join("")
-        if (code.length < 6) {
-            toast.error("کد ۶ رقمی را وارد کنید")
+    const handleVerifyOtp = async (codeToVerify?: string) => {
+        const finalOtp = codeToVerify ?? otp
+        if (finalOtp.length < 6) {
+            toast.error("کد ۶ رقمی را کامل کنید")
             return
         }
 
         setLoading(true)
         try {
-            const data = await authService.verifyOtp(toLatinDigits(phone.trim()), code)
+            const data = await authService.verifyOtp(toLatinDigits(phone.trim()), finalOtp)
             setSession(data)
             toast.success(`خوش آمدی ${data.user.firstName ?? ""}`)
             router.push(redirect)
         } catch (e: unknown) {
-            const msg = e instanceof Error ? e.message : "کد نامعتبر است"
-            toast.error(msg)
-            setOtp(["", "", "", "", "", ""])
-            otpRefs.current[0]?.focus()
+            toast.error("کد نامعتبر است")
+            setOtp("")
         } finally {
             setLoading(false)
         }
     }
 
-    const handleResend = async () => {
-        if (countdown > 0) return
-        setOtp(["", "", "", "", "", ""])
-        await handleSendOtp()
+    const handleOtpChange = (value: string) => {
+        const cleaned = toLatinDigits(value).replace(/\D/g, "").slice(0, 6)
+        setOtp(cleaned)
+        if (cleaned.length === 6) {
+            handleVerifyOtp(cleaned)
+        }
     }
 
+    // تبدیل شماره موبایل به حروف فارسی برای نمایش
+    const faPhone = phone.replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[parseInt(d)])
+
     return (
-        <div className="min-h-screen flex items-center justify-center bg-[#F7FAF8] px-4">
-            <div className="w-full max-w-md">
+        <div className="w-full flex flex-col items-end text-right">
+            <h1 className="text-[28px] sm:text-[32px] font-extrabold text-[#212121] mb-2 w-full">
+                ورود یا ثبت نام
+            </h1>
+            <p className="text-[#8A8A8A] text-[14px] sm:text-[15px] mb-8 w-full">
+                برای ادامه، شماره موبایل خود را وارد کنید
+            </p>
 
-                {/* Card */}
-                <div className="bg-white rounded-[20px] shadow-card p-8 md:p-10">
+            {/* ── مرحله اول ── */}
+            {step === "phone" && (
+                <div className="w-full flex flex-col gap-6 animate-fade-in">
+                    <div className="relative w-full h-[56px] border border-[#E9E8E3] rounded-[14px] flex items-center px-4 focus-within:border-[#51A46B] transition-all bg-white">
+                        <label className="absolute -top-[10px] right-4 bg-white px-2 text-[#8A8A8A] text-[13px] font-medium z-10">
+                            شماره موبایل
+                        </label>
 
-                    {/* Logo */}
-                    <div className="flex justify-center mb-8">
-                        <Link href="/">
-                            <Image src="/logo.svg" alt="کلم" width={80} height={48} />
-                        </Link>
+                        {/* آیکون در سمت چپ فیلد */}
+                        <div className="text-[#8A8A8A] ml-3">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                            </svg>
+                        </div>
+
+                        <input
+                            type="tel"
+                            inputMode="numeric"
+                            value={phone}
+                            onChange={(e) => setPhone(toLatinDigits(e.target.value).replace(/\D/g, "").slice(0, 11))}
+                            onKeyDown={(e) => e.key === "Enter" && phone.length === 11 && handleSendOtp()}
+                            className="flex-1 h-full bg-transparent outline-none text-right text-[17px] text-[#212121] placeholder:text-[#E9E8E3] font-medium tracking-wide"
+                            dir="ltr"
+                            placeholder="09123456789"
+                            maxLength={11}
+                            autoFocus
+                        />
                     </div>
 
-                    {/* ── Phone Step ── */}
-                    {step === "phone" && (
-                        <>
-                            <h1 className="text-[22px] font-bold text-center text-neutral-12 mb-2">
-                                ورود به کلم
-                            </h1>
-                            <p className="text-[14px] text-neutral-10 text-center mb-8">
-                                شماره موبایل خود را وارد کنید
-                            </p>
+                    <button
+                        onClick={handleSendOtp}
+                        disabled={loading || phone.length < 11}
+                        className="w-full h-[56px] bg-[#9BC6A6] text-white rounded-[14px] text-[17px] font-bold hover:bg-[#51A46B] transition-colors disabled:opacity-70 mt-2"
+                        style={{ backgroundColor: (phone.length === 11 && !loading) ? '#51A46B' : '#A3CBB0' }}
+                    >
+                        {loading ? "در حال ارسال..." : "ارسال کد"}
+                    </button>
+                </div>
+            )}
 
-                            <div className="flex flex-col gap-4">
-                                <input
-                                    type="tel"
-                                    inputMode="numeric"
-                                    dir="ltr"
-                                    placeholder="09xxxxxxxxx"
-                                    value={phone}
-                                    onChange={(e) => setPhone(e.target.value)}
-                                    onKeyDown={(e) => e.key === "Enter" && handleSendOtp()}
-                                    className="w-full h-[52px] border border-[#E9E8E3] rounded-[10px] px-4 text-center text-[18px] tracking-widest focus:outline-none focus:border-primary transition-colors"
-                                    maxLength={11}
-                                    autoFocus
-                                />
+            {/* ── مرحله دوم ── */}
+            {step === "otp" && (
+                <div className="w-full flex flex-col gap-6 animate-fade-in">
+                    <p className="text-[#212121] text-[14px] w-full text-right font-medium">
+                        کد تأیید ۶ رقمی به شماره <span className="font-bold">{faPhone}</span> ارسال شد.
+                    </p>
 
-                                <button
-                                    onClick={handleSendOtp}
-                                    disabled={loading}
-                                    className="w-full h-[52px] bg-primary text-white rounded-[10px] text-[17px] font-medium hover:bg-primary-dark transition-colors disabled:opacity-60"
-                                >
-                                    {loading ? "در حال ارسال..." : "دریافت کد تأیید"}
-                                </button>
+                    {/* ردیف تایمر و ویرایش شماره */}
+                    <div className="flex items-center justify-between w-full text-[13px] font-medium">
+                        <button onClick={() => setStep("phone")} className="text-[#8A8A8A] hover:text-[#51A46B] transition-colors">
+                            ویرایش شماره
+                        </button>
+
+                        {countdown > 0 ? (
+                            <div className="flex items-center gap-2 bg-[#F5F5F5] text-[#8A8A8A] px-3 py-1.5 rounded-full">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                                </svg>
+                                <span className="pt-0.5">{formatTimeFa(countdown)} تا ارسال مجدد</span>
                             </div>
-
-                            <p className="text-[13px] text-neutral-10 text-center mt-6">
-                                با ورود، با{" "}
-                                <Link href="#" className="text-primary underline">
-                                    قوانین کلم
-                                </Link>{" "}
-                                موافقت می‌کنید
-                            </p>
-                        </>
-                    )}
-
-                    {/* ── OTP Step ── */}
-                    {step === "otp" && (
-                        <>
-                            <h1 className="text-[22px] font-bold text-center text-neutral-12 mb-2">
-                                کد تأیید
-                            </h1>
-                            <p className="text-[14px] text-neutral-10 text-center mb-1">
-                                کد ۶ رقمی ارسال شده به
-                            </p>
-                            <p className="text-[16px] font-bold text-center text-primary mb-8 dir-ltr" dir="ltr">
-                                {phone}
-                            </p>
-
-                            {/* OTP boxes */}
-                            <div
-                                className="flex justify-center gap-3 mb-6 flex-row-reverse"
-                                onPaste={handleOtpPaste}
-                            >
-                                {otp.map((digit, i) => (
-                                    <input
-                                        key={i}
-                                        ref={(el) => { otpRefs.current[i] = el }}
-                                        type="text"
-                                        inputMode="numeric"
-                                        maxLength={1}
-                                        value={digit}
-                                        onChange={(e) => handleOtpChange(i, e.target.value)}
-                                        onKeyDown={(e) => handleOtpKeyDown(i, e)}
-                                        dir="ltr"
-                                        className="w-[48px] h-[56px] border-2 border-[#E9E8E3] rounded-[10px] text-center text-[22px] font-bold focus:outline-none focus:border-primary transition-colors"
-                                    />
-                                ))}
-                            </div>
-
-                            <button
-                                onClick={handleVerifyOtp}
-                                disabled={loading || otp.join("").length < 6}
-                                className="w-full h-[52px] bg-primary text-white rounded-[10px] text-[17px] font-medium hover:bg-primary-dark transition-colors disabled:opacity-60 mb-4"
-                            >
-                                {loading ? "در حال بررسی..." : "تأیید و ورود"}
+                        ) : (
+                            <button onClick={handleSendOtp} disabled={loading} className="text-[#51A46B] font-bold">
+                                ارسال مجدد کد
                             </button>
+                        )}
+                    </div>
 
-                            {/* Resend + change number */}
-                            <div className="flex justify-between items-center text-[13px]">
-                                <button
-                                    onClick={() => { setStep("phone"); setOtp(["","","","","",""]) }}
-                                    className="text-neutral-10 hover:text-primary transition-colors"
-                                >
-                                    تغییر شماره
-                                </button>
+                    <div className="relative w-full" dir="ltr">
+                        <input
+                            ref={otpInputRef}
+                            type="tel"
+                            inputMode="numeric"
+                            value={otp}
+                            onChange={(e) => handleOtpChange(e.target.value)}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                            maxLength={6}
+                            autoFocus
+                        />
 
-                                <button
-                                    onClick={handleResend}
-                                    disabled={countdown > 0}
-                                    className="text-primary disabled:text-neutral-10 transition-colors"
-                                >
-                                    {countdown > 0
-                                        ? `ارسال مجدد (${countdown})`
-                                        : "ارسال مجدد کد"}
-                                </button>
-                            </div>
-                        </>
-                    )}
+                        <div className="grid grid-cols-6 gap-2 sm:gap-3">
+                            {Array(6).fill(0).map((_, index) => {
+                                const char = otp[index] || ""
+                                const isFocused = otp.length === index
+                                return (
+                                    <div
+                                        key={index}
+                                        className={`w-full h-[60px] sm:h-[68px] border rounded-[12px] flex items-center justify-center text-[24px] font-bold text-[#51A46B] transition-all bg-white
+                                        ${isFocused ? "border-[#51A46B] ring-1 ring-[#51A46B]" : "border-[#E9E8E3]"} 
+                                        ${char ? "border-[#51A46B]" : ""}`}
+                                    >
+                                        {/* تبدیل عدد انگلیسی به فارسی برای نمایش در باکس */}
+                                        {char ? char.replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[parseInt(d)]) : ""}
+                                        {isFocused && (
+                                            <div className="w-[1.5px] h-6 bg-[#51A46B] animate-pulse"></div>
+                                        )}
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={() => handleVerifyOtp()}
+                        disabled={loading || otp.length < 6}
+                        className="w-full h-[56px] text-white rounded-[14px] text-[17px] font-bold transition-colors disabled:opacity-70 mt-4 shadow-sm"
+                        style={{ backgroundColor: (otp.length === 6 && !loading) ? '#51A46B' : '#A3CBB0' }}
+                    >
+                        {loading ? "در حال بررسی..." : "ورود به کلم"}
+                    </button>
                 </div>
-
-                {/* Back to home */}
-                <div className="text-center mt-6">
-                    <Link href="/" className="text-[14px] text-neutral-10 hover:text-primary transition-colors">
-                        بازگشت به صفحه اصلی
-                    </Link>
-                </div>
-            </div>
+            )}
         </div>
     )
 }

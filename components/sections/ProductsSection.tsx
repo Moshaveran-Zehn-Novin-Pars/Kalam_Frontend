@@ -8,108 +8,130 @@ import { useCartStore } from "@/store/cartStore"
 import type { Product } from "@/types"
 
 const TABS = [
-  { value: "all",      label: "همه" },
-  { value: "mive",     label: "میوه" },
-  { value: "sabzijat", label: "سبزیجات" },
-  { value: "sayfijat", label: "صیفی‌جات" },
+    { value: "mive",     label: "میوه" },
+    { value: "sabzijat", label: "سبزیجات" },
+    { value: "sayfijat", label: "صیفی‌جات" },
 ]
 
-const MOCK: Product[] = Array.from({ length: 12 }, (_, i) => ({
-  id: `m${i}`, farmerId: "f1", categoryId: `c${i % 3}`,
-  name: ["انار ساوه","بلوبری وارداتی","موز اکوادور","توت‌فرنگی","هلو زعفرانی","طالبی","تمشک","لیمو ترش","پشن فروت","گیلاس","انگور بی‌دانه","لیمو شیرین"][i],
-  slug: `product-${i}`, description: null, origin: "ایران", harvestDate: null,
-  qualityGrade: (["A","B","A","B","A","A","B","A","A","B","A","A"] as const)[i],
-  unit: "کیلو", pricePerUnit: String((550 + i * 100) * 1000),
-  minOrderQty: i % 3 === 0 ? "50" : "10", maxOrderQty: null,
-  stockQty: "500", reservedQty: "0", status: "ACTIVE" as const,
-  requiresColdChain: false, storageTempMin: null, storageTempMax: null,
-  shelfLifeDays: null, viewsCount: 0, salesCount: 0,
-  createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
-  images: [],
+const MOCK: Product[] = Array.from({ length: 8 }, (_, i) => ({
+    id: `m${i}`, farmerId: "f1", categoryId: `c0`,
+    name: "توت‌فرنگی خارجی",
+    slug: `product-${i}`, description: null, origin: "ایران", harvestDate: null,
+    qualityGrade: "A",
+    unit: "کیلو",
+    pricePerUnit: "128500",
+    minOrderQty: "10", maxOrderQty: null,
+    stockQty: "500", reservedQty: "0", status: "ACTIVE" as const,
+    requiresColdChain: false, storageTempMin: null, storageTempMax: null,
+    shelfLifeDays: null, viewsCount: 0, salesCount: 0,
+    createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+    images: [],
 }))
 
+// تابع برای فارسی کردن اعداد
+function toFa(num: string | number) {
+    return num.toString().replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[parseInt(d)])
+}
+
 export default function ProductsSection({ products }: { products?: Product[] }) {
-  const [active, setActive] = useState("all")
-  const items = products?.length ? products : MOCK
-  const shown = active === "all" ? items : items.filter(p => p.category?.slug === active)
+    const [active, setActive] = useState("mive")
+    const items = products?.length ? products : MOCK
+    const shown = items
 
-  return (
-      <section className="max-w-7xl mx-auto px-4 py-16" dir="rtl">
-        <div className="flex flex-col items-center mb-10">
-          <h2 className="text-3xl font-bold text-[#212121] mb-6">محصولات</h2>
-          <div className="flex gap-8 border-b border-[#E9E8E3] w-full max-w-md justify-center">
-            {TABS.map((tab) => (
-                <button key={tab.value} onClick={() => setActive(tab.value)}
-                        className={`pb-2.5 text-[16px] relative transition-colors ${
-                            active === tab.value ? "text-[#51A46B] font-bold" : "text-[#505050] hover:text-[#212121]"
-                        }`}>
-                  {tab.label}
-                  {active === tab.value && (
-                      <span className="absolute bottom-0 right-0 left-0 h-[2px] bg-[#51A46B] rounded-full" />
-                  )}
-                </button>
-            ))}
-          </div>
-        </div>
+    return (
+        <section className="max-w-7xl mx-auto px-4 py-12 sm:py-16" dir="rtl">
+            {/* هدر بخش محصولات */}
+            <div className="flex flex-col items-center mb-8 sm:mb-12">
+                <h2 className="text-[24px] sm:text-[32px] font-extrabold text-[#212121] mb-6 sm:mb-8">محصولات</h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <AnimatePresence mode="popLayout">
-            {shown.slice(0, 12).map((p) => <ProductCard key={p.id} product={p} />)}
-          </AnimatePresence>
-        </div>
+                {/* تب‌ها */}
+                <div className="flex gap-6 sm:gap-12 border-b border-[#E9E8E3] w-full max-w-sm justify-center">
+                    {TABS.map((tab) => (
+                        <button
+                            key={tab.value}
+                            onClick={() => setActive(tab.value)}
+                            className={`pb-2 sm:pb-3 px-1 sm:px-2 text-[14px] sm:text-[16px] relative transition-colors ${
+                                active === tab.value ? "text-[#51A46B] font-bold" : "text-[#505050] hover:text-[#212121]"
+                            }`}>
+                            {tab.label}
+                            {active === tab.value && (
+                                <span className="absolute bottom-0 right-0 left-0 h-[2.5px] bg-[#51A46B] rounded-t-md" />
+                            )}
+                        </button>
+                    ))}
+                </div>
+            </div>
 
-        <div className="text-center mt-12">
-          <Link href="/products" className="text-[#51A46B] font-bold hover:underline text-lg">
-            محصولات بیشتر...
-          </Link>
-        </div>
-      </section>
-  )
+            {/* گرید محصولات (در موبایل ۲ ستونه، در تبلت ۳ و در دسکتاپ ۴ ستونه) */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+                <AnimatePresence mode="popLayout">
+                    {shown.slice(0, 8).map((p) => <ProductCard key={p.id} product={p} />)}
+                </AnimatePresence>
+            </div>
+        </section>
+    )
 }
 
 function ProductCard({ product }: { product: Product }) {
-  const addItem = useCartStore((s) => s.addItem)
-  const img = product.images?.find(i => i.isPrimary)?.url ?? product.images?.[0]?.url
-  const price = parseFloat(product.pricePerUnit)
-  const priceFormatted = new Intl.NumberFormat("fa-IR").format(Math.round(price / 10))
+    const addItem = useCartStore((s) => s.addItem)
+    const img = product.images?.find(i => i.isPrimary)?.url ?? product.images?.[0]?.url
 
-  return (
-      <motion.div layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.25 }}
-                  className="bg-white rounded-2xl p-4 border border-[#E9E8E3] hover:shadow-md transition duration-300 flex flex-col h-full">
-        <Link href={`/products/${product.slug || product.id}`}
-              className="bg-[#F5F9F6] rounded-xl p-4 mb-4 h-48 flex items-center justify-center">
-          {img
-              ? <img src={img} alt={product.name} className="max-h-full object-contain hover:scale-105 transition duration-300" />
-              : <div className="w-14 h-14 rounded-full bg-[#E5F2E9] flex items-center justify-center">
-                <ShoppingCart className="w-6 h-6 text-[#51A46B]" />
-              </div>}
-        </Link>
-        <div className="flex justify-between items-start mb-3">
-          <Link href={`/products/${product.slug || product.id}`}
-                className="font-bold text-[#212121] text-sm hover:text-[#51A46B] transition truncate">
-            {product.name}
-          </Link>
-          <span className="text-[10px] text-[#505050] border border-[#E9E8E3] rounded px-2 py-1 whitespace-nowrap shrink-0 mr-2">
-          هر {product.unit}
-        </span>
-        </div>
-        {parseFloat(product.minOrderQty) > 1 && (
-            <p className="text-[12px] text-right mb-2">
-              حداقل سفارش: <span className="font-bold text-[#51A46B]">{product.minOrderQty} {product.unit}</span>
-            </p>
-        )}
-        <div className="flex justify-between items-center mt-auto pt-2">
-          <div className="flex flex-col">
-            <span className="font-bold text-[#212121] text-lg">{priceFormatted}</span>
-            <span className="text-xs text-[#505050]">تومان</span>
-          </div>
-          <button onClick={() => addItem(product)}
-                  className="flex items-center gap-1 border border-[#51A46B] text-[#51A46B] px-3 py-2 rounded-lg hover:bg-[#51A46B] hover:text-white transition text-sm font-medium">
-            <Plus size={14} />
-            افزودن
-          </button>
-        </div>
-      </motion.div>
-  )
+    const price = parseFloat(product.pricePerUnit)
+    const priceFormatted = new Intl.NumberFormat("en-US").format(price)
+
+    return (
+        <motion.div
+            layout
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.25 }}
+            className="bg-white rounded-[16px] sm:rounded-[20px] p-3 sm:p-5 border border-[#E9E8E3] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-300 flex flex-col h-full w-full"
+        >
+            {/* تصویر محصول */}
+            <Link href={`/products/${product.slug || product.id}`}
+                  className="w-full aspect-[4/3] sm:h-[180px] sm:aspect-auto flex items-center justify-center overflow-hidden mb-3 sm:mb-5 pb-3 sm:pb-5 border-b border-[#E9E8E3]">
+                {img
+                    ? <img src={img} alt={product.name} className="max-h-full object-contain hover:scale-105 transition-transform duration-500" />
+                    : <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[#E5F2E9] flex items-center justify-center">
+                        <ShoppingCart className="w-5 h-5 sm:w-7 sm:h-7 text-[#51A46B] opacity-80" />
+                    </div>}
+            </Link>
+
+            {/* نام و واحد محصول */}
+            <div className="flex justify-between items-center mb-4 sm:mb-7 gap-2">
+                <Link href={`/products/${product.slug || product.id}`}
+                      className="font-bold text-[#212121] text-[13px] sm:text-[15px] hover:text-[#51A46B] transition-colors line-clamp-1 text-right">
+                    {product.name}
+                </Link>
+                <div className="border border-[#E9E8E3] rounded-[6px] sm:rounded-[8px] px-1.5 sm:px-2.5 py-0.5 sm:py-1 flex items-center justify-center shrink-0">
+                    <span className="text-[10px] sm:text-[12px] text-[#505050] whitespace-nowrap">هر {product.unit}</span>
+                </div>
+            </div>
+
+            {/* قیمت و دکمه افزودن (پایین کارت) */}
+            <div className="flex flex-row justify-between items-center mt-auto w-full gap-1.5 sm:gap-2">
+
+                {/* قیمت (راست‌چین) */}
+                <div className="flex items-center gap-1 shrink-0">
+            <span className="font-bold text-[#212121] text-[14px] sm:text-[17px] tracking-tight mt-0.5">
+              {toFa(priceFormatted)}
+            </span>
+                    <span className="text-[10px] sm:text-[12px] text-[#505050] font-medium pt-1 hidden min-[360px]:inline-block">
+              تومان
+            </span>
+                </div>
+
+                {/* دکمه افزودن (چپ‌چین) - استفاده از shrink-0 برای جلوگیری از له شدن دکمه */}
+                <button
+                    onClick={(e) => { e.preventDefault(); addItem(product); }}
+                    className="flex items-center justify-center gap-1 border border-[#51A46B] text-[#51A46B] px-2 sm:px-3.5 h-[32px] sm:h-[38px] bg-white rounded-[8px] sm:rounded-[10px] hover:bg-[#51A46B] hover:text-white transition-colors text-[12px] sm:text-[14px] font-medium shrink-0"
+                >
+                    <Plus size={14} strokeWidth={2.5} className="sm:w-4 sm:h-4" />
+                    <span>افزودن</span>
+                </button>
+
+            </div>
+        </motion.div>
+    )
 }

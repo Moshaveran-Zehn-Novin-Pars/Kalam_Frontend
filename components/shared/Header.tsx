@@ -42,10 +42,10 @@ export default function Header() {
                 className="bg-white sticky top-0 z-50 border-b border-[#E9E8E3]"
                 dir="rtl"
             >
-                <div className="max-w-7xl mx-auto px-4 h-20 flex justify-between items-center">
+                <div className="max-w-7xl mx-auto px-4 h-[84px] flex justify-between items-center">
 
-                    {/* Logo + Nav — کنار هم سمت راست */}
-                    <div className="flex items-center gap-8">
+                    {/* Logo + Nav */}
+                    <div className="flex items-center gap-10">
                         <Link href="/">
                             <img src="/logo.svg" alt="کلم" className="h-8 w-auto" />
                         </Link>
@@ -55,7 +55,7 @@ export default function Header() {
                                 <Link
                                     key={link.href}
                                     href={link.href}
-                                    className="text-[#212121] hover:text-[#51A46B] transition font-medium text-[18px]"
+                                    className="text-[#505050] hover:text-[#51A46B] transition font-medium text-[16px]"
                                 >
                                     {link.label}
                                 </Link>
@@ -67,20 +67,20 @@ export default function Header() {
                     <div className="flex items-center gap-3">
 
                         {/* Search */}
-                        <button className="w-[49px] h-[49px] flex items-center justify-center border border-[#E9E8E3] rounded-xl hover:bg-[#F5F5F5] hover:border-[#51A46B] transition">
+                        <button className="w-12 h-12 flex items-center justify-center border border-[#E9E8E3] rounded-[14px] hover:bg-[#F5F5F5] hover:border-[#51A46B] transition">
                             <Search size={20} className="text-[#51A46B]" />
                         </button>
 
                         {/* Cart */}
                         <button
                             onClick={openCart}
-                            className="w-[49px] h-[49px] flex items-center justify-center border border-[#E9E8E3] rounded-xl hover:bg-[#F5F5F5] hover:border-[#51A46B] transition relative"
+                            className="w-12 h-12 flex items-center justify-center border border-[#E9E8E3] rounded-[14px] hover:bg-[#F5F5F5] hover:border-[#51A46B] transition relative"
                         >
                             <ShoppingCart size={20} className="text-[#51A46B]" />
                             {totalItems() > 0 && (
-                                <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#51A46B] text-white text-[10px] font-bold flex items-center justify-center rounded-full">
-                  {totalItems()}
-                </span>
+                                <span className="absolute -top-1.5 -right-1.5 w-[22px] h-[22px] bg-[#51A46B] text-white text-[11px] font-bold flex items-center justify-center rounded-full border-2 border-white shadow-sm">
+                                  {totalItems()}
+                                </span>
                             )}
                         </button>
 
@@ -88,10 +88,10 @@ export default function Header() {
                         {!isAuthenticated && (
                             <Link
                                 href="/auth/login"
-                                className="hidden sm:flex items-center gap-2 px-5 py-2.5 border border-[#51A46B] text-[#51A46B] rounded-xl hover:bg-[#51A46B] hover:text-white transition group font-medium text-[18px]"
+                                className="hidden sm:flex items-center gap-2.5 px-6 py-2.5 ml-1 border border-[#E9E8E3] rounded-[14px] hover:border-[#51A46B] hover:text-[#51A46B] transition group font-medium text-[15px] text-[#505050]"
                             >
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                                     stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                     stroke="#51A46B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/>
                                     <polyline points="10 17 15 12 10 7"/>
                                     <line x1="15" y1="12" x2="3" y2="12"/>
@@ -103,27 +103,25 @@ export default function Header() {
                         {/* Logged in */}
                         {isAuthenticated && user && (
                             <>
-                                {/* سفارش سریع */}
-                                <button className="hidden sm:block bg-[#51A46B] text-white px-4 py-2.5 rounded-xl text-[18px] font-medium hover:bg-[#417F56] transition whitespace-nowrap">
+                                <button className="hidden sm:block bg-[#51A46B] text-white px-4 py-2.5 rounded-[14px] text-[15px] font-medium hover:bg-[#417F56] transition whitespace-nowrap">
                                     سفارش سریع
                                 </button>
 
-                                {/* User avatar + dropdown */}
                                 <div className="relative">
                                     <button
                                         onClick={() => setShowUserMenu((v) => !v)}
-                                        className="flex items-center gap-2 border border-[#E9E8E3] rounded-xl px-3 h-[49px] hover:border-[#51A46B] transition"
+                                        className="flex items-center gap-2 border border-[#E9E8E3] rounded-[14px] px-3 h-12 hover:border-[#51A46B] transition"
                                     >
-                                        <div className="w-8 h-8 rounded-full bg-[#E5F2E9] flex items-center justify-center overflow-hidden">
+                                        <div className="w-[30px] h-[30px] rounded-full bg-[#E5F2E9] flex items-center justify-center overflow-hidden">
                                             {user.avatar
                                                 ? <img src={user.avatar} alt="" className="w-full h-full object-cover" />
                                                 : <span className="text-[#51A46B] font-bold text-sm">
-                            {(user.firstName ?? user.phone)?.[0]}
-                          </span>}
+                                                    {(user.firstName ?? user.phone)?.[0]}
+                                                  </span>}
                                         </div>
-                                        <span className="hidden md:inline text-[16px] text-[#212121]">
-                      سلام؛ {user.firstName ?? "کاربر"}
-                    </span>
+                                        <span className="hidden md:inline text-[15px] text-[#505050]">
+                                          سلام؛ <b className="text-[#212121]">{user.firstName ?? "کاربر"}</b>
+                                        </span>
                                     </button>
 
                                     <AnimatePresence>
@@ -133,18 +131,18 @@ export default function Header() {
                                                 animate={{ opacity: 1, y: 0 }}
                                                 exit={{ opacity: 0, y: -8 }}
                                                 transition={{ duration: 0.15 }}
-                                                className="absolute left-0 top-[54px] bg-white border border-[#E9E8E3] rounded-[12px] shadow-lg min-w-[160px] overflow-hidden z-50"
+                                                className="absolute left-0 top-[56px] bg-white border border-[#E9E8E3] rounded-[14px] shadow-lg min-w-[170px] overflow-hidden z-50"
                                             >
                                                 <Link href={dashboardHref} onClick={() => setShowUserMenu(false)}
-                                                      className="block px-4 py-3 text-right text-[15px] hover:bg-[#E5F2E9] transition">
+                                                      className="block px-4 py-3 text-right text-[15px] text-[#212121] hover:bg-[#E5F2E9] transition">
                                                     پنل کاربری
                                                 </Link>
                                                 <Link href="/account/orders" onClick={() => setShowUserMenu(false)}
-                                                      className="block px-4 py-3 text-right text-[15px] hover:bg-[#E5F2E9] transition">
+                                                      className="block px-4 py-3 text-right text-[15px] text-[#212121] hover:bg-[#E5F2E9] transition">
                                                     سفارش‌هایم
                                                 </Link>
                                                 <Link href="/account/profile" onClick={() => setShowUserMenu(false)}
-                                                      className="block px-4 py-3 text-right text-[15px] hover:bg-[#E5F2E9] transition">
+                                                      className="block px-4 py-3 text-right text-[15px] text-[#212121] hover:bg-[#E5F2E9] transition">
                                                     پروفایل
                                                 </Link>
                                                 <hr className="border-[#E9E8E3]" />
@@ -162,9 +160,9 @@ export default function Header() {
                         {/* Mobile hamburger */}
                         <button
                             onClick={() => setMobileOpen(true)}
-                            className="md:hidden w-10 h-10 flex items-center justify-center border border-[#E9E8E3] rounded-xl"
+                            className="md:hidden w-12 h-12 flex items-center justify-center border border-[#E9E8E3] rounded-[14px]"
                         >
-                            <Menu size={20} />
+                            <Menu size={22} className="text-[#505050]" />
                         </button>
                     </div>
                 </div>
@@ -173,51 +171,51 @@ export default function Header() {
             {/* Mobile Menu */}
             <AnimatePresence>
                 {mobileOpen && (
-                    <motion.div className="fixed inset-0 z-50"
+                    <motion.div className="fixed inset-0 z-[100]"
                                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                        <button className="absolute inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
+                        <button className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
                         <motion.aside
-                            className="absolute right-0 top-0 w-72 h-full bg-white p-5 flex flex-col"
+                            className="absolute right-0 top-0 w-[280px] h-full bg-white p-6 flex flex-col"
                             dir="rtl"
-                            initial={{ x: 288, opacity: 0 }}
+                            initial={{ x: 280, opacity: 0 }}
                             animate={{ x: 0,   opacity: 1 }}
-                            exit={{ x: 288,    opacity: 0 }}
+                            exit={{ x: 280,    opacity: 0 }}
                             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                         >
-                            <button onClick={() => setMobileOpen(false)} className="mb-6 self-start">
-                                <X size={22} />
+                            <button onClick={() => setMobileOpen(false)} className="mb-6 self-start text-[#505050] hover:text-black">
+                                <X size={24} />
                             </button>
 
                             {isAuthenticated && user && (
-                                <div className="flex items-center gap-3 mb-6 pb-4 border-b border-[#E9E8E3]">
-                                    <div className="w-10 h-10 rounded-full bg-[#E5F2E9] flex items-center justify-center text-[#51A46B] font-bold">
+                                <div className="flex items-center gap-3 mb-6 pb-5 border-b border-[#E9E8E3]">
+                                    <div className="w-12 h-12 rounded-full bg-[#E5F2E9] flex items-center justify-center text-[#51A46B] font-bold text-lg">
                                         {(user.firstName ?? user.phone)?.[0]}
                                     </div>
                                     <div>
-                                        <p className="font-bold text-[15px]">{user.firstName ?? "کاربر"}</p>
-                                        <p className="text-[13px] text-[#505050]">{user.phone}</p>
+                                        <p className="font-bold text-[16px] text-[#212121]">{user.firstName ?? "کاربر"}</p>
+                                        <p className="text-[14px] text-[#505050] mt-0.5">{user.phone}</p>
                                     </div>
                                 </div>
                             )}
 
-                            <nav className="flex flex-col gap-4 text-right">
+                            <nav className="flex flex-col gap-5 text-right">
                                 {NAV_LINKS.map((link) => (
                                     <Link key={link.href} href={link.href}
                                           onClick={() => setMobileOpen(false)}
-                                          className="text-[17px] text-[#212121] hover:text-[#51A46B] transition">
+                                          className="text-[17px] font-medium text-[#212121] hover:text-[#51A46B] transition">
                                         {link.label}
                                     </Link>
                                 ))}
                             </nav>
 
-                            <div className="mt-auto">
+                            <div className="mt-auto pt-6 border-t border-[#E9E8E3]">
                                 {!isAuthenticated
                                     ? <Link href="/auth/login" onClick={() => setMobileOpen(false)}
-                                            className="block text-center bg-[#51A46B] text-white rounded-xl py-3 text-[16px]">
+                                            className="flex justify-center items-center gap-2 bg-[#51A46B] text-white rounded-[14px] py-3.5 text-[16px] font-medium hover:bg-[#417F56] transition">
                                         ورود / ثبت‌نام
                                     </Link>
                                     : <button onClick={handleLogout}
-                                              className="w-full text-center text-red-500 border border-red-200 rounded-xl py-3 text-[16px]">
+                                              className="w-full text-center text-red-500 border border-red-100 bg-red-50 rounded-[14px] py-3.5 text-[16px] font-medium hover:bg-red-100 transition">
                                         خروج از حساب
                                     </button>}
                             </div>

@@ -104,15 +104,24 @@
 }
 /* Main — first in DOM = LEFT in LTR flex (which is LEFT visually = right side in RTL page) */
 .adm-main {
-  flex: 1; order: 1; padding: 28px 40px 56px; min-width: 0;
+  flex: 1;
+  order: 2; /* این مقدار را از ۱ به ۲ تغییر بده */
+  padding: 28px 40px 56px;
+  min-width: 0;
 }
 /* Sidebar — second in DOM = RIGHT visually */
 .adm-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 40; }
 .adm-sidebar {
-  width: var(--adm-sidebar-w); flex-shrink: 0; order: 2;
-  background: var(--adm-bg); border-inline-start: 1px solid var(--adm-border);
-  padding: 24px 18px; position: sticky; top: var(--adm-header-h);
-  height: calc(100vh - var(--adm-header-h)); overflow-y: auto;
+  width: var(--adm-sidebar-w);
+  flex-shrink: 0;
+  order: 1; /* این مقدار را از ۲ به ۱ تغییر بده تا در سمت راست قرار بگیرد */
+  background: var(--adm-bg);
+  border-inline-end: 1px solid var(--adm-border); /* مقدار border-inline-start را به end تغییر بده */
+  padding: 24px 18px;
+  position: sticky;
+  top: var(--adm-header-h);
+  height: calc(100vh - var(--adm-header-h));
+  overflow-y: auto;
 }
 .adm-sidebar-close {
   display: none; margin-bottom: 12px; width: 30px; height: 30px;

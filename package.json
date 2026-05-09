@@ -21,6 +21,8 @@
     "recharts": "^3.8.1",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",
+    "tree-cli": "^0.6.7",
+    "tree-node-cli": "^3.0.0",
     "zustand": "^5.0.12"
   },
   "devDependencies": {
