@@ -1,11 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import Link from "next/link"
-import { Plus, ShoppingCart } from "lucide-react"
 import { AnimatePresence, motion } from "framer-motion"
-import { useCartStore } from "@/store/cartStore"
 import type { Product } from "@/types"
+import ProductCard from "@/components/shared/ProductCard/ProductCard";
 
 const TABS = [
     { value: "mive",     label: "میوه" },
@@ -27,11 +25,6 @@ const MOCK: Product[] = Array.from({ length: 8 }, (_, i) => ({
     createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
     images: [],
 }))
-
-// تابع برای فارسی کردن اعداد
-function toFa(num: string | number) {
-    return num.toString().replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[parseInt(d)])
-}
 
 export default function ProductsSection({ products }: { products?: Product[] }) {
     const [active, setActive] = useState("mive")
@@ -69,69 +62,5 @@ export default function ProductsSection({ products }: { products?: Product[] }) 
                 </AnimatePresence>
             </div>
         </section>
-    )
-}
-
-function ProductCard({ product }: { product: Product }) {
-    const addItem = useCartStore((s) => s.addItem)
-    const img = product.images?.find(i => i.isPrimary)?.url ?? product.images?.[0]?.url
-
-    const price = parseFloat(product.pricePerUnit)
-    const priceFormatted = new Intl.NumberFormat("en-US").format(price)
-
-    return (
-        <motion.div
-            layout
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.25 }}
-            className="bg-white rounded-[16px] sm:rounded-[20px] p-3 sm:p-5 border border-[#E9E8E3] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-300 flex flex-col h-full w-full"
-        >
-            {/* تصویر محصول */}
-            <Link href={`/products/${product.slug || product.id}`}
-                  className="w-full aspect-[4/3] sm:h-[180px] sm:aspect-auto flex items-center justify-center overflow-hidden mb-3 sm:mb-5 pb-3 sm:pb-5 border-b border-[#E9E8E3]">
-                {img
-                    ? <img src={img} alt={product.name} className="max-h-full object-contain hover:scale-105 transition-transform duration-500" />
-                    : <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[#E5F2E9] flex items-center justify-center">
-                        <ShoppingCart className="w-5 h-5 sm:w-7 sm:h-7 text-[#51A46B] opacity-80" />
-                    </div>}
-            </Link>
-
-            {/* نام و واحد محصول */}
-            <div className="flex justify-between items-center mb-4 sm:mb-7 gap-2">
-                <Link href={`/products/${product.slug || product.id}`}
-                      className="font-bold text-[#212121] text-[13px] sm:text-[15px] hover:text-[#51A46B] transition-colors line-clamp-1 text-right">
-                    {product.name}
-                </Link>
-                <div className="border border-[#E9E8E3] rounded-[6px] sm:rounded-[8px] px-1.5 sm:px-2.5 py-0.5 sm:py-1 flex items-center justify-center shrink-0">
-                    <span className="text-[10px] sm:text-[12px] text-[#505050] whitespace-nowrap">هر {product.unit}</span>
-                </div>
-            </div>
-
-            {/* قیمت و دکمه افزودن (پایین کارت) */}
-            <div className="flex flex-row justify-between items-center mt-auto w-full gap-1.5 sm:gap-2">
-
-                {/* قیمت (راست‌چین) */}
-                <div className="flex items-center gap-1 shrink-0">
-            <span className="font-bold text-[#212121] text-[14px] sm:text-[17px] tracking-tight mt-0.5">
-              {toFa(priceFormatted)}
-            </span>
-                    <span className="text-[10px] sm:text-[12px] text-[#505050] font-medium pt-1 hidden min-[360px]:inline-block">
-              تومان
-            </span>
-                </div>
-
-                {/* دکمه افزودن (چپ‌چین) - استفاده از shrink-0 برای جلوگیری از له شدن دکمه */}
-                <button
-                    onClick={(e) => { e.preventDefault(); addItem(product); }}
-                    className="flex items-center justify-center gap-1 border border-[#51A46B] text-[#51A46B] px-2 sm:px-3.5 h-[32px] sm:h-[38px] bg-white rounded-[8px] sm:rounded-[10px] hover:bg-[#51A46B] hover:text-white transition-colors text-[12px] sm:text-[14px] font-medium shrink-0"
-                >
-                    <Plus size={14} strokeWidth={2.5} className="sm:w-4 sm:h-4" />
-                    <span>افزودن</span>
-                </button>
-
-            </div>
-        </motion.div>
     )
 }

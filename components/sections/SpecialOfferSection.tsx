@@ -3,9 +3,10 @@
 import { useEffect, useState, useCallback } from "react"
 import useEmblaCarousel from "embla-carousel-react"
 import Autoplay from "embla-carousel-autoplay"
-import { ChevronLeft, ChevronRight, Plus, ShoppingCart } from "lucide-react"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 import Link from "next/link"
 import type { Product } from "@/types"
+import ProductCard from "@/components/shared/ProductCard/ProductCard";
 
 function pad(n: number) { return String(n).padStart(2, "0") }
 
@@ -82,7 +83,7 @@ export default function SpecialOfferSection({ products }: { products?: Partial<P
               <div className="flex gap-6">
                 {items.map((p, i) => (
                     <div key={p.id ?? i} className="shrink-0 w-64">
-                      <ProductCard product={p} />
+                      <ProductCard product={p} withLink={false} withMotion={false} />
                     </div>
                 ))}
               </div>
@@ -98,39 +99,5 @@ export default function SpecialOfferSection({ products }: { products?: Partial<P
           </div>
         </div>
       </section>
-  )
-}
-
-function ProductCard({ product }: { product: Partial<Product> }) {
-  const img = (product.images as { url: string }[] | undefined)?.[0]?.url ?? null
-  const price = parseFloat(product.pricePerUnit ?? "0")
-  const priceFormatted = new Intl.NumberFormat("fa-IR").format(Math.round(price / 10))
-
-  return (
-      <div className="bg-white rounded-2xl p-4 border border-[#E9E8E3] hover:shadow-md transition duration-300 flex flex-col h-full">
-        <div className="bg-[#F5F9F6] rounded-xl p-4 mb-4 h-48 flex items-center justify-center">
-          {img
-              ? <img src={img} alt={product.name} className="max-h-full object-contain hover:scale-105 transition duration-300" />
-              : <div className="w-16 h-16 rounded-full bg-[#E5F2E9] flex items-center justify-center">
-                <ShoppingCart className="w-7 h-7 text-[#51A46B]" />
-              </div>}
-        </div>
-        <div className="flex justify-between items-start mb-4">
-          <h3 className="font-bold text-[#212121] text-sm">{product.name}</h3>
-          <span className="text-[10px] text-[#505050] border border-[#E9E8E3] rounded px-2 py-1 whitespace-nowrap">
-          هر {product.unit}
-        </span>
-        </div>
-        <div className="flex justify-between items-center mt-auto pt-2">
-          <div className="flex flex-col">
-            <span className="font-bold text-[#212121] text-lg">{priceFormatted}</span>
-            <span className="text-xs text-[#505050]">تومان</span>
-          </div>
-          <button className="flex items-center gap-1 border border-[#51A46B] text-[#51A46B] px-3 py-2 rounded-lg hover:bg-[#51A46B] hover:text-white transition text-sm font-medium">
-            <Plus size={14} />
-            افزودن
-          </button>
-        </div>
-      </div>
   )
 }
