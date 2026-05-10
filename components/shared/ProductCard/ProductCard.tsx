@@ -92,7 +92,7 @@ export default function ProductCard({
                         e.preventDefault()
                         if (product.id) addItem(product as Product)
                     }}
-                    className="flex items-center justify-center gap-1 border border-[#51A46B] text-[#51A46B] px-2 sm:px-3.5 h-[32px] sm:h-[38px] bg-white rounded-[8px] sm:rounded-[10px] hover:bg-[#51A46B] hover:text-white transition-colors text-[12px] sm:text-[14px] font-medium shrink-0"
+                    className="flex items-center justify-center cursor-pointer gap-1 border border-[#51A46B] text-[#51A46B] px-2 sm:px-3.5 h-[32px] sm:h-[38px] bg-white rounded-[8px] sm:rounded-[10px] hover:bg-[#51A46B] hover:text-white transition-colors text-[12px] sm:text-[14px] font-medium shrink-0"
                 >
                     <Plus size={14} strokeWidth={2.5} className="sm:w-4 sm:h-4" />
                     <span>افزودن</span>
