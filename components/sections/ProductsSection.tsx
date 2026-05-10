@@ -18,7 +18,7 @@ const MOCK: Product[] = Array.from({ length: 8 }, (_, i) => ({
     qualityGrade: "A",
     unit: "کیلو",
     pricePerUnit: "128500",
-    minOrderQty: "10", maxOrderQty: null,
+    minOrderQty: "1", maxOrderQty: null,
     stockQty: "500", reservedQty: "0", status: "ACTIVE" as const,
     requiresColdChain: false, storageTempMin: null, storageTempMax: null,
     shelfLifeDays: null, viewsCount: 0, salesCount: 0,
