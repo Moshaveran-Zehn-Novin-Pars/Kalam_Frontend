@@ -76,9 +76,12 @@ export default function LoginForm() {
         }
 
         if (toLatinDigits(phone.trim()) === "09100200300" && finalOtp === "123456") {
+            // ── MOCK ──
+            document.cookie = "mock_test_user=09100200300; path=/"
+            // ── END MOCK ──
+
             const mockData = {
                 user: { firstName: "کاربر تست" },
-                // هر فیلد دیگه‌ای که setSession نیاز داره
             }
             setSession(mockData as any)
             toast.success("خوش آمدی کاربر تست")

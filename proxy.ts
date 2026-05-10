@@ -43,6 +43,12 @@ export async function proxy(req: NextRequest) {
     // Protected routes: redirect guests to login
     if (PROTECTED_ROUTES.some((r) => pathname.startsWith(r))) {
         if (!isAuthenticated) {
+            // ── MOCK: bypass for test number ──
+            const mockPhone = req.cookies.get('mock_test_user')?.value
+            if (mockPhone === '09100200300') {
+                return NextResponse.next()
+            }
+            // ── END MOCK ──
             const loginUrl = new URL('/auth/login', req.url)
             loginUrl.searchParams.set('redirect', pathname)
             return NextResponse.redirect(loginUrl)
