@@ -2,9 +2,10 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { SlidersHorizontal, Plus, ShoppingCart } from "lucide-react"
+import { SlidersHorizontal} from "lucide-react"
 import { useCartStore } from "@/store/cartStore"
 import type { Product } from "@/types"
+import ProductCard from "@/components/shared/ProductCard/ProductCard";
 
 const CATEGORIES = [
     { key: "all", label: "همه" },
@@ -119,7 +120,7 @@ export default function ProductsPage() {
 
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                         {MOCK.map((p) => (
-                            <PLPCard key={p.id} product={p} onAdd={() => addItem(p)} />
+                            <ProductCard key={p.id} product={p}  />
                         ))}
                     </div>
 
@@ -130,44 +131,6 @@ export default function ProductsPage() {
                     </div>
                 </div>
 
-            </div>
-        </div>
-    )
-}
-
-function PLPCard({ product, onAdd }: { product: Product; onAdd: () => void }) {
-    const img = product.images?.[0]?.url ?? null
-    const price = parseFloat(product.pricePerUnit)
-    const priceFormatted = new Intl.NumberFormat("fa-IR").format(Math.round(price / 10))
-
-    return (
-        <div className="bg-white border border-[#E9E8E3] rounded-[20px] overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col">
-            <Link href={`/products/${product.slug || product.id}`}
-                  className="h-[160px] flex items-center justify-center p-4">
-                {img
-                    ? <img src={img} alt={product.name} className="h-full w-full object-contain" />
-                    : <div className="w-14 h-14 rounded-full bg-[#E5F2E9] flex items-center justify-center">
-                        <ShoppingCart className="w-6 h-6 text-[#51A46B]" />
-                    </div>}
-            </Link>
-
-            <div className="h-px bg-[#E9E8E3]" />
-
-            <div className="p-4 flex flex-col gap-2.5">
-                <div className="flex items-center justify-between">
-                    <span className="text-[12px] text-[#505050] border border-[#E9E8E3] rounded-[8px] px-2 py-1">هر {product.unit}</span>
-                    <Link href={`/products/${product.slug || product.id}`}
-                          className="text-[14px] font-bold text-[#212121] truncate mr-2 hover:text-[#51A46B] transition-colors">
-                        {product.name}
-                    </Link>
-                </div>
-                <div className="flex items-center justify-between">
-                    <button onClick={onAdd}
-                            className="flex items-center gap-1 border border-[#51A46B] text-[#51A46B] rounded-[10px] px-3 py-1.5 text-[13px] font-medium hover:bg-[#51A46B] hover:text-white transition-colors">
-                        <Plus size={14} />افزودن
-                    </button>
-                    <span className="text-[13px] font-medium text-[#212121] tabular-nums">{priceFormatted} تومان</span>
-                </div>
             </div>
         </div>
     )

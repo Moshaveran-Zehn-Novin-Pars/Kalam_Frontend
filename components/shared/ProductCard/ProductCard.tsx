@@ -8,8 +8,8 @@ import type { Product } from "@/types"
 
 interface ProductCardProps {
     product: Partial<Product>
-    withLink?: boolean      // آیا کارت لینک داشته باشه (default: true)
-    withMotion?: boolean    // آیا انیمیشن داشته باشه (default: true)
+    withLink?: boolean      //  (default: true)
+    withMotion?: boolean    //  (default: true)
 }
 
 function toFa(num: string | number) {
