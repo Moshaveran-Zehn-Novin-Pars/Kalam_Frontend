@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Home, ChevronLeft, Plus, Minus, ShoppingCart } from "lucide-react"
 import { useCartStore } from "@/store/cartStore"
 import type { Product } from "@/types"
+import ProductCard from "@/components/shared/ProductCard/ProductCard";
 
 const PRESET_QTYS = ["۰.۵ کیلو", "۱ کیلو", "۲ کیلو", "۵ کیلو"]
 
@@ -145,42 +146,8 @@ export default function ProductDetailPage({ params }: { params: { productId: str
                 <h2 className="text-[22px] font-bold text-[#212121] text-right mb-6">محصولات مشابه</h2>
                 <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide flex-row-reverse">
                     {MOCK_RELATED.map((p) => (
-                        <RelatedCard key={p.id} product={p} />
+                        <ProductCard key={p.id} product={p} />
                     ))}
-                </div>
-            </div>
-        </div>
-    )
-}
-
-function RelatedCard({ product }: { product: Product }) {
-    const img = product.images?.[0]?.url ?? null
-    const price = parseFloat(product.pricePerUnit)
-    const priceFormatted = new Intl.NumberFormat("fa-IR").format(Math.round(price / 10))
-    const { addItem } = useCartStore()
-
-    return (
-        <div className="bg-white border border-[#E9E8E3] rounded-[20px] overflow-hidden shrink-0 w-[200px]
-                    hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-            <div className="h-[140px] flex items-center justify-center p-4">
-                {img
-                    ? <img src={img} alt={product.name} className="h-full w-full object-contain" />
-                    : <div className="w-12 h-12 rounded-full bg-[#E5F2E9] flex items-center justify-center">
-                        <ShoppingCart className="w-5 h-5 text-[#51A46B]" />
-                    </div>}
-            </div>
-            <div className="h-px bg-[#E9E8E3]" />
-            <div className="p-3 flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-[#505050] border border-[#E9E8E3] rounded-[6px] px-2 py-0.5">هر {product.unit}</span>
-                    <span className="text-[13px] font-bold text-[#212121] truncate mr-1">{product.name}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                    <button onClick={() => addItem(product)}
-                            className="flex items-center gap-1 border border-[#51A46B] text-[#51A46B] rounded-[8px] px-2.5 py-1 text-[12px] hover:bg-[#51A46B] hover:text-white transition-colors">
-                        <Plus size={12} />افزودن
-                    </button>
-                    <span className="text-[12px] font-medium text-[#212121]">{priceFormatted} تومان</span>
                 </div>
             </div>
         </div>
