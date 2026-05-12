@@ -1,8 +1,7 @@
-import "./globals.css";
+import "./globals.css"
 import localFont from "next/font/local"
-import {Toaster} from "sonner"
-import Header from "@/components/shared/Header"
-import Footer from "@/components/shared/Footer"
+import { Toaster } from "sonner"
+import AuthProvider from "@/components/shared/AuthProvider"
 
 const iranSans = localFont({
     src: [
@@ -18,20 +17,25 @@ const iranSans = localFont({
     variable: "--font-iran",
 })
 
-export default function RootLayout({
-                                       children,
-                                   }: Readonly<{
-    children: React.ReactNode;
-}>) {
-    return (
-        <html lang="fa" className={iranSans.variable}>
-        <body className="font-sans">
-        <Header/>
-        {children}
-        <Footer/>
-        <Toaster position="top-center"/>
-        </body>
-        </html>
-    );
+export const metadata = {
+    title: "کلم | پلتفرم B2B میوه و تره‌بار",
+    description: "اولین پلتفرم عمده‌فروشی میوه و تره‌بار ایران",
 }
 
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+    return (
+        <html lang="fa" dir="rtl" className={iranSans.variable}>
+        <head>
+            <link rel="preconnect" href="https://fonts.googleapis.com" />
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+            <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+        </head>
+        <body className="font-sans bg-white text-neutral-12">
+        <AuthProvider>
+            {children}
+        </AuthProvider>
+        <Toaster position="top-center" richColors />
+        </body>
+        </html>
+    )
+}

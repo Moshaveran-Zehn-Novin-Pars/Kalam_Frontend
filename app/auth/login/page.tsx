@@ -1,8 +1,12 @@
+"use client"
+
+import { Suspense } from "react"
+import LoginForm from "./LoginForm"
 
 export default function LoginPage() {
     return (
-        <div className="p-10">
-            <b className='text-center'>LoginPage</b>
-        </div>
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">در حال بارگذاری...</div>}>
+            <LoginForm />
+        </Suspense>
     )
 }

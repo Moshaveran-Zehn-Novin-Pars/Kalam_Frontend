@@ -1,81 +1,116 @@
 "use client"
 
 import { useCartStore } from "@/store/cartStore"
-import { motion, AnimatePresence } from "framer-motion"
-import { Trash2 } from "lucide-react"
+import { X, ShoppingCart, Plus, Minus } from "lucide-react"
+import { AnimatePresence, motion } from "framer-motion"
 import Link from "next/link"
 
 export default function MiniCart() {
-    const { items, isOpen, closeCart, removeFromCart } = useCartStore()
+    const { isOpen, closeCart, items, updateItem, removeItem, totalPrice } = useCartStore()
 
-    const total = items.reduce(
-        (sum, item) => sum + item.price * item.quantity,
-        0
-    )
+    const total = totalPrice()
+    const totalFormatted = new Intl.NumberFormat("fa-IR").format(Math.round(total / 10))
 
     return (
         <AnimatePresence>
             {isOpen && (
-                <>
+                <motion.div className="fixed inset-0 z-50"
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                            transition={{ duration: 0.2 }}>
+
                     {/* overlay */}
-                    <motion.div
-                        onClick={closeCart}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black/30 z-40"
-                    />
+                    <div className="absolute inset-0 bg-black/30" onClick={closeCart} />
 
-                    {/* sidebar */}
+                    {/* sidebar — از چپ */}
                     <motion.div
-                        initial={{ x: 300 }}
-                        animate={{ x: 0 }}
-                        exit={{ x: 300 }}
-                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                        className="fixed top-0 right-0 w-80 h-full bg-white z-50 shadow-xl p-4 flex flex-col"
+                        className="absolute left-0 top-0 h-full w-[300px] bg-white shadow-xl flex flex-col"
+                        initial={{ x: -300 }} animate={{ x: 0 }} exit={{ x: -300 }}
+                        transition={{ type: "spring", damping: 28, stiffness: 260 }}
                     >
-                        <h2 className="text-lg font-semibold mb-4">سبد خرید</h2>
+                        {/* header */}
+                        <div className="flex items-center justify-between px-5 py-4 border-b border-[#E9E8E3]">
+                            <button onClick={closeCart} className="hover:text-[#51A46B] transition-colors">
+                                <X size={20} />
+                            </button>
+                            <div className="flex items-center gap-2 font-bold text-[17px] text-[#212121]">
+                                <ShoppingCart size={20} className="text-[#51A46B]" />
+                                سبد خرید
+                            </div>
+                        </div>
 
-                        {/* لیست */}
-                        <div className="flex-1 overflow-y-auto">
-                            {items.length === 0 && <p>سبد خالی است</p>}
+                        {items.length === 0 ? (
+                            /* حالت خالی */
+                            <div className="flex-1 flex flex-col items-center justify-center gap-4 p-6 text-center">
+                                <div className="w-24 h-24 rounded-full bg-[#E5F2E9] flex items-center justify-center">
+                                    <ShoppingCart size={40} className="text-[#51A46B]" strokeWidth={1.5} />
+                                </div>
+                                <p className="text-[15px] text-[#505050] font-medium">هنوز سفارشی ثبت نشده است.</p>
+                                <Link href="/products" onClick={closeCart}
+                                      className="border border-[#51A46B] text-[#51A46B] rounded-[10px] px-6 py-2 text-[14px] hover:bg-[#51A46B] hover:text-white transition-colors">
+                                    مشاهده محصولات
+                                </Link>
+                            </div>
+                        ) : (
+                            <>
+                                {/* آیتم‌ها */}
+                                <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-4">
+                                    {items.map((item) => {
+                                        const img = (item.product.images as { url: string }[] | undefined)?.[0]?.url ?? null
+                                        const itemPrice = parseFloat(item.product.pricePerUnit) * item.quantity
+                                        const itemPriceFormatted = new Intl.NumberFormat("fa-IR").format(Math.round(itemPrice / 10))
 
-                            {items.map((item) => (
-                                <div
-                                    key={item.id}
-                                    className="flex justify-between items-center mb-3 border-b pb-2"
-                                >
-                                    <div>
-                                        <p className="text-sm">{item.title}</p>
-                                        <p className="text-xs text-gray-500">
-                                            {item.quantity} × ${item.price}
-                                        </p>
+                                        return (
+                                            <div key={item.productId} className="flex items-center gap-3 pb-4 border-b border-[#E9E8E3] last:border-0">
+                                                {/* تصویر */}
+                                                <div className="w-14 h-14 rounded-[10px] bg-[#F5F9F6] flex items-center justify-center shrink-0 overflow-hidden">
+                                                    {img
+                                                        ? <img src={img} alt={item.product.name} className="w-full h-full object-contain" />
+                                                        : <ShoppingCart size={20} className="text-[#51A46B]" />}
+                                                </div>
+
+                                                {/* اطلاعات */}
+                                                <div className="flex-1 text-right min-w-0">
+                                                    <p className="text-[14px] font-bold text-[#212121] truncate">{item.product.name}</p>
+                                                    <p className="text-[12px] text-[#505050]">{item.quantity} {item.product.unit}</p>
+                                                    <p className="text-[13px] font-bold text-[#51A46B]">{itemPriceFormatted} تومان</p>
+                                                </div>
+
+                                                {/* counter */}
+                                                <div className="flex items-center border border-[#E9E8E3] rounded-[8px] overflow-hidden shrink-0">
+                                                    <button onClick={() => updateItem(item.productId, item.quantity - 1)}
+                                                            className="w-7 h-7 flex items-center justify-center hover:bg-[#F5F5F5] text-[#505050]">
+                                                        <Minus size={12} />
+                                                    </button>
+                                                    <span className="w-7 text-center text-[13px] font-bold">{item.quantity}</span>
+                                                    <button onClick={() => updateItem(item.productId, item.quantity + 1)}
+                                                            className="w-7 h-7 flex items-center justify-center hover:bg-[#F5F5F5] text-[#505050]">
+                                                        <Plus size={12} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+
+                                {/* footer */}
+                                <div className="px-5 py-4 border-t border-[#E9E8E3] flex flex-col gap-3">
+                                    <div className="flex justify-between text-[15px]">
+                                        <span className="font-bold text-[#212121]">{totalFormatted} تومان</span>
+                                        <span className="text-[#505050]">جمع کل:</span>
                                     </div>
-
-                                    <button onClick={() => removeFromCart(item.id)}>
-                                        <Trash2 size={16} className="text-red-500" />
+                                    <Link href="/checkout" onClick={closeCart}
+                                          className="block w-full bg-[#51A46B] text-white text-center py-3 rounded-[10px] font-bold text-[15px] hover:bg-[#417F56] transition-colors">
+                                        ثبت سفارش
+                                    </Link>
+                                    <button onClick={closeCart}
+                                            className="w-full border border-[#51A46B] text-[#51A46B] text-center py-2.5 rounded-[10px] text-[14px] hover:bg-[#E5F2E9] transition-colors">
+                                        ادامه خرید
                                     </button>
                                 </div>
-                            ))}
-                        </div>
-
-                        {/* footer */}
-                        <div className="border-t pt-4 mt-4">
-                            <p className="flex justify-between mb-3">
-                                <span>جمع:</span>
-                                <span>${total}</span>
-                            </p>
-
-                            <Link
-                                href="/checkout"
-                                onClick={closeCart}
-                                className="block text-center bg-[var(--primary)] text-white py-2 rounded-xl"
-                            >
-                                ادامه خرید
-                            </Link>
-                        </div>
+                            </>
+                        )}
                     </motion.div>
-                </>
+                </motion.div>
             )}
         </AnimatePresence>
     )

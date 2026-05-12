@@ -1,28 +1,144 @@
 @import "tailwindcss";
 
+/* ============================================
+   KALAM DESIGN SYSTEM - CSS VARIABLES
+   ============================================ */
 :root {
-  --primary: #000000;
-  --accent: #f59e0b;
+  /* Brand Colors */
+  --kalam-green:        #51A46B;
+  --kalam-green-dark:   #417F56;
+  --kalam-green-light:  #E5F2E9;
+  --kalam-green-bg:     #DDEEE2;
+  --kalam-green-sale:   #E4F1E8;
+
+  /* Neutral */
+  --kalam-text:         #212121;
+  --kalam-text-muted:   #505050;
+  --kalam-border:       #E9E8E3;
+  --kalam-gray:         #EDEDED;
+
+  /* Status */
+  --kalam-yellow:       #F5A623;
+  --kalam-purple:       #9B59B6;
+  --kalam-red:          #E74C3C;
+
+  /* Shadows */
+  --shadow-card:        0 2px 12px rgba(0,0,0,0.06);
+  --shadow-hover:       0 8px 24px rgba(81,164,107,0.15);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+/* ============================================
+   GLOBAL RESET & BASE
+   ============================================ */
+*, *::before, *::after { box-sizing: border-box; }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+html { scroll-behavior: smooth; }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-iran), sans-serif;
+  font-family: var(--font-iran), 'IRANSansX', sans-serif;
   direction: rtl;
+  color: var(--kalam-text);
+  background: #fff;
+  -webkit-font-smoothing: antialiased;
 }
 
+/* ============================================
+   SHADCN/UI CSS VARIABLES (manual setup)
+   Compatible with Tailwind v4
+   ============================================ */
+:root {
+  --background: 0 0% 100%;
+  --foreground: 0 0% 13%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 13%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 13%;
+  --primary: 142 35% 47%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 142 35% 95%;
+  --secondary-foreground: 142 35% 30%;
+  --muted: 0 0% 96%;
+  --muted-foreground: 0 0% 45%;
+  --accent: 142 35% 95%;
+  --accent-foreground: 142 35% 30%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 91%;
+  --input: 0 0% 91%;
+  --ring: 142 35% 47%;
+  --radius: 0.75rem;
+}
+
+/* ============================================
+   CUSTOM UTILITIES
+   ============================================ */
+
+/* Embla Carousel */
+.embla { overflow: hidden; }
+.embla__container { display: flex; }
+.embla__slide { flex: 0 0 auto; min-width: 0; }
+
+/* Smooth transitions */
+.transition-smooth {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* RTL-aware animations */
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); opacity: 0; }
+  to   { transform: translateX(0);     opacity: 1; }
+}
+@keyframes fadeUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+@keyframes pulse-green {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(81,164,107,0.4); }
+  50%       { box-shadow: 0 0 0 8px rgba(81,164,107,0); }
+}
+
+.animate-fade-up   { animation: fadeUp 0.5s ease forwards; }
+.animate-slide-in  { animation: slideInRight 0.4s ease forwards; }
+.animate-pulse-green { animation: pulse-green 2s infinite; }
+
+/* Countdown flip */
+.countdown-box {
+  background: white;
+  border: 1.5px solid var(--kalam-green);
+  border-radius: 10px;
+  width: 56px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--kalam-text);
+}
+
+/* Scrollbar hide */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ============================================
+   CUSTOM ANIMATIONS (Add to globals.css)
+   ============================================ */
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(12deg); }
+  50% { transform: translateY(-15px) rotate(18deg); }
+}
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float-reverse {
+  0%, 100% { transform: translateY(0) rotate(-10deg); }
+  50% { transform: translateY(15px) rotate(-15deg); }
+}
+.animate-float-reverse {
+  animation: float-reverse 7s ease-in-out infinite;
+}
