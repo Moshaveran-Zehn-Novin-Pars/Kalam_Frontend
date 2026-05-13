@@ -43,7 +43,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="adm-topbar-inner">
           <button className="adm-ham" onClick={() => setMenuOpen(true)}><Menu size={20} /></button>
 
-          <Link href="/" className="adm-logo">کلم</Link>
+          <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center" }}>
+            <img src="/logo.svg" alt="کلم" style={{ height: 32, width: "auto" }} />
+          </Link>
 
           <nav className="adm-nav">
             {TOP_NAV.map(n => (
