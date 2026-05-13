@@ -32,4 +32,12 @@ export const paymentService = {
   async getPaymentByOrder(orderId: string): Promise<Payment> {
     return apiGet<Payment>(`/payments/order/${orderId}`)
   },
+
+  async releaseEscrow(orderId: string): Promise<Payment> {
+    return apiPost<Payment>(`/payments/escrow/${orderId}/release`)
+  },
+
+  async refundPayment(orderId: string): Promise<Payment> {
+    return apiPost<Payment>(`/payments/escrow/${orderId}/refund`)
+  },
 }

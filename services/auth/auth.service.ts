@@ -1,4 +1,4 @@
-import { apiGet, apiPost, tokenStore } from './api'
+import { apiGet, apiPost, tokenStore } from '@/services/api'
 import type {
     SendOtpResponse,
     AuthResponse,

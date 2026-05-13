@@ -1,5 +1,5 @@
-import { apiGet, apiGetPaginated, apiPost } from '@/services/api'
-import type { Product, QueryProductsParams, PaginatedResponse } from '@/types'
+import { apiGet, apiGetPaginated, apiPost, apiPatch, apiDelete } from '@/services/api'
+import type { Product, QueryProductsParams, PaginatedResponse, CreateProductDto, UpdateProductDto } from '@/types'
 
 export const productService = {
     // Public: list products with filters + pagination
@@ -21,6 +21,28 @@ export const productService = {
     // FARMER: my products
     async getMyProducts(params?: QueryProductsParams): Promise<PaginatedResponse<Product>> {
         const res = await apiGetPaginated<PaginatedResponse<Product>>('/products/my', { params })
+        return res.data as PaginatedResponse<Product>
+    },
+
+    async createProduct(dto: CreateProductDto): Promise<Product> {
+        return apiPost<Product>('/products', dto)
+    },
+
+    async updateProduct(id: string, dto: UpdateProductDto): Promise<Product> {
+        return apiPatch<Product>(`/products/${id}`, dto)
+    },
+
+    async deleteProduct(id: string): Promise<void> {
+        return apiDelete(`/products/${id}`)
+    },
+
+    async approveProduct(id: string): Promise<Product> {
+        return apiPost<Product>(`/products/${id}/approve`)
+    },
+
+    // ADMIN: all products
+    async findAllAdmin(params?: QueryProductsParams): Promise<PaginatedResponse<Product>> {
+        const res = await apiGetPaginated<PaginatedResponse<Product>>('/products/admin', { params })
         return res.data as PaginatedResponse<Product>
     },
 }

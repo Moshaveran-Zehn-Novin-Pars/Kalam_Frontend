@@ -23,6 +23,10 @@ export const orderService = {
     return apiPost<Order>(`/orders/${id}/confirm`)
   },
 
+  async updateOrderStatus(id: string, status: string, reason?: string): Promise<Order> {
+    return apiPatch<Order>(`/orders/${id}/status`, { status, reason })
+  },
+
   // ADMIN
   async getAllOrders(params?: QueryOrdersParams): Promise<PaginatedResponse<Order>> {
     const res = await apiGetPaginated<PaginatedResponse<Order>>('/orders/admin', { params })
