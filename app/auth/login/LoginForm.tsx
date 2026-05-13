@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "sonner"
-import { authService } from "@/services/auth.service"
+import { authService } from "@/services/auth"
 import { useAuthStore } from "@/store/authStore"
 import { toLatinDigits } from "@/lib/utils"
 

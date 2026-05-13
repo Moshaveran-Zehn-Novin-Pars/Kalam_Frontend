@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { User, AuthResponse } from '@/types'
-import { authService } from '@/services/auth.service'
+import { authService } from '@/services/auth'
 
 interface AuthState {
     user: User | null
