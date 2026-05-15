@@ -1,6 +1,6 @@
 "use client"
 import { useState } from "react"
-import { FileText, Plus, Pencil, Trash2, X, Save, Eye, FileCheck, HelpCircle } from "lucide-react"
+import { FileText, Plus, Pencil, Trash2, X, Save, Eye, FileCheck, HelpCircle, TrendingUp } from "lucide-react"
 
 function fa(n: string | number) { return String(n).replace(/[0-9]/g, d => "۰۱۲۳۴۵۶۷۸۹"[+d]) }
 
@@ -10,87 +10,48 @@ const INIT_POSTS = [
     { id:"c3", title:"چگونه باغدار معتبر را تشخیص دهیم؟", status:"draft", views:0, date:"۱۴۰۴/۹/۱۰" },
 ]
 const INIT_FAQS = [
-    { id:"f1", question:"حداقل مقدار سفارش چقدر است؟", answer:"حداقل مقدار سفارش بستگی به محصول دارد و معمولاً ۵۰ کیلوگرم است.", status:"active" },
+    { id:"f1", question:"حداقل مقدار سفارش چقدر است؟", answer:"حداقل مقدار سفارش بستگی به محصول دارد.", status:"active" },
     { id:"f2", question:"هزینه ارسال چگونه محاسبه می‌شود؟", answer:"هزینه ارسال بر اساس وزن، مسافت و نیاز به سردخانه محاسبه می‌شود.", status:"active" },
-    { id:"f3", question:"چگونه می‌توانم باغدار شوم؟", answer:"با ثبت‌نام در پلتفرم و تکمیل مدارک احراز هویت می‌توانید باغدار شوید.", status:"active" },
+    { id:"f3", question:"چگونه می‌توانم باغدار شوم؟", answer:"با ثبت‌نام در پلتفرم و تکمیل مدارک می‌توانید باغدار شوید.", status:"active" },
 ]
-
 export default function ContentPage() {
-    const [tab, setTab] = useState("blog")
-    const [posts, setPosts] = useState(INIT_POSTS)
-    const [faqs, setFaqs] = useState(INIT_FAQS)
-    const [showDlg, setShowDlg] = useState(false)
-    const [editItem, setEditItem] = useState<any>(null)
-    const [delId, setDelId] = useState<string|null>(null)
-    const [form, setForm] = useState({ title:"", question:"", answer:"", status:"draft" })
-
-    const openAdd = () => { setEditItem(null); setForm({ title:"", question:"", answer:"", status:"draft" }); setShowDlg(true) }
-    const openEdit = (item:any) => { setEditItem(item); setForm({ title:item.title||"", question:item.question||"", answer:item.answer||"", status:item.status }); setShowDlg(true) }
-    const save = () => {
-        if (tab === "blog") {
-            if (editItem) setPosts(prev => prev.map(p => p.id===editItem.id ? {...p, title:form.title, status:form.status} : p))
-            else setPosts(prev => [...prev, { id:`c${Date.now()}`, title:form.title, status:form.status, views:0, date:"۱۴۰۴/۹/۱۵" }])
-        } else {
-            if (editItem) setFaqs(prev => prev.map(f => f.id===editItem.id ? {...f, question:form.question, answer:form.answer} : f))
-            else setFaqs(prev => [...prev, { id:`f${Date.now()}`, question:form.question, answer:form.answer, status:"active" }])
-        }
-        setShowDlg(false)
-    }
-    const remove = () => {
-        if (tab === "blog") setPosts(prev => prev.filter(p => p.id !== delId))
-        else setFaqs(prev => prev.filter(f => f.id !== delId))
-        setDelId(null)
-    }
-
-    return (<>
-        <h1 className="adm-page-title">مدیریت محتوا</h1>
-
-        <div className="adm-stat-grid" style={{marginBottom:20}}>
-            <div className="adm-stat-card"><FileCheck size={18}/><span><span className="adm-stat-label">مطالب بلاگ</span><span className="adm-stat-value">{fa(posts.length)}</span></span></div>
-            <div className="adm-stat-card"><HelpCircle size={18}/><span><span className="adm-stat-label">سوالات متداول</span><span className="adm-stat-value">{fa(faqs.length)}</span></span></div>
-            <div className="adm-stat-card"><Eye size={18}/><span><span className="adm-stat-label">بازدید کل</span><span className="adm-stat-value">{fa(posts.reduce((s,p)=>s+p.views,0))}</span></span></div>
+    const [tab,setTab]=useState("blog"); const [posts,setPosts]=useState(INIT_POSTS); const [faqs,setFaqs]=useState(INIT_FAQS)
+    const [showDlg,setShowDlg]=useState(false); const [editItem,setEditItem]=useState<any>(null); const [delId,setDelId]=useState<string|null>(null)
+    const [form,setForm]=useState({title:"",question:"",answer:"",status:"draft"})
+    const openAdd=()=>{setEditItem(null);setForm({title:"",question:"",answer:"",status:"draft"});setShowDlg(true)}
+    const openEdit=(item:any)=>{setEditItem(item);setForm({title:item.title||"",question:item.question||"",answer:item.answer||"",status:item.status});setShowDlg(true)}
+    const save=()=>{
+        if(tab==="blog"){if(editItem)setPosts(prev=>prev.map(p=>p.id===editItem.id?{...p,title:form.title,status:form.status}:p));else setPosts(prev=>[...prev,{id:`c${Date.now()}`,title:form.title,status:form.status,views:0,date:"۱۴۰۴/۹/۱۵"}])}
+        else{if(editItem)setFaqs(prev=>prev.map(f=>f.id===editItem.id?{...f,question:form.question,answer:form.answer}:f));else setFaqs(prev=>[...prev,{id:`f${Date.now()}`,question:form.question,answer:form.answer,status:"active"}])}
+        setShowDlg(false)}
+    const remove=()=>{if(tab==="blog")setPosts(prev=>prev.filter(p=>p.id!==delId));else setFaqs(prev=>prev.filter(f=>f.id!==delId));setDelId(null)}
+    const totalViews=posts.reduce((s,p)=>s+p.views,0)
+    return(<><h1 className="adm-page-title">مدیریت محتوا</h1>
+        <div className="adm-stat-grid">
+            <div className="adm-stat"><div className="adm-stat__top"><div className="adm-stat__label"><FileCheck size={18}/>مطالب بلاگ</div><span className="adm-stat__delta up"><TrendingUp size={12}/>{fa(50)}٪</span></div><div className="adm-stat__value">{fa(posts.length)}</div><div className="adm-stat__compare">ماه قبل: {fa(2)} مطلب</div></div>
+            <div className="adm-stat"><div className="adm-stat__top"><div className="adm-stat__label"><HelpCircle size={18}/>سوالات متداول</div></div><div className="adm-stat__value">{fa(faqs.length)}</div></div>
+            <div className="adm-stat"><div className="adm-stat__top"><div className="adm-stat__label"><Eye size={18}/>بازدید کل</div></div><div className="adm-stat__value">{fa(totalViews)}</div><div className="adm-stat__compare">میانگین: {fa(Math.round(totalViews/posts.length))} بازدید</div></div>
         </div>
-
         <div className="adm-filters" style={{marginBottom:16}}>
             {["blog","faq"].map(t=>(<button key={t} className={`adm-filter-btn ${tab===t?"active":""}`} onClick={()=>setTab(t)}>{t==="blog"?"بلاگ":"سوالات متداول"}</button>))}
             <button className="adm-btn adm-btn--filled" style={{marginInlineStart:"auto"}} onClick={openAdd}><Plus size={14}/> {tab==="blog"?"مطلب جدید":"سوال جدید"}</button></div>
-
-        {tab==="blog" ? (<div className="adm-table-card"><div className="adm-table-wrap"><table className="adm-table">
-            <thead><tr><th>عنوان</th><th>وضعیت</th><th>بازدید</th><th>تاریخ</th><th>عملیات</th></tr></thead>
-            <tbody>{posts.map(p=>(<tr key={p.id}>
-                <td style={{fontWeight:500}}>{p.title}</td>
-                <td><span className={`pill ${p.status==="published"?"pill--shipped":"pill--draft"}`}>{p.status==="published"?"منتشر شده":"پیش‌نویس"}</span></td>
-                <td className="tnum">{fa(p.views)}</td><td className="tnum">{fa(p.date)}</td>
-                <td><div className="row-acts"><button className="row-act-btn" onClick={()=>openEdit(p)}><Pencil size={14}/></button><button className="row-act-btn del" onClick={()=>setDelId(p.id)}><Trash2 size={14}/></button></div></td>
-            </tr>))}</tbody></table></div></div>) : (
-            <div className="adm-table-card"><div className="adm-table-wrap"><table className="adm-table">
-                <thead><tr><th>سوال</th><th>پاسخ</th><th>وضعیت</th><th>عملیات</th></tr></thead>
-                <tbody>{faqs.map(f=>(<tr key={f.id}>
-                    <td style={{fontWeight:500,maxWidth:200}}>{f.question}</td>
-                    <td style={{fontSize:12,color:"var(--adm-fg-3)",maxWidth:300,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{f.answer}</td>
-                    <td><span className="pill pill--shipped">فعال</span></td>
-                    <td><div className="row-acts"><button className="row-act-btn" onClick={()=>openEdit(f)}><Pencil size={14}/></button><button className="row-act-btn del" onClick={()=>setDelId(f.id)}><Trash2 size={14}/></button></div></td>
-                </tr>))}</tbody></table></div></div>)}
-
-        {showDlg && <div className="adm-dlg-overlay" onClick={()=>setShowDlg(false)}><div className="adm-dlg" onClick={e=>e.stopPropagation()} style={{minWidth:480}}>
+        {tab==="blog"?(<div className="adm-table-card"><div className="adm-table-wrap"><table className="adm-table"><thead><tr><th>عنوان</th><th>وضعیت</th><th>بازدید</th><th>تاریخ</th><th>عملیات</th></tr></thead>
+            <tbody>{posts.map(p=>(<tr key={p.id}><td style={{fontWeight:500}}>{p.title}</td><td><span className={`pill ${p.status==="published"?"pill--shipped":"pill--draft"}`}>{p.status==="published"?"منتشر شده":"پیش‌نویس"}</span></td><td className="tnum">{fa(p.views)}</td><td className="tnum">{fa(p.date)}</td>
+                <td><div className="row-acts"><button className="row-act-btn" onClick={()=>openEdit(p)}><Pencil size={14}/></button><button className="row-act-btn del" onClick={()=>setDelId(p.id)}><Trash2 size={14}/></button></div></td></tr>))}</tbody></table></div></div>):(
+        <div className="adm-table-card"><div className="adm-table-wrap"><table className="adm-table"><thead><tr><th>سوال</th><th>وضعیت</th><th>عملیات</th></tr></thead>
+            <tbody>{faqs.map(f=>(<tr key={f.id}><td style={{fontWeight:500}}>{f.question}</td><td><span className="pill pill--shipped">فعال</span></td>
+                <td><div className="row-acts"><button className="row-act-btn" onClick={()=>openEdit(f)}><Pencil size={14}/></button><button className="row-act-btn del" onClick={()=>setDelId(f.id)}><Trash2 size={14}/></button></div></td></tr>))}</tbody></table></div></div>)}
+        {showDlg&&<div className="adm-dlg-overlay" onClick={()=>setShowDlg(false)}><div className="adm-dlg" onClick={e=>e.stopPropagation()} style={{minWidth:480}}>
             <button className="adm-dlg-close" onClick={()=>setShowDlg(false)}><X size={14}/></button>
             <p className="adm-dlg-title">{editItem?(tab==="blog"?"ویرایش مطلب":"ویرایش سوال"):(tab==="blog"?"مطلب جدید":"سوال جدید")}</p>
             <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:16}}>
-                <input className="adm-input" value={tab==="blog"?form.title:form.question}
-                    onChange={e=>setForm(f=>({...f,[tab==="blog"?"title":"question"]:e.target.value}))}
-                    placeholder={tab==="blog"?"عنوان مطلب":"سوال"}/>
-                {tab==="faq" && <textarea className="adm-textarea" value={form.answer} onChange={e=>setForm(f=>({...f,answer:e.target.value}))} placeholder="پاسخ" rows={3}/>}
-                {tab==="blog" && <select className="adm-input" value={form.status} onChange={e=>setForm(f=>({...f,status:e.target.value}))} style={{appearance:"none",cursor:"pointer"}}>
-                    <option value="published">منتشر شده</option><option value="draft">پیش‌نویس</option></select>}
+                <input className="adm-field-input" value={tab==="blog"?form.title:form.question} onChange={e=>setForm(f=>({...f,[tab==="blog"?"title":"question"]:e.target.value}))} placeholder={tab==="blog"?"عنوان مطلب":"سوال"}/>
+                {tab==="faq"&&<textarea className="adm-field-textarea" value={form.answer} onChange={e=>setForm(f=>({...f,answer:e.target.value}))} placeholder="پاسخ" rows={3}/>}
+                {tab==="blog"&&<select className="adm-field-input" value={form.status} onChange={e=>setForm(f=>({...f,status:e.target.value}))} style={{appearance:"none",cursor:"pointer"}}><option value="published">منتشر شده</option><option value="draft">پیش‌نویس</option></select>}
             </div>
-            <div className="adm-dlg-actions"><button className="adm-btn adm-btn--filled" onClick={save}><Save size={14}/> ذخیره</button>
-                <button className="adm-btn adm-btn--outline" onClick={()=>setShowDlg(false)}>انصراف</button></div>
+            <div className="adm-dlg-actions"><button className="adm-btn adm-btn--filled" onClick={save}><Save size={14}/> ذخیره</button><button className="adm-btn adm-btn--outline" onClick={()=>setShowDlg(false)}>انصراف</button></div>
         </div></div>}
-
-        {delId && <div className="adm-dlg-overlay" onClick={()=>setDelId(null)}><div className="adm-dlg" onClick={e=>e.stopPropagation()}>
-            <p className="adm-dlg-title">آیا می‌خواهید این آیتم را حذف کنید؟</p>
-            <div className="adm-dlg-actions"><button className="adm-btn adm-btn--filled" onClick={remove}>حذف</button>
-                <button className="adm-btn adm-btn--outline" onClick={()=>setDelId(null)}>انصراف</button></div>
-        </div></div>}
+        {delId&&<div className="adm-dlg-overlay" onClick={()=>setDelId(null)}><div className="adm-dlg" onClick={e=>e.stopPropagation()}><p className="adm-dlg-title">آیا می‌خواهید این آیتم را حذف کنید؟</p>
+            <div className="adm-dlg-actions"><button className="adm-btn adm-btn--filled" onClick={remove}>حذف</button><button className="adm-btn adm-btn--outline" onClick={()=>setDelId(null)}>انصراف</button></div></div></div>}
     </>)
 }

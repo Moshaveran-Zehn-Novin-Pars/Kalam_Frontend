@@ -55,9 +55,9 @@ export default function CategoriesPage() {
             <button className="adm-dlg-close" onClick={()=>setShowDialog(false)}><X size={14}/></button>
             <p className="adm-dlg-title">{editCat?"ویرایش دسته‌بندی":"دسته‌بندی جدید"}</p>
             <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:16}}>
-                <input className="adm-input" value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} placeholder="نام دسته‌بندی"/>
-                <input className="adm-input" value={form.slug} onChange={e=>setForm(f=>({...f,slug:e.target.value}))} placeholder="اسلاگ (mive)"/>
-                <select className="adm-input" value={form.status} onChange={e=>setForm(f=>({...f,status:e.target.value}))} style={{appearance:"none",cursor:"pointer"}}>
+                <input className="adm-field-input" value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} placeholder="نام دسته‌بندی"/>
+                <input className="adm-field-input" value={form.slug} onChange={e=>setForm(f=>({...f,slug:e.target.value}))} placeholder="اسلاگ (mive)"/>
+                <select className="adm-field-input" value={form.status} onChange={e=>setForm(f=>({...f,status:e.target.value}))} style={{appearance:"none",cursor:"pointer"}}>
                     <option value="active">فعال</option><option value="inactive">غیرفعال</option>
                 </select>
             </div>

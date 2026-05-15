@@ -673,4 +673,28 @@
   .adm-form-grid { grid-template-columns: 1fr; }
   .adm-user-detail-grid { grid-template-columns: 1fr; }
 }
+/* ── Empty state ── */
+.adm-empty { padding: 48px 24px; text-align: center; color: var(--adm-fg-3); font-size: 14px; }
+
+/* ── Alert banners ── */
+.adm-alert {
+  display: flex; align-items: center; gap: 12px; padding: 14px 18px;
+  border-radius: var(--adm-r); font-size: 13px; margin-bottom: 18px;
+}
+.adm-alert--info { background: #e8f0fe; color: #1a56b0; border: 1px solid #c3d5fb; }
+.adm-alert--success { background: var(--adm-accent-100); color: #2f7a4d; border: 1px solid var(--adm-accent-100); }
+.adm-alert--warning { background: #fff4d2; color: #b07900; border: 1px solid #f0d090; }
+
+/* ── Statistic card (alternative to adm-stat for smaller summaries) ── */
+.adm-stat-card {
+  background: var(--adm-surface); border: 1px solid var(--adm-border);
+  border-radius: var(--adm-r-lg); padding: 18px 20px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.adm-stat-card .adm-stat-label { font-size: 13px; color: var(--adm-fg-3); }
+.adm-stat-card .adm-stat-value { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* ── Admin label shorthand ── */
+.adm-label { font-size: 13px; font-weight: 500; color: var(--adm-fg-2); display: block; margin-bottom: 6px; text-align: right; }
+
 @media (min-width: 801px) { .adm-desktop-only { display: flex; } }
