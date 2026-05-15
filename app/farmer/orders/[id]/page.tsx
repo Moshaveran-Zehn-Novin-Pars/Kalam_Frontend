@@ -61,10 +61,10 @@ export default function OrderDetailPage() {
                 <span className={`f-pill ${s.cls}`} style={{ fontSize: 13 }}>{s.label}</span>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16, marginBottom: 20 }}>
+            <div className="f-grid-2" style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16, marginBottom: 20 }}>
                 <div className="f-card">
                     <h3 style={{ margin: "0 0 16px", fontSize: 15, fontWeight: 600 }}>اطلاعات سفارش</h3>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, fontSize: 13 }}>
+                    <div className="f-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, fontSize: 13 }}>
                         <div><span style={{ color: "var(--f-fg-3)" }}>شماره سفارش: </span><span className="tnum" style={{ fontWeight: 600 }}>#{fa(order.id)}</span></div>
                         <div><span style={{ color: "var(--f-fg-3)" }}>تاریخ ثبت: </span><span className="tnum">{fa(order.date)}</span></div>
                         <div><span style={{ color: "var(--f-fg-3)" }}>تاریخ تحویل: </span><span className="tnum">{fa(order.deliveryDate)}</span></div>
