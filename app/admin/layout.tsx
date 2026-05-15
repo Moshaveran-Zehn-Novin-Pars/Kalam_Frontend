@@ -5,7 +5,9 @@ import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
 import {
   BarChart3, Pencil, ShoppingCart, Send, Users, LogOut,
-  Search, Menu, X, Home, LayoutGrid, UserCircle, LogIn, ChevronLeft
+  Search, Menu, X, Home, LayoutGrid, UserCircle, LogIn, ChevronLeft,
+  Shield, CreditCard, Wallet, Scale, AlertTriangle, Truck,
+  Warehouse, TrendingUp, Bell, FileText, Settings, CheckSquare
 } from "lucide-react"
 import "./admin.css"
 
@@ -14,11 +16,22 @@ function fa(n: string | number) {
 }
 
 const SIDEBAR_ITEMS = [
-  { href: "/admin/dashboard",  label: "پیشخوان",               icon: BarChart3 },
-  { href: "/admin/products",   label: "مدیریت محصولات",         icon: Pencil },
-  { href: "/admin/orders",     label: "مدیریت سفارش‌ها",        icon: ShoppingCart },
-  { href: "/admin/shipping",   label: "مدیریت حمل و نقل",       icon: Send },
-  { href: "/admin/users",      label: "کاربران",                icon: Users },
+  { href: "/admin/dashboard",   label: "پیشخوان",               icon: BarChart3 },
+  { href: "/admin/users",       label: "کاربران",               icon: Users },
+  { href: "/admin/kyc",         label: "احراز هویت",            icon: Shield },
+  { href: "/admin/products",    label: "محصولات",               icon: Pencil },
+  { href: "/admin/orders",      label: "سفارش‌ها",              icon: ShoppingCart },
+  { href: "/admin/payments",    label: "تراکنش‌ها",             icon: CreditCard },
+  { href: "/admin/settlements", label: "تسویه‌حساب‌ها",         icon: Wallet },
+  { href: "/admin/commissions", label: "کمیسیون‌ها",            icon: Scale },
+  { href: "/admin/disputes",    label: "اعتراضات",              icon: AlertTriangle },
+  { href: "/admin/shipping",    label: "حمل و نقل",             icon: Send },
+  { href: "/admin/deliveries/drivers", label: "رانندگان",       icon: Truck },
+  { href: "/admin/warehouses",  label: "سردخانه‌ها",            icon: Warehouse },
+  { href: "/admin/analytics",   label: "گزارش‌ها",              icon: TrendingUp },
+  { href: "/admin/notifications", label: "اعلان‌ها",            icon: Bell },
+  { href: "/admin/content",     label: "محتوا",                 icon: FileText },
+  { href: "/admin/settings",    label: "تنظیمات",               icon: Settings },
 ]
 
 const TOP_NAV = [
