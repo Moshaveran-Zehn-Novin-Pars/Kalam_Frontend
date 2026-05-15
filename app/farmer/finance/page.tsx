@@ -40,7 +40,7 @@ export default function FarmerFinancePage() {
                 💡 تسویه‌حساب‌ها هر ماه اول به حساب ثبت شده واریز می‌شود.
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 24 }}>
+            <div className="f-finance-nav" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 24 }}>
                 <Link href="/farmer/finance/settlements"
                     style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 18px", background: "var(--f-surface)", border: "1px solid var(--f-border)", borderRadius: "var(--f-r)", textDecoration: "none" }}>
                     <div style={{ width: 40, height: 40, borderRadius: "var(--f-r-sm)", background: "var(--f-accent-50)", display: "grid", placeItems: "center", color: "var(--f-accent)" }}>

@@ -58,7 +58,7 @@ export default function DemandForecastPage() {
                 پیش‌بینی تقاضا بر اساس تحلیل سفارشات گذشته، روندهای فصلی و داده‌های بازار توسط هوش مصنوعی کلم محاسبه شده است.
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16, marginBottom: 24 }}>
+            <div className="f-grid-2" style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16, marginBottom: 24 }}>
                 <div className="f-card">
                     <h3 style={{ margin: "0 0 14px", fontSize: 15, fontWeight: 600 }}>مقایسه تقاضای فعلی و پیش‌بینی شده</h3>
                     <div style={{ height: 280 }}>

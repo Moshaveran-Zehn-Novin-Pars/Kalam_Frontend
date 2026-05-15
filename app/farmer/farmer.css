@@ -367,6 +367,12 @@
     :root { --f-sidebar-w: 240px; }
     .farmer-main { padding: 22px 24px 48px; }
 }
+@media (max-width: 1100px) {
+    .f-grid-2 { grid-template-columns: 1fr !important; }
+    .f-grid-3 { grid-template-columns: 1fr 1fr !important; }
+    .f-grid-4 { grid-template-columns: 1fr 1fr !important; }
+    .f-finance-nav { grid-template-columns: 1fr 1fr !important; }
+}
 @media (max-width: 800px) {
     :root { --f-header-h: 64px; --f-sidebar-w: min(320px, 88vw); }
     .farmer-ham { display: flex; }
@@ -386,9 +392,12 @@
     .farmer-sidebar-close { display: flex; }
     .f-stat-grid { grid-template-columns: 1fr 1fr; }
     .f-finance-grid { grid-template-columns: 1fr; }
+    .f-grid-2, .f-grid-3, .f-grid-4, .f-finance-nav { grid-template-columns: 1fr !important; }
     .farmer-main { padding: 18px 14px 80px; }
     .farmer-body { flex-direction: column; }
     .farmer-tabbar { display: flex; }
+    .farmer-dlg { min-width: unset !important; max-width: 92vw !important; margin: 0 12px; }
+    .f-stat-grid .f-stat__value { font-size: 18px; }
 }
 @media (max-width: 600px) {
     .f-stat-grid { grid-template-columns: 1fr; }

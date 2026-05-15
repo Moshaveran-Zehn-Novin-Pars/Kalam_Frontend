@@ -26,7 +26,7 @@ export default function CommissionsPage() {
                 <h1 className="f-title" style={{ margin: 0 }}>کمیسیون‌ها</h1>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14, marginBottom: 20 }}>
+            <div className="f-grid-3" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14, marginBottom: 20 }}>
                 <div className="f-finance-card f-finance-card--accent">
                     <div className="f-finance-label">کل کمیسیون پرداختی</div>
                     <div className="f-finance-value">{faNum(totalCommission)}<span className="f-finance-unit">تومان</span></div>

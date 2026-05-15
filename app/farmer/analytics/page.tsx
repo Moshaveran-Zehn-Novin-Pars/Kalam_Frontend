@@ -82,7 +82,7 @@ export default function FarmerAnalyticsPage() {
                 </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16, marginBottom: 24 }}>
+            <div className="f-grid-2" style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16, marginBottom: 24 }}>
                 <div className="f-card">
                     <h3 style={{ margin: "0 0 14px", fontSize: 15, fontWeight: 600 }}>درآمد ماهانه (میلیون تومان)</h3>
                     <div style={{ height: 240 }}>
@@ -115,7 +115,7 @@ export default function FarmerAnalyticsPage() {
                 </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }}>
+            <div className="f-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }}>
                 <div className="f-card">
                     <h3 style={{ margin: "0 0 14px", fontSize: 15, fontWeight: 600 }}>روند سفارش‌ها</h3>
                     <div style={{ height: 200 }}>

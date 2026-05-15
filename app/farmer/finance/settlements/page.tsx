@@ -31,7 +31,7 @@ export default function SettlementsPage() {
                 <h1 className="f-title" style={{ margin: 0 }}>تسویه‌حساب‌ها</h1>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 14, marginBottom: 20 }}>
+            <div className="f-grid-2" style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 14, marginBottom: 20 }}>
                 <div className="f-finance-card f-finance-card--accent">
                     <div className="f-finance-label">کل تسویه‌های انجام شده</div>
                     <div className="f-finance-value">{faNum(totalPaid)}<span className="f-finance-unit">تومان</span></div>

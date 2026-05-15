@@ -61,7 +61,7 @@ export default function PricePredictionPage() {
                 پیش‌بینی‌ها توسط هوش مصنوعی کلم بر اساس تحلیل داده‌های بازار، روند فصلی و الگوهای قیمتی تولید شده‌اند.
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16, marginBottom: 24 }}>
+            <div className="f-grid-2" style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16, marginBottom: 24 }}>
                 <div className="f-card">
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
                         <h3 style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>روند قیمت و پیش‌بینی</h3>
@@ -134,7 +134,7 @@ export default function PricePredictionPage() {
 
             <div className="f-card" style={{ marginBottom: 20 }}>
                 <h3 style={{ margin: "0 0 14px", fontSize: 15, fontWeight: 600 }}>عوامل مؤثر بر پیش‌بینی</h3>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 16, fontSize: 13 }}>
+                <div className="f-grid-4" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 16, fontSize: 13 }}>
                     <div style={{ textAlign: "center", padding: "12px", background: "var(--f-accent-50)", borderRadius: "var(--f-r-sm)" }}>
                         <div style={{ fontWeight: 700, fontSize: 18, color: "var(--f-accent)", marginBottom: 4 }}>+{fa(12)}٪</div>
                         <div style={{ color: "var(--f-fg-3)", fontSize: 11 }}>روند فصلی</div>
