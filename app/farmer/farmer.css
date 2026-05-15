@@ -393,4 +393,11 @@
 @media (max-width: 600px) {
     .f-stat-grid { grid-template-columns: 1fr; }
 }
+/* ── Animations ── */
+@keyframes fa-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+.fa-spin { animation: fa-spin 1s linear infinite; }
+
 @media (min-width: 801px) { .farmer-desktop-only { display: flex; } }
