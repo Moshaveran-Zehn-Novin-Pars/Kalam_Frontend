@@ -6,7 +6,8 @@ import Link from "next/link"
 import {
     LayoutDashboard, Package, ShoppingBag, Wallet,
     Star, UserCircle, LogOut, Menu, X, Bell, ChevronLeft,
-    Search, ShoppingCart, LogIn, Home, LayoutGrid
+    Search, ShoppingCart, LogIn, Home, LayoutGrid,
+    BarChart3, AlertTriangle, Award, BrainCircuit, TrendingUp, ClipboardList
 } from "lucide-react"
 import "./farmer.css"
 
@@ -15,12 +16,16 @@ function fa(n: string | number) {
 }
 
 const SIDEBAR_ITEMS = [
-    { href: "/farmer/dashboard", label: "داشبورد",         icon: LayoutDashboard },
-    { href: "/farmer/products",  label: "محصولات من",       icon: Package },
-    { href: "/farmer/orders",    label: "سفارش‌های دریافتی", icon: ShoppingBag },
-    { href: "/farmer/finance",   label: "مالی و تسویه",      icon: Wallet },
-    { href: "/farmer/reviews",   label: "نظرات خریداران",    icon: Star },
-    { href: "/farmer/profile",   label: "پروفایل من",        icon: UserCircle },
+    { href: "/farmer/dashboard",    label: "داشبورد",           icon: LayoutDashboard },
+    { href: "/farmer/analytics",    label: "تحلیل فروش",        icon: BarChart3 },
+    { href: "/farmer/products",     label: "محصولات من",        icon: Package },
+    { href: "/farmer/inventory",    label: "موجودی انبار",      icon: ClipboardList },
+    { href: "/farmer/orders",       label: "سفارش‌های دریافتی", icon: ShoppingBag },
+    { href: "/farmer/finance",      label: "مالی و تسویه",      icon: Wallet },
+    { href: "/farmer/certificates", label: "گواهی‌ها",          icon: Award },
+    { href: "/farmer/reviews",      label: "نظرات خریداران",    icon: Star },
+    { href: "/farmer/tools/price-prediction", label: "ابزارهای هوشمند", icon: BrainCircuit },
+    { href: "/farmer/profile",      label: "پروفایل من",        icon: UserCircle },
 ]
 
 const TOP_NAV = [
