@@ -2,7 +2,6 @@ import { apiGet, apiPost, tokenStore } from '@/services/api'
 import type {
     SendOtpResponse,
     AuthResponse,
-    AuthTokens,
     User,
 } from '@/types'
 
@@ -18,52 +17,28 @@ export const authService = {
     },
 
     // Step 2: Verify OTP → get tokens
-    // We proxy through Next.js BFF to set httpOnly cookie for refreshToken
     async verifyOtp(phone: string, code: string): Promise<AuthResponse> {
-        const res = await fetch('/api/auth/verify-otp', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ phone, code }),
-        })
-
-        if (!res.ok) {
-            const err = await res.json()
-            throw new Error(err.message || 'خطا در ورود')
-        }
-
-        const data: AuthResponse = await res.json()
-        // Store accessToken in memory
+        const data = await apiPost<AuthResponse>('/auth/verify-otp', { phone, code })
         tokenStore.set(data.accessToken)
+        tokenStore.setRefresh(data.refreshToken)
         return data
     },
 
     // Refresh accessToken (called automatically by interceptor)
-    async refreshToken(): Promise<AuthTokens> {
-        const res = await fetch('/api/auth/refresh', {
-            method: 'POST',
-            credentials: 'include',
-        })
-
-        if (!res.ok) throw new Error('Refresh failed')
-
-        const data: AuthTokens = await res.json()
+    async refreshToken(): Promise<void> {
+        const rt = tokenStore.getRefresh()
+        if (!rt) throw new Error('No refresh token')
+        const data = await apiPost<{ accessToken: string; refreshToken: string }>('/auth/refresh', { refreshToken: rt })
         tokenStore.set(data.accessToken)
-        return data
+        tokenStore.setRefresh(data.refreshToken)
     },
 
-    // Logout: clear cookie + memory
+    // Logout: clear tokens
     async logout(): Promise<void> {
         try {
-            // Tell backend to revoke session
             await apiPost('/auth/logout')
         } finally {
-            // Clear client-side state
             tokenStore.clear()
-            await fetch('/api/auth/logout', {
-                method: 'POST',
-                credentials: 'include',
-            })
         }
     },
 
@@ -72,22 +47,13 @@ export const authService = {
         return apiGet<User>('/auth/me')
     },
 
-    // Initialize on app load: try to restore session from cookie
+    // Initialize on app load: try to restore session from stored refresh token
     async initSession(): Promise<AuthResponse | null> {
         try {
-            const res = await fetch('/api/auth/refresh', {
-                method: 'POST',
-                credentials: 'include',
-            })
-
-            if (!res.ok) return null
-
-            const data = await res.json()
-            tokenStore.set(data.accessToken)
-
-            // Fetch user info
+            await authService.refreshToken()
             const user = await authService.getMe()
-            return { ...data, user }
+            const at = tokenStore.get()
+            return { accessToken: at!, refreshToken: tokenStore.getRefresh()!, user: user as any }
         } catch {
             return null
         }

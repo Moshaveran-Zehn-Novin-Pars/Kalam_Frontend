@@ -4,7 +4,7 @@ import axios, {
     AxiosResponse,
     InternalAxiosRequestConfig,
 } from 'axios'
-import type { ApiResponse } from '@/types'
+import type { ApiResponse, AuthTokens } from '@/types'
 
 // ============================================
 // CONFIG
@@ -14,16 +14,18 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v
 
 // ============================================
 // IN-MEMORY TOKEN STORE
-// accessToken lives in memory (not localStorage)
-// refreshToken lives in httpOnly cookie (managed by Next route handlers)
-// ============================================
+// Both tokens live in memory (not localStorage)
+// Since BFF is removed, refreshToken is also stored in memory
 
 let accessToken: string | null = null
+let refreshToken: string | null = null
 
 export const tokenStore = {
     get: () => accessToken,
     set: (token: string) => { accessToken = token },
-    clear: () => { accessToken = null },
+    getRefresh: () => refreshToken,
+    setRefresh: (token: string) => { refreshToken = token },
+    clear: () => { accessToken = null; refreshToken = null },
 }
 
 // ============================================
@@ -100,18 +102,17 @@ api.interceptors.response.use(
             isRefreshing = true
 
             try {
-                // Call our Next.js BFF route to refresh using the httpOnly cookie
-                const res = await fetch('/api/auth/refresh', {
-                    method: 'POST',
-                    credentials: 'include',
-                })
+                // Call backend directly to refresh using the stored refreshToken
+                const rt = tokenStore.getRefresh()
+                if (!rt) throw new Error('No refresh token')
 
-                if (!res.ok) throw new Error('Refresh failed')
+                const res = await api.post<ApiResponse<AuthTokens>>('/auth/refresh', { refreshToken: rt })
 
-                const data = await res.json()
+                const data = res.data.data
                 const newToken = data.accessToken
 
                 tokenStore.set(newToken)
+                tokenStore.setRefresh(data.refreshToken)
                 processQueue(null, newToken)
 
                 if (originalRequest.headers) {
