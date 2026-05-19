@@ -9,3 +9,9 @@ export interface Invoice {
     taxSystemRef: string | null
     createdAt: string
 }
+
+export interface CreditNoteDto {
+    reason: string
+    items?: { productId: string; quantity: number; reason: string }[]
+    deductionAmount?: number
+}
