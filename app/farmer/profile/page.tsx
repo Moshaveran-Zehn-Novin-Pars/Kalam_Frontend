@@ -1,43 +1,64 @@
 "use client"
 
-import { useState } from "react"
-import { Camera, CheckCircle, AlertCircle } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Camera, CheckCircle, AlertCircle, Loader2 } from "lucide-react"
+import { farmerService } from "@/services/farmer"
+import { toast } from "sonner"
 
 function fa(n: string | number) { return String(n).replace(/[0-9]/g, d => "۰۱۲۳۴۵۶۷۸۹"[+d]) }
 
 export default function FarmerProfilePage() {
     const [form, setForm] = useState({
-        firstName: "علی",
-        lastName: "محمدی",
-        phone: "09111111111",
-        businessName: "باغ سیب نقره‌ای",
-        farmLocation: "شیراز، دشت ارژن",
-        nationalId: "0012345678",
-        bio: "باغدار با بیش از ۱۵ سال سابقه در پرورش میوه‌های درجه یک شیراز.",
+        firstName: "", lastName: "", phone: "", businessName: "",
+        farmLocation: "", nationalId: "", bio: "",
     })
-    const [saved, setSaved] = useState(false)
+    const [loading, setLoading] = useState(true)
+    const [saving, setSaving] = useState(false)
     const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))
 
-    const handleSave = () => {
-        setSaved(true)
-        setTimeout(() => setSaved(false), 2500)
+    useEffect(() => {
+        farmerService.getMyProfile().then((profile: any) => {
+            setForm({
+                firstName: profile.firstName || "",
+                lastName: profile.lastName || "",
+                phone: profile.phone || "",
+                businessName: profile.businessName || "",
+                farmLocation: profile.farmLocation || "",
+                nationalId: profile.nationalId || "",
+                bio: profile.bio || "",
+            })
+        }).catch(() => {}).finally(() => setLoading(false))
+    }, [])
+
+    const handleSave = async () => {
+        setSaving(true)
+        try {
+            await farmerService.updateProfile({
+                firstName: form.firstName,
+                lastName: form.lastName,
+                businessName: form.businessName,
+                bio: form.bio,
+            } as any)
+            toast.success("تغییرات با موفقیت ذخیره شد")
+        } catch {
+            toast.error("خطا در ذخیره تغییرات")
+        } finally {
+            setSaving(false)
+        }
+    }
+
+    if (loading) {
+        return <div style={{ textAlign: "center", padding: 48 }}><Loader2 size={24} className="animate-spin inline-block" /></div>
     }
 
     return (
         <>
             <h1 className="f-title">پروفایل من</h1>
 
-            {saved && (
-                <div className="f-alert f-alert--success">
-                    <CheckCircle size={16} /> تغییرات با موفقیت ذخیره شد.
-                </div>
-            )}
-
             <div className="f-card" style={{ marginBottom: 20 }}>
-                {/* avatar */}
                 <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24, paddingBottom: 20, borderBottom: "1px solid var(--f-border)" }}>
                     <div style={{ position: "relative" }}>
-                        <div style={{ width: 72, height: 72, borderRadius: "50%", background: "var(--f-accent-100)", display: "grid", placeItems: "center", fontSize: 28, fontWeight: 700, color: "var(--f-accent)" }}>ع</div>
+                        <div style={{ width: 72, height: 72, borderRadius: "50%", background: "var(--f-accent-100)", display: "grid", placeItems: "center", fontSize: 28, fontWeight: 700, color: "var(--f-accent)" }}>{form.firstName[0] || "?"}</div>
                         <button style={{ position: "absolute", bottom: 0, insetInlineEnd: 0, width: 26, height: 26, borderRadius: "50%", background: "var(--f-surface)", border: "1px solid var(--f-border-s)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--f-accent)" }}>
                             <Camera size={12} />
                         </button>
@@ -45,15 +66,9 @@ export default function FarmerProfilePage() {
                     <div>
                         <div style={{ fontWeight: 600, fontSize: 16 }}>{form.firstName} {form.lastName}</div>
                         <div style={{ fontSize: 13, color: "var(--f-fg-3)", marginTop: 3 }}>{form.businessName}</div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6 }}>
-              <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--f-shipped-fg)", background: "var(--f-shipped-bg)", padding: "3px 10px", borderRadius: 999 }}>
-                <CheckCircle size={11} /> تأیید شده
-              </span>
-                        </div>
                     </div>
                 </div>
 
-                {/* fields */}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                     <div className="f-field">
                         <label className="f-field-label">نام</label>
@@ -86,7 +101,6 @@ export default function FarmerProfilePage() {
                 </div>
             </div>
 
-            {/* verification status */}
             <div className="f-card" style={{ marginBottom: 20 }}>
                 <h3 style={{ margin: "0 0 14px", fontSize: 15, fontWeight: 600 }}>وضعیت تأیید حساب</h3>
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -107,7 +121,9 @@ export default function FarmerProfilePage() {
                 </div>
             </div>
 
-            <button className="f-btn f-btn--filled" onClick={handleSave}>ذخیره تغییرات</button>
+            <button className="f-btn f-btn--filled" onClick={handleSave} disabled={saving}>
+                {saving ? "در حال ذخیره..." : "ذخیره تغییرات"}
+            </button>
         </>
     )
 }

@@ -1,136 +1,274 @@
 "use client"
 
-import { useState } from "react"
-import Link from "next/link"
-import { SlidersHorizontal} from "lucide-react"
-import { useCartStore } from "@/store/cartStore"
+import { useState, useEffect, useMemo, useCallback, Suspense } from "react"
+import { useSearchParams, useRouter } from "next/navigation"
+import { SfIcon } from "@/components/shared/SfIcon"
+import ProductCard from "@/components/shared/ProductCard/ProductCard"
+import { productService } from "@/services/product"
 import type { Product } from "@/types"
-import ProductCard from "@/components/shared/ProductCard/ProductCard";
 
 const CATEGORIES = [
-    { key: "all", label: "همه" },
-    { key: "sabzijat", label: "سبزیجات" },
-    { key: "mive", label: "میوه" },
-    { key: "sayfijat", label: "صیفی‌جات" },
+    { id: "fruits", label: "میوه" },
+    { id: "vegetables", label: "سبزیجات" },
+    { id: "citrus", label: "مرکبات" },
 ]
 
-const USAGES = ["لیموگذاری", "مجلسی", "آشپزی", "یک مراسم"]
+const USE_CASES = [
+    { id: "juice", label: "آبمیوه‌گیری" },
+    { id: "party", label: "مجلسی" },
+    { id: "cooking", label: "آشپزی" },
+    { id: "celebration", label: "پک مراسم" },
+]
 
-const MOCK: Product[] = Array.from({ length: 12 }, (_, i) => ({
-    id: `p${i}`,
-    farmerId: "f1",
-    categoryId: `c${i % 3}`,
-    name: ["توت‌فرنگی خارجی", "گیلاس", "موز", "انگور", "پرتقال", "هلو", "تمشک", "لیمو", "سیب", "گلابی", "انار", "خیار"][i],
-    slug: `product-${i}`,
-    description: null,
-    origin: "ایران",
-    harvestDate: null,
-    qualityGrade: (["A","B","A","B","A","A","B","A","A","B","A","A"] as const)[i],
-    unit: "کیلو",
-    pricePerUnit: String(800000 + i * 100000),
-    minOrderQty: "1",
-    maxOrderQty: null,
-    stockQty: "500",
-    reservedQty: "0",
-    status: "ACTIVE" as const,
-    requiresColdChain: false,
-    storageTempMin: null,
-    storageTempMax: null,
-    shelfLifeDays: null,
-    viewsCount: 0,
-    salesCount: 0,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    images: [],
-}))
+const SORT_LABELS: Record<string, string> = {
+    default: "مرتب سازی بر اساس",
+    "price-asc": "قیمت: ارزان‌ترین",
+    "price-desc": "قیمت: گران‌ترین",
+    name: "نام محصول",
+}
+
+function fa(n: string | number) {
+    if (n === null || n === undefined) return ""
+    return String(n).replace(/\d/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[parseInt(d)])
+}
 
 export default function ProductsPage() {
-    const [activeCategory, setActiveCategory] = useState("all")
-    const [priceRange, setPriceRange] = useState(850)
-    const [selectedUsages, setSelectedUsages] = useState<string[]>([])
-    const { addItem } = useCartStore()
+    return (
+        <Suspense fallback={<div className="sf-page"><div className="plp-layout"><section className="plp-main"><div className="plp-toolbar"><h1 className="plp-toolbar__title">محصولات</h1></div><div className="grid grid-cols-2 md:grid-cols-3 gap-4 p-4">{Array.from({ length: 6 }).map((_, i) => (<div key={i} className="border border-[#E9E8E3] rounded-[16px] p-4 animate-pulse"><div className="w-full aspect-square bg-gray-100 rounded-[12px] mb-3" /><div className="h-4 bg-gray-100 rounded w-3/4 mb-2" /><div className="h-4 bg-gray-100 rounded w-1/2" /></div>))}</div></section></div></div>}>
+            <ProductsPageInner />
+        </Suspense>
+    )
+}
 
-    const toggleUsage = (u: string) =>
-        setSelectedUsages((prev) => prev.includes(u) ? prev.filter((x) => x !== u) : [...prev, u])
+function ProductsPageInner() {
+    const searchParams = useSearchParams()
+    const router = useRouter()
+    const initialCat = searchParams.get("category")
+
+    const [allProducts, setAllProducts] = useState<Product[]>([])
+    const [loading, setLoading] = useState(true)
+    const [selectedCats, setSelectedCats] = useState<string[]>(initialCat ? [initialCat] : [])
+    const [selectedUses, setSelectedUses] = useState<string[]>([])
+    const [priceMax, setPriceMax] = useState(850)
+    const [sheetOpen, setSheetOpen] = useState(false)
+    const [sortOpen, setSortOpen] = useState(false)
+    const [sortBy, setSortBy] = useState("default")
+
+    useEffect(() => {
+        setLoading(true)
+        productService
+            .getProducts({ page: 1, pageSize: 50 })
+            .then((res) => {
+                setAllProducts(res.items || [])
+            })
+            .catch(() => setAllProducts([]))
+            .finally(() => setLoading(false))
+    }, [])
+
+    const filtered = useMemo(() => {
+        let list = allProducts.slice()
+
+        if (selectedCats.length) {
+            list = list.filter((p) => selectedCats.includes(p.category?.slug ?? ''))
+        }
+
+        if (selectedUses.length) {
+            list = list.filter((p) =>
+                selectedUses.some((u) => p.name.includes(u))
+            )
+        }
+
+        const priceLimit = priceMax * 1000
+        list = list.filter((p) => parseFloat(p.pricePerUnit) <= priceLimit)
+
+        if (sortBy === "price-asc") list.sort((a, b) => parseFloat(a.pricePerUnit) - parseFloat(b.pricePerUnit))
+        if (sortBy === "price-desc") list.sort((a, b) => parseFloat(b.pricePerUnit) - parseFloat(a.pricePerUnit))
+        if (sortBy === "name") list.sort((a, b) => a.name.localeCompare(b.name, "fa"))
+
+        return list
+    }, [allProducts, selectedCats, selectedUses, priceMax, sortBy])
+
+    const toggleCat = useCallback((id: string) => {
+        setSelectedCats((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]))
+    }, [])
+
+    const toggleUse = useCallback((id: string) => {
+        setSelectedUses((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]))
+    }, [])
+
+    const filterContent = (
+        <FilterBody
+            selectedCats={selectedCats}
+            toggleCat={toggleCat}
+            selectedUses={selectedUses}
+            toggleUse={toggleUse}
+            priceMax={priceMax}
+            setPriceMax={setPriceMax}
+        />
+    )
 
     return (
-        <div className="w-[90%] md:w-4/5 mx-auto py-8">
-            <div className="flex gap-8">
-
-                {/* راست: فیلترها */}
-                <aside className="hidden md:flex flex-col gap-6 w-[200px] shrink-0 text-right">
-                    <div className="flex items-center gap-2 text-[#51A46B] font-bold text-[15px]">
-                        <SlidersHorizontal size={16} />
+        <main className="sf-page" data-screen-label="02 PLP">
+            <div className="plp-layout">
+                <aside className="plp-filters" aria-label="فیلترها">
+                    <div className="plp-filters__head">
+                        <SfIcon.Filter />
                         <span>فیلترها</span>
                     </div>
-
-                    {/* دسته‌بندی */}
-                    <div>
-                        <h4 className="font-bold text-[14px] text-[#212121] mb-3">دسته‌بندی‌ها</h4>
-                        <div className="flex flex-wrap gap-2">
-                            {CATEGORIES.map((c) => (
-                                <button key={c.key} onClick={() => setActiveCategory(c.key)}
-                                        className={`px-3 py-1 rounded-full text-[13px] border transition-colors ${
-                                            activeCategory === c.key
-                                                ? "bg-[#51A46B] text-white border-[#51A46B]"
-                                                : "border-[#E9E8E3] text-[#505050] hover:border-[#51A46B]"
-                                        }`}>
-                                    {c.label}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* موارد مصرف */}
-                    <div>
-                        <h4 className="font-bold text-[14px] text-[#212121] mb-3">موارد مصرف</h4>
-                        <div className="flex flex-col gap-2">
-                            {USAGES.map((u) => (
-                                <label key={u} className="flex items-center justify-end gap-2 cursor-pointer text-[13px] text-[#505050]">
-                                    {u}
-                                    <input type="checkbox" checked={selectedUsages.includes(u)}
-                                           onChange={() => toggleUsage(u)}
-                                           className="accent-[#51A46B] w-4 h-4" />
-                                </label>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* قیمت */}
-                    <div>
-                        <h4 className="font-bold text-[14px] text-[#212121] mb-3">قیمت</h4>
-                        <input type="range" min={100} max={2000} value={priceRange}
-                               onChange={(e) => setPriceRange(Number(e.target.value))}
-                               className="w-full accent-[#51A46B]" />
-                        <div className="flex justify-between text-[12px] text-[#505050] mt-1">
-                            <span>۱۰۰ تومان</span>
-                            <span>{priceRange.toLocaleString("fa-IR")} تومان</span>
-                        </div>
-                    </div>
+                    {filterContent}
                 </aside>
 
-                {/* چپ: محصولات */}
-                <div className="flex-1">
-                    <div className="flex items-center justify-between mb-6">
-                        <button className="flex items-center gap-1 text-[13px] text-[#505050] border border-[#E9E8E3] rounded-[8px] px-3 py-1.5">
-                            مرتب سازی بر اساس ↓
+                <section className="plp-main">
+                    <div className="plp-toolbar">
+                        <button className="plp-mobile-filter-btn" onClick={() => setSheetOpen(true)}>
+                            <SfIcon.Filter />
+                            فیلترها
                         </button>
-                        <h1 className="text-[22px] font-bold text-[#212121]">محصولات</h1>
+                        <h1 className="plp-toolbar__title">محصولات</h1>
+
+                        <div className="plp-sort">
+                            <button className="plp-sort__btn" onClick={() => setSortOpen((p) => !p)}>
+                                <span>{SORT_LABELS[sortBy]}</span>
+                                <SfIcon.ChevronDown />
+                            </button>
+                            {sortOpen && (
+                                <div className="plp-sort__menu">
+                                    {Object.entries(SORT_LABELS).map(([id, label]) => (
+                                        <button
+                                            key={id}
+                                            className={`plp-sort__item${sortBy === id ? " is-active" : ""}`}
+                                            onClick={() => { setSortBy(id); setSortOpen(false) }}
+                                        >
+                                            {label}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {MOCK.map((p) => (
-                            <ProductCard key={p.id} product={p}  />
-                        ))}
-                    </div>
+                    {loading ? (
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            {Array.from({ length: 6 }).map((_, i) => (
+                                <div key={i} className="border border-[#E9E8E3] rounded-[16px] p-4 animate-pulse">
+                                    <div className="w-full aspect-square bg-gray-100 rounded-[12px] mb-3" />
+                                    <div className="h-4 bg-gray-100 rounded w-3/4 mb-2" />
+                                    <div className="h-4 bg-gray-100 rounded w-1/2" />
+                                </div>
+                            ))}
+                        </div>
+                    ) : filtered.length === 0 ? (
+                        <div className="text-center py-20 text-[#8A8A8A]">محصولی یافت نشد</div>
+                    ) : (
+                        <div className="plp-grid">
+                            {filtered.map((p) => (
+                                <ProductCard key={p.id} product={p} />
+                            ))}
+                        </div>
+                    )}
 
-                    <div className="text-center mt-10">
-                        <Link href="#" className="text-[#51A46B] text-[15px] font-medium hover:underline">
-                            محصولات بیشتر...
-                        </Link>
+                    {!loading && filtered.length > 0 && (
+                        <a className="more-link" href="/products?show=all">محصولات بیشتر...</a>
+                    )}
+                </section>
+            </div>
+
+            {sheetOpen && (
+                <>
+                    <div className="sheet-backdrop" onClick={() => setSheetOpen(false)} />
+                    <div className="sheet" role="dialog" aria-label="فیلترها">
+                        <div className="sheet__head">
+                            <div className="sheet__title">
+                                <SfIcon.Filter />
+                                <span>فیلترها</span>
+                            </div>
+                            <button className="sheet__close" onClick={() => setSheetOpen(false)} aria-label="بستن">
+                                <SfIcon.Close />
+                            </button>
+                        </div>
+                        {filterContent}
+                        <button className="sheet__apply" onClick={() => setSheetOpen(false)}>اعمال فیلتر</button>
                     </div>
+                </>
+            )}
+        </main>
+    )
+}
+
+function FilterBody({
+    selectedCats, toggleCat, selectedUses, toggleUse, priceMax, setPriceMax,
+}: {
+    selectedCats: string[]
+    toggleCat: (id: string) => void
+    selectedUses: string[]
+    toggleUse: (id: string) => void
+    priceMax: number
+    setPriceMax: (v: number) => void
+}) {
+    return (
+        <>
+            <div className="plp-group">
+                <h4>دسته‌بندی‌ها</h4>
+                <div className="plp-group__chips">
+                    {CATEGORIES.map((c) => (
+                        <button
+                            key={c.id}
+                            className={`chip ${selectedCats.includes(c.id) ? "is-active" : ""}`}
+                            onClick={() => toggleCat(c.id)}
+                        >
+                            {c.label}
+                        </button>
+                    ))}
                 </div>
+            </div>
 
+            <div className="plp-divider" />
+
+            <div className="plp-group">
+                <h4>موارد مصرف</h4>
+                <div className="plp-checks">
+                    {USE_CASES.map((u) => (
+                        <label key={u.id} className="plp-check">
+                            <span className="plp-check__label">{u.label}</span>
+                            <input type="checkbox" checked={selectedUses.includes(u.id)} onChange={() => toggleUse(u.id)} />
+                            <span className="plp-check__box"><SfIcon.Check /></span>
+                        </label>
+                    ))}
+                </div>
+            </div>
+
+            <div className="plp-divider" />
+
+            <div className="plp-group">
+                <h4>قیمت</h4>
+                <PriceRange priceMax={priceMax} setPriceMax={setPriceMax} />
+            </div>
+        </>
+    )
+}
+
+function PriceRange({ priceMax, setPriceMax }: { priceMax: number; setPriceMax: (v: number) => void }) {
+    const minP = 0
+    const maxP = 850
+    const pct = ((priceMax - minP) / (maxP - minP)) * 100
+
+    return (
+        <div>
+            <div className="plp-range__bar">
+                <div className="plp-range__fill" style={{ insetInlineEnd: 0, width: `${pct}%` }} />
+                <div className="plp-range__handle" style={{ insetInlineEnd: `calc(${pct}% - 7px)` }} />
+                <input
+                    type="range"
+                    min={minP}
+                    max={maxP}
+                    value={priceMax}
+                    onChange={(e) => setPriceMax(Number(e.target.value))}
+                    className="plp-range__input"
+                />
+            </div>
+            <div className="plp-range__labels">
+                <span>{fa(priceMax)} هزار تومان</span>
+                <span>{fa(minP)} تومان</span>
             </div>
         </div>
     )

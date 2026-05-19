@@ -1,25 +1,11 @@
 "use client"
 
-import { useState } from "react"
-import { Plus, Pencil, Trash2, X, UserCircle, ShoppingBag } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Plus, Pencil, Trash2, X, UserCircle, ShoppingBag, Loader2 } from "lucide-react"
+import { usersService } from "@/services/users"
+import { deliveryService } from "@/services/delivery"
 
 function fa(n: string | number) { return String(n).replace(/[0-9]/g, d => "۰۱۲۳۴۵۶۷۸۹"[+d]) }
-
-const DRIVERS = [
-  { id: "d1", name: "رضا امیری",    delivered: 34 },
-  { id: "d2", name: "علی محمدی",   delivered: 21 },
-  { id: "d3", name: "حسین رضوی",  delivered: 48 },
-]
-
-const DELIVERIES = [
-  { id: "2345923", date: "1404/9/12", slot: "ساعت ۶ تا ۱۴", driver: "ندارد",       drvKind: "none",   status: "sending", pay: "حضوری" },
-  { id: "2345923", date: "1404/9/12", slot: "ساعت ۶ تا ۱۴", driver: "آقای عسگری", drvKind: "active", status: "shipped", pay: "حضوری" },
-  { id: "2345923", date: "1404/9/12", slot: "ساعت ۶ تا ۱۴", driver: "آقای عسگری", drvKind: "active", status: "sending", pay: "حضوری" },
-  { id: "2345923", date: "1404/9/12", slot: "ساعت ۶ تا ۱۴", driver: "آقای عسگری", drvKind: "active", status: "sending", pay: "حضوری" },
-  { id: "2345923", date: "1404/9/12", slot: "ساعت ۶ تا ۱۴", driver: "آقای عسگری", drvKind: "active", status: "cancel",  pay: "حضوری" },
-  { id: "2345923", date: "1404/9/12", slot: "ساعت ۶ تا ۱۴", driver: "آقای عسگری", drvKind: "active", status: "sending", pay: "حضوری" },
-  { id: "2345923", date: "1404/9/12", slot: "ساعت ۶ تا ۱۴", driver: "آقای عسگری", drvKind: "active", status: "shipped", pay: "حضوری" },
-]
 
 function AddDriverModal({ onClose }: { onClose: ()=>void }) {
   return (
@@ -75,20 +61,44 @@ const DELIVERY_STATUS: Record<string, {label:string;cls:string}> = {
   cancel:  { label: "لغو شده",      cls: "pill--cancel"  },
 }
 
+const DELIVERY_STATUS_MAP: Record<string, { label: string; cls: string }> = {
+  PENDING_ASSIGNMENT: { label: "در انتظار تخصیص", cls: "pill--sending" },
+  ASSIGNED: { label: "تخصیص داده شده", cls: "pill--sending" },
+  PICKING_UP: { label: "در حال بارگیری", cls: "pill--sending" },
+  IN_TRANSIT: { label: "در حال ارسال", cls: "pill--sending" },
+  DELIVERED: { label: "ارسال شده", cls: "pill--shipped" },
+  FAILED: { label: "لغو شده", cls: "pill--cancel" },
+}
+
 export default function ShippingPage() {
   const [delDrv, setDelDrv] = useState<any>(null)
   const [addOpen, setAddOpen] = useState(false)
+  const [drivers, setDrivers] = useState<any[]>([])
+  const [deliveries, setDeliveries] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    Promise.all([
+      usersService.findAll({ role: 'driver' }).catch(() => []),
+      deliveryService.findAll().catch(() => []),
+    ]).then(([d, dl]) => {
+      setDrivers(Array.isArray(d) ? d : [])
+      setDeliveries(Array.isArray(dl) ? dl : [])
+    }).finally(() => setLoading(false))
+  }, [])
+
+  if (loading) return <div className="adm-loading"><Loader2 size={24} className="spin" /></div>
 
   return (
     <>
       <h1 className="adm-page-title">رانندگان</h1>
       <div className="adm-drivers-grid">
-        {DRIVERS.map(d => (
+        {drivers.map((d: any) => (
           <div key={d.id} className="adm-driver-card">
             <div className="adm-driver-card__head">
               <div>
-                <div className="adm-driver-name">نام راننده: <b>{d.name}</b></div>
-                <div className="adm-driver-count">سفارشات تحویل شده: <span className="tnum">{fa(d.delivered)}</span></div>
+                <div className="adm-driver-name">نام راننده: <b>{d.name || [d.firstName, d.lastName].filter(Boolean).join(' ') || d.phone}</b></div>
+                <div className="adm-driver-count">سفارشات تحویل شده: <span className="tnum">{fa(d.delivered ?? d.driver?.ordersDelivered ?? 0)}</span></div>
               </div>
               <div className="row-acts">
                 <button className="row-act-btn"><Pencil size={14} /></button>
@@ -114,21 +124,29 @@ export default function ShippingPage() {
               <th>راننده</th><th>وضعیت تحویل</th><th>نوع پرداخت</th>
             </tr></thead>
             <tbody>
-              {DELIVERIES.map((d, i) => {
-                const ds = DELIVERY_STATUS[d.status]
-                return (
-                  <tr key={i}>
-                    <td className="tnum">#{fa(d.id)}</td>
-                    <td className="tnum">{fa(d.date)}</td>
-                    <td className="tnum">{fa(d.slot)}</td>
-                    <td>
-                      <span className={`pill ${d.drvKind === "none" ? "pill--none" : "pill--active"}`}>{d.driver}</span>
-                    </td>
-                    <td><span className={`pill ${ds.cls}`}>{ds.label}</span></td>
-                    <td>{d.pay}</td>
-                  </tr>
-                )
-              })}
+              {deliveries.length === 0 ? (
+                <tr><td colSpan={6} style={{ textAlign: "center", padding: 24, color: "var(--adm-fg-3)" }}>هیچ حمل و نقلی یافت نشد.</td></tr>
+              ) : (
+                deliveries.map((d: any, i: number) => {
+                  const ds = DELIVERY_STATUS_MAP[d.status] || { label: d.status, cls: "pill--sending" }
+                  const driverName = d.driver?.user
+                    ? [d.driver.user.firstName, d.driver.user.lastName].filter(Boolean).join(' ')
+                    : d.driverId ? `راننده #${d.driverId.slice(-4)}` : 'ندارد'
+                  const drvKind = d.driverId ? 'active' : 'none'
+                  return (
+                    <tr key={d.id || i}>
+                      <td className="tnum">#{fa(d.orderId || d.id)}</td>
+                      <td className="tnum">{d.scheduledAt ? fa(new Date(d.scheduledAt).toLocaleDateString('fa-IR')) : '—'}</td>
+                      <td className="tnum">{d.scheduledAt ? fa(new Date(d.scheduledAt).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })) : '—'}</td>
+                      <td>
+                        <span className={`pill ${drvKind === "none" ? "pill--none" : "pill--active"}`}>{driverName}</span>
+                      </td>
+                      <td><span className={`pill ${ds.cls}`}>{ds.label}</span></td>
+                      <td>—</td>
+                    </tr>
+                  )
+                })
+              )}
             </tbody>
           </table>
         </div>

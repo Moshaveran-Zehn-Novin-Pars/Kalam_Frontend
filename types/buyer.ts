@@ -20,3 +20,18 @@ export interface UpdateBuyerDto {
     businessType?: string
     economicCode?: string
 }
+
+export interface UpdateCreditLimitDto {
+    creditLimit: number
+    reason?: string
+}
+
+export interface UpdatePaymentTermsDto {
+    netDays: number
+    lateFeePercent?: number
+}
+
+export interface BlockCreditDto {
+    reason: string
+    blockUntil?: string
+}

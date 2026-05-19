@@ -1,30 +1,16 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronDown, Plus, Pencil, Trash2, Camera, ImageIcon } from "lucide-react"
 import { X } from "lucide-react"
+import { productService } from "@/services/product"
+import { categoryService } from "@/services/category"
 
 function fa(n: string | number) { return String(n).replace(/[0-9]/g, d => "۰۱۲۳۴۵۶۷۸۹"[+d]) }
 function faNum(n: number) { return new Intl.NumberFormat("fa-IR").format(n) }
 
 type View = "categories" | "products" | "add-cat" | "add-product" | "edit-product"
 
-const CATEGORIES = [
-  { id: "c1", name: "سبزیجات", count: 24, status: "active" },
-  { id: "c2", name: "میوه‌ها",  count: 18, status: "active" },
-  { id: "c3", name: "لبنیات",  count: 12, status: "active" },
-  { id: "c4", name: "خشکبار",  count: 8,  status: "inactive" },
-  { id: "c5", name: "نان",     count: 5,  status: "active" },
-  { id: "c6", name: "گوشت",    count: 7,  status: "inactive" },
-]
-const PRODUCTS = [
-  { id: "p1", name: "لیمو شیرین", cat: "میوه", stock: "100 کیلوگرم", price: 120000 },
-  { id: "p2", name: "گوجه فرنگی", cat: "سبزیجات", stock: "200 کیلوگرم", price: 45000 },
-  { id: "p3", name: "سیب درختی",  cat: "میوه", stock: "80 کیلوگرم",  price: 65000 },
-  { id: "p4", name: "خیار",       cat: "سبزیجات", stock: "150 کیلوگرم", price: 28000 },
-  { id: "p5", name: "انگور",      cat: "میوه", stock: "60 کیلوگرم",  price: 85000 },
-  { id: "p6", name: "اسفناج",     cat: "سبزیجات", stock: "50 کیلوگرم",  price: 32000 },
-]
 
 function Breadcrumb({ items, onNav }: { items: {label:string;active?:boolean}[]; onNav: (i:number)=>void }) {
   return (
@@ -67,7 +53,7 @@ function ConfirmDialog({ open, title, onConfirm, onCancel }: any) {
 }
 
 /* ── Categories list ── */
-function CategoriesView({ onOpen, onAdd, onEdit }: any) {
+function CategoriesView({ onOpen, onAdd, onEdit, categories = [], catLoading }: any) {
   const [del, setDel] = useState<any>(null)
   return (
     <>
@@ -85,7 +71,11 @@ function CategoriesView({ onOpen, onAdd, onEdit }: any) {
               <th>عکس</th><th>نام دسته‌بندی</th><th>تعداد محصول</th><th>وضعیت</th><th>ویرایش و حذف</th>
             </tr></thead>
             <tbody>
-              {CATEGORIES.map(c => (
+              {catLoading ? (
+                <tr><td colSpan={5} style={{ textAlign: "center", padding: 32, color: "var(--adm-fg-3)" }}>در حال بارگذاری...</td></tr>
+              ) : categories.length === 0 ? (
+                <tr><td colSpan={5} style={{ textAlign: "center", padding: 32, color: "var(--adm-fg-3)" }}>دسته‌بندی‌ای یافت نشد</td></tr>
+              ) : categories.map((c: any) => (
                 <tr key={c.id} className="clickable" onClick={() => onOpen(c)}>
                   <td>
                     <div style={{ width: 36, height: 36, borderRadius: 8, background: "var(--adm-accent-50)", display: "grid", placeItems: "center" }}>
@@ -93,10 +83,10 @@ function CategoriesView({ onOpen, onAdd, onEdit }: any) {
                     </div>
                   </td>
                   <td>{c.name}</td>
-                  <td className="tnum">{fa(c.count)}</td>
+                  <td className="tnum">{fa((c as any)._count?.products ?? 0)}</td>
                   <td>
-                    <span className={`pill ${c.status === "active" ? "pill--active" : "pill--inactive"}`}>
-                      {c.status === "active" ? "فعال" : "غیرفعال"}
+                    <span className={`pill ${c.isActive ? "pill--active" : "pill--inactive"}`}>
+                      {c.isActive ? "فعال" : "غیرفعال"}
                     </span>
                   </td>
                   <td onClick={e => e.stopPropagation()}>
@@ -117,7 +107,7 @@ function CategoriesView({ onOpen, onAdd, onEdit }: any) {
 }
 
 /* ── Products list ── */
-function ProductsView({ cat, onBack, onEdit, onAdd }: any) {
+function ProductsView({ cat, onBack, onEdit, onAdd, products = [], prodLoading }: any) {
   const [del, setDel] = useState<any>(null)
   return (
     <>
@@ -137,13 +127,17 @@ function ProductsView({ cat, onBack, onEdit, onAdd }: any) {
               <th>عکس</th><th>نام محصول</th><th>دسته‌بندی</th><th>موجودی</th><th>قیمت هرکیلو</th><th>ویرایش و حذف</th>
             </tr></thead>
             <tbody>
-              {PRODUCTS.map(p => (
+              {prodLoading ? (
+                <tr><td colSpan={6} style={{ textAlign: "center", padding: 32, color: "var(--adm-fg-3)" }}>در حال بارگذاری...</td></tr>
+              ) : products.length === 0 ? (
+                <tr><td colSpan={6} style={{ textAlign: "center", padding: 32, color: "var(--adm-fg-3)" }}>محصولی یافت نشد</td></tr>
+              ) : products.map((p: any) => (
                 <tr key={p.id} className="clickable" onClick={() => onEdit(p)}>
                   <td><div style={{ width: 36, height: 36, borderRadius: 8, background: "var(--adm-accent-50)", display: "grid", placeItems: "center", fontSize: 18 }}>🍋</div></td>
                   <td>{p.name}</td>
-                  <td>{p.cat}</td>
-                  <td className="tnum">{fa(p.stock)}</td>
-                  <td className="tnum">{faNum(p.price)} تومان</td>
+                  <td>{p.category?.name ?? ""}</td>
+                  <td className="tnum">{fa(p.stockQty)}</td>
+                  <td className="tnum">{faNum(+p.pricePerUnit)} تومان</td>
                   <td onClick={e => e.stopPropagation()}>
                     <RowActions onEdit={() => onEdit(p)} onDelete={() => setDel(p)} />
                   </td>
@@ -275,6 +269,25 @@ export default function ProductsPage() {
   const [view, setView] = useState<View>("categories")
   const [selectedCat, setSelectedCat] = useState<any>(null)
   const [selectedProduct, setSelectedProduct] = useState<any>(null)
+  const [categories, setCategories] = useState<any[]>([])
+  const [products, setProducts] = useState<any[]>([])
+  const [catLoading, setCatLoading] = useState(true)
+  const [prodLoading, setProdLoading] = useState(true)
+
+  useEffect(() => {
+    categoryService.getCategories()
+      .then((res: any) => {
+        setCategories(Array.isArray(res) ? res : res?.items ?? [])
+      })
+      .catch(() => {})
+      .finally(() => setCatLoading(false))
+    productService.getProducts()
+      .then((res: any) => {
+        setProducts(Array.isArray(res) ? res : res?.items ?? [])
+      })
+      .catch(() => {})
+      .finally(() => setProdLoading(false))
+  }, [])
 
   if (view === "add-cat") return <AddCatView onBack={() => setView("categories")} />
   if (view === "add-product") return <EditProductView mode="add" onBack={() => setView("products")} />
@@ -282,6 +295,8 @@ export default function ProductsPage() {
   if (view === "products") return (
     <ProductsView
       cat={selectedCat}
+      products={products}
+      prodLoading={prodLoading}
       onBack={() => setView("categories")}
       onEdit={(p: any) => { setSelectedProduct(p); setView("edit-product") }}
       onAdd={() => setView("add-product")}
@@ -289,6 +304,8 @@ export default function ProductsPage() {
   )
   return (
     <CategoriesView
+      categories={categories}
+      catLoading={catLoading}
       onOpen={(c: any) => { setSelectedCat(c); setView("products") }}
       onAdd={() => setView("add-cat")}
       onEdit={(c: any) => { setSelectedCat(c); setView("add-cat") }}

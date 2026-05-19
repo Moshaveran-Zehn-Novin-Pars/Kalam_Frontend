@@ -15,6 +15,143 @@
         ]
       }
     },
+    "/api/v1/notifications": {
+      "get": {
+        "operationId": "NotificationsController_getMyNotifications",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "unreadOnly",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": false,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "لیست اعلان‌های من",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/api/v1/notifications/unread-count": {
+      "get": {
+        "operationId": "NotificationsController_getUnreadCount",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "تعداد اعلان‌های خوانده نشده",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/api/v1/notifications/{id}/read": {
+      "patch": {
+        "operationId": "NotificationsController_markAsRead",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "علامت‌گذاری اعلان به عنوان خوانده شده",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/api/v1/notifications/read-all": {
+      "post": {
+        "operationId": "NotificationsController_markAllAsRead",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "خواندن همه اعلان‌ها",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/api/v1/notifications/cleanup": {
+      "post": {
+        "operationId": "NotificationsController_deleteOldNotifications",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "پاک‌سازی اعلان‌های قدیمی (ادمین)",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
     "/api/v1/health": {
       "get": {
         "operationId": "HealthController_check",
@@ -54,7 +191,9 @@
                     },
                     "error": {
                       "type": "object",
-                      "example": {},
+                      "example": {
+
+                      },
                       "additionalProperties": {
                         "type": "object",
                         "required": [
@@ -320,6 +459,86 @@
         ]
       }
     },
+    "/api/v1/kyc/start": {
+      "post": {
+        "operationId": "KycController_startKyc",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartKycDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "شروع احراز هویت",
+        "tags": [
+          "KYC"
+        ]
+      }
+    },
+    "/api/v1/kyc/verify": {
+      "post": {
+        "operationId": "KycController_verifyOtp",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyKycOtpDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "تایید کد احراز هویت",
+        "tags": [
+          "KYC"
+        ]
+      }
+    },
+    "/api/v1/kyc/status": {
+      "get": {
+        "operationId": "KycController_getStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "وضعیت احراز هویت",
+        "tags": [
+          "KYC"
+        ]
+      }
+    },
     "/api/v1/users": {
       "get": {
         "operationId": "UsersController_findAll",
@@ -351,8 +570,10 @@
               "enum": [
                 "BUYER",
                 "FARMER",
+                "VENDOR",
                 "DRIVER",
                 "ADMIN",
+                "SUPER_ADMIN",
                 "SUPPORT"
               ]
             }
@@ -873,6 +1094,191 @@
         ]
       }
     },
+    "/api/v1/vendors": {
+      "get": {
+        "operationId": "VendorsController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "لیست میدان‌بارها (عمومی)",
+        "tags": [
+          "Vendors"
+        ]
+      }
+    },
+    "/api/v1/vendors/me": {
+      "get": {
+        "operationId": "VendorsController_getMyProfile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "پروفایل میدان‌بار جاری",
+        "tags": [
+          "Vendors"
+        ]
+      }
+    },
+    "/api/v1/vendors/{id}": {
+      "get": {
+        "operationId": "VendorsController_findById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "پروفایل میدان‌بار با ID (عمومی)",
+        "tags": [
+          "Vendors"
+        ]
+      }
+    },
+    "/api/v1/vendors/{id}/verify": {
+      "patch": {
+        "operationId": "VendorsController_verifyVendor",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "تأیید میدان‌بار",
+        "tags": [
+          "Vendors"
+        ]
+      }
+    },
+    "/api/v1/vendors/{id}/branches": {
+      "post": {
+        "operationId": "VendorsController_addBranch",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "افزودن شعبه به میدان‌بار",
+        "tags": [
+          "Vendors"
+        ]
+      },
+      "get": {
+        "operationId": "VendorsController_getBranches",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "لیست شعب میدان‌بار",
+        "tags": [
+          "Vendors"
+        ]
+      }
+    },
+    "/api/v1/vendors/branches/{branchId}": {
+      "patch": {
+        "operationId": "VendorsController_updateBranch",
+        "parameters": [
+          {
+            "name": "branchId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "ویرایش شعبه",
+        "tags": [
+          "Vendors"
+        ]
+      }
+    },
     "/api/v1/buyers/me": {
       "get": {
         "operationId": "BuyersController_getMyProfile",
@@ -916,6 +1322,172 @@
           }
         ],
         "summary": "آپدیت پروفایل خریدار",
+        "tags": [
+          "Buyers"
+        ]
+      }
+    },
+    "/api/v1/buyers": {
+      "get": {
+        "operationId": "BuyersController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "لیست همه خریداران (ادمین)",
+        "tags": [
+          "Buyers"
+        ]
+      }
+    },
+    "/api/v1/buyers/{id}": {
+      "get": {
+        "operationId": "BuyersController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "جزئیات خریدار",
+        "tags": [
+          "Buyers"
+        ]
+      }
+    },
+    "/api/v1/buyers/{id}/credit-limit": {
+      "patch": {
+        "operationId": "BuyersController_updateCreditLimit",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCreditDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "بروزرسانی سقف اعتبار خریدار",
+        "tags": [
+          "Buyers"
+        ]
+      }
+    },
+    "/api/v1/buyers/{id}/block-credit": {
+      "post": {
+        "operationId": "BuyersController_blockCredit",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BlockCreditDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "مسدود/رفع مسدودیت اعتبار خریدار",
+        "tags": [
+          "Buyers"
+        ]
+      }
+    },
+    "/api/v1/buyers/{id}/payment-terms": {
+      "patch": {
+        "operationId": "BuyersController_updatePaymentTerms",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePaymentTermsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "بروزرسانی شرایط پرداخت خریدار (Net-30/Net-60)",
         "tags": [
           "Buyers"
         ]
@@ -2281,6 +2853,26 @@
         ]
       }
     },
+    "/api/v1/payments/webhook": {
+      "post": {
+        "operationId": "PaymentsController_handleWebhook",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Webhook از درگاه پرداخت",
+        "tags": [
+          "Payments"
+        ]
+      }
+    },
     "/api/v1/payments/initiate": {
       "post": {
         "operationId": "PaymentsController_initiatePayment",
@@ -2305,7 +2897,72 @@
             "access-token": []
           }
         ],
-        "summary": "شروع فرآیند پرداخت",
+        "summary": "شروع فرآیند پرداخت از طریق درگاه",
+        "tags": [
+          "Payments"
+        ]
+      }
+    },
+    "/api/v1/payments/callback": {
+      "post": {
+        "operationId": "PaymentsController_handleGatewayCallback",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GatewayCallbackDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "بازگشت از درگاه پرداخت",
+        "tags": [
+          "Payments"
+        ]
+      },
+      "get": {
+        "operationId": "PaymentsController_handleGatewayCallbackGet",
+        "parameters": [
+          {
+            "name": "Authority",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "بازگشت از درگاه پرداخت (GET)",
         "tags": [
           "Payments"
         ]
@@ -2395,6 +3052,279 @@
         "summary": "استرداد وجه (ادمین)",
         "tags": [
           "Payments"
+        ]
+      }
+    },
+    "/api/v1/wallet": {
+      "get": {
+        "operationId": "WalletController_getWallet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "مشاهده کیف پول",
+        "tags": [
+          "Wallet"
+        ]
+      }
+    },
+    "/api/v1/wallet/balance": {
+      "get": {
+        "operationId": "WalletController_getBalance",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "موجودی کیف پول",
+        "tags": [
+          "Wallet"
+        ]
+      }
+    },
+    "/api/v1/wallet/transactions": {
+      "get": {
+        "operationId": "WalletController_getTransactions",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DEPOSIT",
+                "WITHDRAWAL",
+                "PURCHASE",
+                "REFUND",
+                "TRANSFER",
+                "COMMISSION",
+                "PAYOUT",
+                "ESCROW_HOLD",
+                "ESCROW_RELEASE"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "تاریخچه تراکنش‌ها",
+        "tags": [
+          "Wallet"
+        ]
+      }
+    },
+    "/api/v1/wallet/deposit": {
+      "post": {
+        "operationId": "WalletController_deposit",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DepositDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "شارژ کیف پول",
+        "tags": [
+          "Wallet"
+        ]
+      }
+    },
+    "/api/v1/wallet/withdraw": {
+      "post": {
+        "operationId": "WalletController_withdraw",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WithdrawDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "برداشت از کیف پول",
+        "tags": [
+          "Wallet"
+        ]
+      }
+    },
+    "/api/v1/wallet/transfer": {
+      "post": {
+        "operationId": "WalletController_transfer",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "انتقال وجه به کاربر دیگر",
+        "tags": [
+          "Wallet"
+        ]
+      }
+    },
+    "/api/v1/escrow/{orderId}": {
+      "get": {
+        "operationId": "EscrowController_getByOrder",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "مشاهده اسکرو سفارش",
+        "tags": [
+          "Escrow"
+        ]
+      }
+    },
+    "/api/v1/escrow/{orderId}/release": {
+      "post": {
+        "operationId": "EscrowController_release",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "آزادسازی اسکرو (ادمین)",
+        "tags": [
+          "Escrow"
+        ]
+      }
+    },
+    "/api/v1/escrow/{orderId}/release-vendor": {
+      "post": {
+        "operationId": "EscrowController_releaseVendor",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "آزادسازی سهم میدان‌بار (ادمین)",
+        "tags": [
+          "Escrow"
         ]
       }
     },
@@ -2550,6 +3480,35 @@
         ]
       }
     },
+    "/api/v1/deliveries/{id}/auto-assign": {
+      "post": {
+        "operationId": "DeliveriesController_autoAssignDriver",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "تخصیص خودکار بهترین راننده بر اساس منطقه",
+        "tags": [
+          "Deliveries"
+        ]
+      }
+    },
     "/api/v1/deliveries/{id}/status": {
       "patch": {
         "operationId": "DeliveriesController_updateStatus",
@@ -2691,6 +3650,297 @@
         "summary": "ردیابی زنده سفارش",
         "tags": [
           "Deliveries"
+        ]
+      }
+    },
+    "/api/v1/deliveries/{id}/temperature": {
+      "post": {
+        "operationId": "DeliveriesController_logTemperature",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LogTemperatureDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "ثبت دمای محموله (زنجیره سرد)",
+        "tags": [
+          "Deliveries"
+        ]
+      },
+      "get": {
+        "operationId": "DeliveriesController_getTemperatureLog",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "گزارش دمای محموله (زنجیره سرد)",
+        "tags": [
+          "Deliveries"
+        ]
+      }
+    },
+    "/api/v1/delivery-zones": {
+      "post": {
+        "operationId": "DeliveryZonesController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateZoneDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "ایجاد منطقه حمل‌ونقل جدید (ادمین)",
+        "tags": [
+          "Delivery Zones"
+        ]
+      },
+      "get": {
+        "operationId": "DeliveryZonesController_findAll",
+        "parameters": [
+          {
+            "name": "city",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "activeOnly",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "لیست مناطق حمل‌ونقل",
+        "tags": [
+          "Delivery Zones"
+        ]
+      }
+    },
+    "/api/v1/delivery-zones/{id}": {
+      "get": {
+        "operationId": "DeliveryZonesController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "جزئیات منطقه",
+        "tags": [
+          "Delivery Zones"
+        ]
+      },
+      "patch": {
+        "operationId": "DeliveryZonesController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateZoneDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "بروزرسانی منطقه",
+        "tags": [
+          "Delivery Zones"
+        ]
+      },
+      "delete": {
+        "operationId": "DeliveryZonesController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "حذف منطقه (soft)",
+        "tags": [
+          "Delivery Zones"
+        ]
+      }
+    },
+    "/api/v1/delivery-zones/assign-driver": {
+      "post": {
+        "operationId": "DeliveryZonesController_assignDriver",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignDriverZoneDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "اختصاص راننده به منطقه",
+        "tags": [
+          "Delivery Zones"
+        ]
+      }
+    },
+    "/api/v1/delivery-zones/unassign-driver/{driverId}/{zoneId}": {
+      "delete": {
+        "operationId": "DeliveryZonesController_unassignDriver",
+        "parameters": [
+          {
+            "name": "driverId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "zoneId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "خروج راننده از منطقه",
+        "tags": [
+          "Delivery Zones"
         ]
       }
     },
@@ -3002,143 +4252,6 @@
         ]
       }
     },
-    "/api/v1/notifications": {
-      "get": {
-        "operationId": "NotificationsController_getMyNotifications",
-        "parameters": [
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "example": 1,
-              "type": "number"
-            }
-          },
-          {
-            "name": "pageSize",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "example": 10,
-              "type": "number"
-            }
-          },
-          {
-            "name": "unreadOnly",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "example": false,
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "لیست اعلان‌های من",
-        "tags": [
-          "Notifications"
-        ]
-      }
-    },
-    "/api/v1/notifications/unread-count": {
-      "get": {
-        "operationId": "NotificationsController_getUnreadCount",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "تعداد اعلان‌های خوانده نشده",
-        "tags": [
-          "Notifications"
-        ]
-      }
-    },
-    "/api/v1/notifications/{id}/read": {
-      "patch": {
-        "operationId": "NotificationsController_markAsRead",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "علامت‌گذاری اعلان به عنوان خوانده شده",
-        "tags": [
-          "Notifications"
-        ]
-      }
-    },
-    "/api/v1/notifications/read-all": {
-      "post": {
-        "operationId": "NotificationsController_markAllAsRead",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "خواندن همه اعلان‌ها",
-        "tags": [
-          "Notifications"
-        ]
-      }
-    },
-    "/api/v1/notifications/cleanup": {
-      "post": {
-        "operationId": "NotificationsController_deleteOldNotifications",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "پاک‌سازی اعلان‌های قدیمی (ادمین)",
-        "tags": [
-          "Notifications"
-        ]
-      }
-    },
     "/api/v1/commissions": {
       "get": {
         "operationId": "CommissionsController_findAll",
@@ -3417,7 +4530,34 @@
     "/api/v1/invoices": {
       "get": {
         "operationId": "InvoicesController_findAll",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "INVOICE",
+                "CREDIT_NOTE"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "ISSUED",
+                "SENT",
+                "ACCEPTED",
+                "CANCELLED"
+              ],
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": ""
@@ -3516,6 +4656,113 @@
           }
         ],
         "summary": "صدور فاکتور برای سفارش (ادمین)",
+        "tags": [
+          "Invoices"
+        ]
+      }
+    },
+    "/api/v1/invoices/order/{orderId}/credit-note": {
+      "post": {
+        "operationId": "InvoicesController_generateCreditNote",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCreditNoteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "صدور برگشت فاکتور (سیاهه برگشتی) برای سفارش لغو/مرجوع شده",
+        "tags": [
+          "Invoices"
+        ]
+      }
+    },
+    "/api/v1/invoices/{id}/status": {
+      "patch": {
+        "operationId": "InvoicesController_updateStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateInvoiceStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "بروزرسانی وضعیت فاکتور",
+        "tags": [
+          "Invoices"
+        ]
+      }
+    },
+    "/api/v1/invoices/{id}/download": {
+      "get": {
+        "operationId": "InvoicesController_downloadPdf",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "دانلود PDF فاکتور",
         "tags": [
           "Invoices"
         ]
@@ -3951,6 +5198,209 @@
         "summary": "لغو اشتراک",
         "tags": [
           "Subscriptions"
+        ]
+      }
+    },
+    "/api/v1/pre-harvest-orders": {
+      "post": {
+        "operationId": "PreHarvestController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePreHarvestOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "ایجاد پیش‌خرید محصول (خریدار)",
+        "tags": [
+          "Pre-Harvest Orders"
+        ]
+      },
+      "get": {
+        "operationId": "PreHarvestController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "لیست پیش‌خریدهای من",
+        "tags": [
+          "Pre-Harvest Orders"
+        ]
+      }
+    },
+    "/api/v1/pre-harvest-orders/{id}": {
+      "get": {
+        "operationId": "PreHarvestController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "جزئیات پیش‌خرید",
+        "tags": [
+          "Pre-Harvest Orders"
+        ]
+      }
+    },
+    "/api/v1/pre-harvest-orders/{id}/pay-deposit": {
+      "post": {
+        "operationId": "PreHarvestController_payDeposit",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "پرداخت پیش‌پرداخت (خریدار)",
+        "tags": [
+          "Pre-Harvest Orders"
+        ]
+      }
+    },
+    "/api/v1/pre-harvest-orders/{id}/mark-growing": {
+      "post": {
+        "operationId": "PreHarvestController_markGrowing",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "ثبت شروع کشت (کشاورز)",
+        "tags": [
+          "Pre-Harvest Orders"
+        ]
+      }
+    },
+    "/api/v1/pre-harvest-orders/{id}/mark-harvested": {
+      "post": {
+        "operationId": "PreHarvestController_markHarvested",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "ثبت برداشت محصول (کشاورز)",
+        "tags": [
+          "Pre-Harvest Orders"
+        ]
+      }
+    },
+    "/api/v1/pre-harvest-orders/{id}/cancel": {
+      "patch": {
+        "operationId": "PreHarvestController_cancel",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelPreHarvestOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "لغو پیش‌خرید",
+        "tags": [
+          "Pre-Harvest Orders"
         ]
       }
     },
@@ -4621,11 +6071,503 @@
           "Wishlist"
         ]
       }
+    },
+    "/api/v1/analytics/dashboard": {
+      "get": {
+        "operationId": "AnalyticsController_getDashboard",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "داشبورد اصلی",
+        "tags": [
+          "Analytics"
+        ]
+      }
+    },
+    "/api/v1/analytics/revenue": {
+      "get": {
+        "operationId": "AnalyticsController_getRevenue",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "گزارش درآمد",
+        "tags": [
+          "Analytics"
+        ]
+      }
+    },
+    "/api/v1/analytics/orders": {
+      "get": {
+        "operationId": "AnalyticsController_getOrders",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "آمار سفارشات",
+        "tags": [
+          "Analytics"
+        ]
+      }
+    },
+    "/api/v1/analytics/users": {
+      "get": {
+        "operationId": "AnalyticsController_getUsers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "آمار کاربران",
+        "tags": [
+          "Analytics"
+        ]
+      }
+    },
+    "/api/v1/analytics/products": {
+      "get": {
+        "operationId": "AnalyticsController_getProducts",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "آمار محصولات",
+        "tags": [
+          "Analytics"
+        ]
+      }
+    },
+    "/api/v1/time-slots/available": {
+      "get": {
+        "operationId": "TimeSlotsController_getAvailableSlots",
+        "parameters": [
+          {
+            "name": "date",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "days",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 7,
+              "type": "number"
+            }
+          },
+          {
+            "name": "zoneId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "لیست زمان‌بندی‌های موجود",
+        "tags": [
+          "TimeSlots"
+        ]
+      }
+    },
+    "/api/v1/time-slots/available-dates": {
+      "get": {
+        "operationId": "TimeSlotsController_getAvailableDates",
+        "parameters": [
+          {
+            "name": "days",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "zoneId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "تاریخ‌های دارای زمان‌بندی",
+        "tags": [
+          "TimeSlots"
+        ]
+      }
+    },
+    "/api/v1/time-slots/templates": {
+      "post": {
+        "operationId": "TimeSlotsController_createTemplate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTemplateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "ایجاد تمپلیت زمان‌بندی (ادمین)",
+        "tags": [
+          "TimeSlots"
+        ]
+      },
+      "get": {
+        "operationId": "TimeSlotsController_findAllTemplates",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "لیست تمپلیت‌ها (ادمین)",
+        "tags": [
+          "TimeSlots"
+        ]
+      }
+    },
+    "/api/v1/time-slots/templates/{id}": {
+      "patch": {
+        "operationId": "TimeSlotsController_updateTemplate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTemplateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "ویرایش تمپلیت (ادمین)",
+        "tags": [
+          "TimeSlots"
+        ]
+      },
+      "delete": {
+        "operationId": "TimeSlotsController_removeTemplate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "حذف تمپلیت (ادمین)",
+        "tags": [
+          "TimeSlots"
+        ]
+      }
+    },
+    "/api/v1/time-slots/generate": {
+      "post": {
+        "operationId": "TimeSlotsController_generateSlots",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateSlotsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "تولید دستی زمان‌بندی (ادمین)",
+        "tags": [
+          "TimeSlots"
+        ]
+      }
+    },
+    "/api/v1/catalog": {
+      "get": {
+        "operationId": "CatalogController_search",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "categoryId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "vendorId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "farmerId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "qualityGrade",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "A",
+                "B",
+                "C"
+              ]
+            }
+          },
+          {
+            "name": "minPrice",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "maxPrice",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "minOrderQty",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "origin",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "requiresColdChain",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "createdAt",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "desc",
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "جستجوی محصولات با فیلترهای پیشرفته",
+        "tags": [
+          "Catalog"
+        ]
+      }
     }
   },
   "info": {
     "title": "🥬 Kalam API",
-    "description": "\n## Kalam Backend API\n\nB2B wholesale marketplace for fruits and vegetables in Iran.\n\n### Authentication\nMost endpoints require a **Bearer JWT token**.\nUse `POST /api/v1/auth/send-otp` → `POST /api/v1/auth/verify-otp` to get a token.\n\n### Roles\n- `FARMER` - Farmer / باغدار\n- `BUYER` - Buyer (supermarket, restaurant, hotel) / خریدار\n- `DRIVER` - Driver / راننده\n- `ADMIN` - Platform admin / ادمین\n- `SUPPORT` - Support agent / پشتیبانی\n      ",
+    "description": "\n## Kalam Backend API\n\nB2B wholesale marketplace for fruits and vegetables in Iran.\n\n### Authentication\nMost endpoints require a **Bearer JWT token**.\nUse `POST /api/v1/auth/send-otp` → `POST /api/v1/auth/verify-otp` to get a token.\n\n### Roles\n- `SUPER_ADMIN` - Super admin with full access / سوپرادمین\n- `ADMIN` - Platform admin / ادمین\n- `SUPPORT` - Support agent / پشتیبانی\n- `FARMER` - Farmer / باغدار\n- `VENDOR` - Vendor / میدان‌بار\n- `BUYER` - Buyer (supermarket, restaurant, hotel) / خریدار\n- `DRIVER` - Driver / راننده\n      ",
     "version": "1.0",
     "contact": {
       "name": "Kalam Team",
@@ -4645,6 +6587,10 @@
     {
       "name": "Farmers",
       "description": "پروفایل باغداران"
+    },
+    {
+      "name": "Vendors",
+      "description": "میدان‌بار و شعب"
     },
     {
       "name": "Buyers",
@@ -4668,7 +6614,15 @@
     },
     {
       "name": "Payments",
-      "description": "پرداخت و کیف پول"
+      "description": "پرداخت"
+    },
+    {
+      "name": "Escrow",
+      "description": "اسکرو"
+    },
+    {
+      "name": "Wallet",
+      "description": "کیف پول"
     },
     {
       "name": "Deliveries",
@@ -4685,6 +6639,14 @@
     {
       "name": "Admin",
       "description": "پنل ادمین"
+    },
+    {
+      "name": "TimeSlots",
+      "description": "زمان‌بندی تحویل"
+    },
+    {
+      "name": "Catalog",
+      "description": "جستجوی پیشرفته کاتالوگ"
     },
     {
       "name": "Health",
@@ -4742,6 +6704,37 @@
         },
         "required": [
           "refreshToken"
+        ]
+      },
+      "StartKycDto": {
+        "type": "object",
+        "properties": {
+          "nationalCode": {
+            "type": "string",
+            "example": "0012345678",
+            "description": "کد ملی"
+          },
+          "phone": {
+            "type": "string",
+            "example": "09123456789",
+            "description": "شماره موبایل"
+          }
+        },
+        "required": [
+          "nationalCode",
+          "phone"
+        ]
+      },
+      "VerifyKycOtpDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "123456"
+          }
+        },
+        "required": [
+          "code"
         ]
       },
       "UpdateProfileDto": {
@@ -4904,6 +6897,44 @@
           "economicCode": {
             "type": "string",
             "example": "1234567890"
+          }
+        }
+      },
+      "UpdateCreditDto": {
+        "type": "object",
+        "properties": {
+          "creditLimit": {
+            "type": "number",
+            "example": 50000000
+          }
+        },
+        "required": [
+          "creditLimit"
+        ]
+      },
+      "BlockCreditDto": {
+        "type": "object",
+        "properties": {
+          "creditBlocked": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "creditBlocked"
+        ]
+      },
+      "UpdatePaymentTermsDto": {
+        "type": "object",
+        "properties": {
+          "paymentTermDays": {
+            "type": "number",
+            "example": 30,
+            "description": "Days (0, 30, 60)"
+          },
+          "paymentTermType": {
+            "type": "string",
+            "example": "NET_30"
           }
         }
       },
@@ -5244,11 +7275,81 @@
           "gateway": {
             "type": "string",
             "example": "ZARINPAL"
+          },
+          "idempotencyKey": {
+            "type": "string"
           }
         },
         "required": [
           "orderId",
           "method"
+        ]
+      },
+      "GatewayCallbackDto": {
+        "type": "object",
+        "properties": {
+          "authority": {
+            "type": "string"
+          },
+          "orderId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "authority",
+          "orderId"
+        ]
+      },
+      "DepositDto": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number"
+          },
+          "description": {
+            "type": "string"
+          },
+          "idempotencyKey": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount"
+        ]
+      },
+      "WithdrawDto": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number"
+          },
+          "description": {
+            "type": "string"
+          },
+          "idempotencyKey": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount"
+        ]
+      },
+      "TransferDto": {
+        "type": "object",
+        "properties": {
+          "toUserId": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "toUserId",
+          "amount"
         ]
       },
       "AssignDriverDto": {
@@ -5296,6 +7397,137 @@
             "example": "علی محمدی"
           }
         }
+      },
+      "LogTemperatureDto": {
+        "type": "object",
+        "properties": {
+          "deliveryId": {
+            "type": "string",
+            "example": "delivery-uuid"
+          },
+          "temperature": {
+            "type": "number",
+            "example": 4.5,
+            "description": "Temperature in Celsius"
+          },
+          "lat": {
+            "type": "number",
+            "example": 37.7749
+          },
+          "lng": {
+            "type": "number",
+            "example": -122.4194
+          }
+        },
+        "required": [
+          "deliveryId",
+          "temperature",
+          "lat",
+          "lng"
+        ]
+      },
+      "LatLngDto": {
+        "type": "object",
+        "properties": {
+          "lat": {
+            "type": "number",
+            "example": 35.6892
+          },
+          "lng": {
+            "type": "number",
+            "example": 51.389
+          }
+        },
+        "required": [
+          "lat",
+          "lng"
+        ]
+      },
+      "CreateZoneDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "منطقه تهران مرکز"
+          },
+          "city": {
+            "type": "string",
+            "example": "تهران"
+          },
+          "boundaries": {
+            "description": "Polygon vertices",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LatLngDto"
+            }
+          },
+          "baseFee": {
+            "type": "number",
+            "example": 50000
+          },
+          "feePerKm": {
+            "type": "number",
+            "example": 3000
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "name",
+          "city",
+          "boundaries"
+        ]
+      },
+      "UpdateZoneDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "منطقه تهران مرکز"
+          },
+          "city": {
+            "type": "string",
+            "example": "تهران"
+          },
+          "boundaries": {
+            "description": "Polygon vertices",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LatLngDto"
+            }
+          },
+          "baseFee": {
+            "type": "number",
+            "example": 50000
+          },
+          "feePerKm": {
+            "type": "number",
+            "example": 3000
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "AssignDriverZoneDto": {
+        "type": "object",
+        "properties": {
+          "driverId": {
+            "type": "string",
+            "example": "driver-uuid"
+          },
+          "zoneId": {
+            "type": "string",
+            "example": "zone-uuid"
+          }
+        },
+        "required": [
+          "driverId",
+          "zoneId"
+        ]
       },
       "CreateReviewDto": {
         "type": "object",
@@ -5423,6 +7655,39 @@
           "farmerId",
           "periodStart",
           "periodEnd"
+        ]
+      },
+      "CreateCreditNoteDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "example": "سفارش توسط خریدار لغو شد"
+          },
+          "originalInvoiceId": {
+            "type": "string",
+            "example": "invoice-uuid"
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "UpdateInvoiceStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ISSUED",
+              "SENT",
+              "ACCEPTED",
+              "CANCELLED"
+            ]
+          }
+        },
+        "required": [
+          "status"
         ]
       },
       "PricePredictionDto": {
@@ -5568,6 +7833,49 @@
           "startDate"
         ]
       },
+      "CreatePreHarvestOrderDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "example": "product-uuid"
+          },
+          "quantity": {
+            "type": "number",
+            "example": 500
+          },
+          "depositPercent": {
+            "type": "number",
+            "example": 0.1,
+            "description": "Deposit as fraction (0.1 = 10%)"
+          },
+          "expectedHarvestDate": {
+            "type": "string",
+            "example": "2026-08-15"
+          },
+          "notes": {
+            "type": "string",
+            "example": "Pre-order for fall harvest"
+          }
+        },
+        "required": [
+          "productId",
+          "quantity",
+          "depositPercent"
+        ]
+      },
+      "CancelPreHarvestOrderDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "example": "Change of plans"
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
       "CreateWarehouseDto": {
         "type": "object",
         "properties": {
@@ -5638,6 +7946,70 @@
           "startDate",
           "endDate"
         ]
+      },
+      "CreateTemplateDto": {
+        "type": "object",
+        "properties": {
+          "dayOfWeek": {
+            "type": "number",
+            "description": "0=Sunday, 1=Monday, ..., 6=Saturday"
+          },
+          "startTime": {
+            "type": "string",
+            "example": "08:00"
+          },
+          "endTime": {
+            "type": "string",
+            "example": "12:00"
+          },
+          "capacity": {
+            "type": "number",
+            "default": 50
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "zoneId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "dayOfWeek",
+          "startTime",
+          "endTime"
+        ]
+      },
+      "UpdateTemplateDto": {
+        "type": "object",
+        "properties": {
+          "dayOfWeek": {
+            "type": "number"
+          },
+          "startTime": {
+            "type": "string"
+          },
+          "endTime": {
+            "type": "string"
+          },
+          "capacity": {
+            "type": "number"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "zoneId": {
+            "type": "string"
+          }
+        }
+      },
+      "GenerateSlotsDto": {
+        "type": "object",
+        "properties": {
+          "days": {
+            "type": "number",
+            "default": 7
+          }
+        }
       }
     }
   }

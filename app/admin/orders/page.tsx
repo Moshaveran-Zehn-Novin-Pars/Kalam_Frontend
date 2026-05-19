@@ -1,7 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { MapPin, Package, ImageIcon, X, ChevronDown } from "lucide-react"
+import { orderService } from "@/services/order"
+import type { Order } from "@/types"
 
 function fa(n: string | number) { return String(n).replace(/[0-9]/g, d => "۰۱۲۳۴۵۶۷۸۹"[+d]) }
 function faNum(n: number) { return new Intl.NumberFormat("fa-IR").format(n) }
@@ -13,26 +15,22 @@ const STATUS_MAP: Record<string, {label:string;cls:string}> = {
   cancel:  { label: "لغو شده",          cls: "pill--cancel"  },
 }
 
-const ORDERS = [
-  { id: "2345923", date: "1404/9/12", user: "سلحشور",  cat: "سبزیجات و صیفی‌جات", status: "pending", total: 1389000 },
-  { id: "2345924", date: "1404/9/12", user: "محمدی",    cat: "میوه‌ها",             status: "prep",    total: 2150000 },
-  { id: "2345925", date: "1404/9/12", user: "احمدی",    cat: "نان و غلات",          status: "prep",    total: 489000  },
-  { id: "2345926", date: "1404/9/11", user: "رضایی",    cat: "لبنیات",              status: "shipped", total: 1879000 },
-  { id: "2345927", date: "1404/9/11", user: "حسینی",   cat: "گوشت و پروتئین",      status: "shipped", total: 3290000 },
-  { id: "2345928", date: "1404/9/11", user: "کریمی",    cat: "سبزیجات",             status: "pending", total: 670000  },
-  { id: "2345929", date: "1404/9/10", user: "موسوی",    cat: "خشکبار",              status: "cancel",  total: 945000  },
-  { id: "2345930", date: "1404/9/10", user: "شریفی",    cat: "میوه‌ها",             status: "shipped", total: 1389000 },
-]
-type Order = typeof ORDERS[0]
-
-const ITEMS = [
-  { name: "بلوبری", qty: 3, total: 210000 },
-  { name: "بلوبری", qty: 3, total: 210000 },
-  { name: "بلوبری", qty: 3, total: 210000 },
-]
+const API_STATUS_MAP: Record<string, string> = {
+  PENDING_PAYMENT: "pending",
+  PAID_HELD:       "pending",
+  CONFIRMED:       "pending",
+  PREPARING:       "prep",
+  READY_FOR_PICKUP:"prep",
+  SHIPPING:        "shipped",
+  DELIVERED:       "shipped",
+  COMPLETED:       "shipped",
+  CANCELLED:       "cancel",
+  REFUNDED:        "cancel",
+  DISPUTED:        "cancel",
+}
 
 function OrderDetail({ order, onBack }: { order: Order; onBack: ()=>void }) {
-  const [status, setStatus] = useState(order.status)
+  const [status, setStatus] = useState(API_STATUS_MAP[order.status] || "pending")
   const s = STATUS_MAP[status]
   return (
     <>
@@ -46,9 +44,9 @@ function OrderDetail({ order, onBack }: { order: Order; onBack: ()=>void }) {
         <div className="adm-detail-left">
           <div className="adm-info-row">
             <span className="adm-info-key">شماره سفارش:</span>
-            <span className="adm-info-val tnum">#{fa(order.id)}</span>
+            <span className="adm-info-val tnum">#{fa(order.orderNumber || order.id)}</span>
             <span className="adm-info-key" style={{ marginInlineStart: 24 }}>تاریخ:</span>
-            <span className="adm-info-val tnum">{fa("1404/12/10")}</span>
+            <span className="adm-info-val tnum">{fa(new Date(order.createdAt).toLocaleDateString("fa-IR"))}</span>
           </div>
           <div className="adm-info-row">
             <span className="adm-info-key">روش پرداخت:</span>
@@ -85,24 +83,24 @@ function OrderDetail({ order, onBack }: { order: Order; onBack: ()=>void }) {
       </div>
 
       {/* products */}
-      <h2 className="adm-section-title">محصولات <span style={{ color: "var(--adm-fg-3)", fontWeight: 500 }}>({fa(ITEMS.length)})</span></h2>
+      <h2 className="adm-section-title">محصولات <span style={{ color: "var(--adm-fg-3)", fontWeight: 500 }}>({fa((order.items || []).length)})</span></h2>
       <div className="adm-prod-list">
-        {ITEMS.map((it, i) => (
+        {(order.items || []).map((it, i) => (
           <div key={i} className="adm-prod-row">
             <div className="adm-prod-thumb">🫐</div>
-            <div className="adm-prod-name">{it.name}</div>
-            <div className="adm-prod-qty">{fa(it.qty)} کیلو</div>
-            <div className="adm-prod-total">قیمت کل: <span className="tnum">{faNum(it.total)}</span> تومان</div>
+            <div className="adm-prod-name">{it.productName}</div>
+            <div className="adm-prod-qty">{fa(Number(it.quantity))} کیلو</div>
+            <div className="adm-prod-total">قیمت کل: <span className="tnum">{faNum(Number(it.subtotal))}</span> تومان</div>
           </div>
         ))}
       </div>
 
       {/* totals */}
       <div className="adm-totals">
-        <div className="adm-totals-row"><span>قیمت کالاها:</span><span>{faNum(3543500)} تومان</span></div>
+        <div className="adm-totals-row"><span>قیمت کالاها:</span><span>{faNum(Number(order.subtotal))} تومان</span></div>
         <div className="adm-totals-row"><span>تخفیف:</span><span>{faNum(1000000)} تومان</span></div>
-        <div className="adm-totals-row"><span>هزینه ارسال:</span><span>{faNum(400000)} تومان</span></div>
-        <div className="adm-totals-row"><span>جمع سبد خرید:</span><span style={{ color: "var(--adm-accent)" }}>{faNum(2543500)} تومان</span></div>
+        <div className="adm-totals-row"><span>هزینه ارسال:</span><span>{faNum(Number(order.deliveryFee))} تومان</span></div>
+        <div className="adm-totals-row"><span>جمع سبد خرید:</span><span style={{ color: "var(--adm-accent)" }}>{faNum(Number(order.total))} تومان</span></div>
       </div>
 
       {/* receipt */}
@@ -123,7 +121,33 @@ const FILTERS = [
 export default function OrdersPage() {
   const [filter, setFilter] = useState("all")
   const [detail, setDetail] = useState<Order | null>(null)
-  const filtered = filter === "all" ? ORDERS : ORDERS.filter(o => o.status === filter)
+  const [orders, setOrders] = useState<Order[]>([])
+  const [loading, setLoading] = useState(true)
+  const filtered = filter === "all" ? orders : orders.filter(o => API_STATUS_MAP[o.status] === filter)
+
+  useEffect(() => {
+    orderService.getAllOrders()
+      .then(res => { setOrders(res.items); setLoading(false) })
+      .catch(() => setLoading(false))
+  }, [])
+
+  if (loading) {
+    return (
+      <>
+        <h1 className="adm-page-title">مدیریت سفارش‌ها</h1>
+        <div style={{ textAlign: "center", padding: "60px 0", color: "var(--adm-fg-3)" }}>در حال بارگذاری...</div>
+      </>
+    )
+  }
+
+  if (!orders.length) {
+    return (
+      <>
+        <h1 className="adm-page-title">مدیریت سفارش‌ها</h1>
+        <div style={{ textAlign: "center", padding: "60px 0", color: "var(--adm-fg-3)" }}>هیچ سفارشی یافت نشد.</div>
+      </>
+    )
+  }
 
   if (detail) return <OrderDetail order={detail} onBack={() => setDetail(null)} />
 
@@ -146,15 +170,16 @@ export default function OrdersPage() {
             </tr></thead>
             <tbody>
               {filtered.map(r => {
-                const s = STATUS_MAP[r.status]
+                const uiStatus = API_STATUS_MAP[r.status] || "pending"
+                const s = STATUS_MAP[uiStatus]
                 return (
                   <tr key={r.id} className="clickable" onClick={() => setDetail(r)}>
-                    <td className="oid tnum">#{fa(r.id)}</td>
-                    <td className="tnum">{fa(r.date)}</td>
-                    <td>{r.user}</td>
-                    <td>{r.cat}</td>
+                    <td className="oid tnum">#{fa(r.orderNumber || r.id)}</td>
+                    <td className="tnum">{fa(new Date(r.createdAt).toLocaleDateString("fa-IR"))}</td>
+                    <td>{r.buyer ? r.buyer.firstName + ' ' + r.buyer.lastName : ''}</td>
+                    <td>{r.items?.[0]?.productName || ''}</td>
                     <td><span className={`pill ${s.cls}`}>{s.label}</span></td>
-                    <td className="total">{faNum(r.total)}</td>
+                    <td className="total">{faNum(Number(r.total))}</td>
                   </tr>
                 )
               })}

@@ -1,0 +1,45 @@
+"use client"
+import { useState, useEffect } from "react"
+import { Search, Truck, Users, Navigation, Star, TrendingUp, X, CheckCircle, XCircle, Loader2 } from "lucide-react"
+import { usersService } from "@/services/users"
+
+function fa(n: string | number) { return String(n).replace(/[0-9]/g, d => "۰۱۲۳۴۵۶۷۸۹"[+d]) }
+
+function DriverDrawer({ driver, onClose, onToggle }: { driver: any; onClose: () => void; onToggle: (id: string) => void }) {
+    if (!driver) return null
+    return (<><div className="adm-drawer-overlay" onClick={onClose} /><aside className="adm-drawer open">
+        <div className="adm-drawer-head"><div><div style={{ fontSize: 12, color: "var(--adm-fg-3)" }}>راننده</div><div style={{ fontSize: 18, fontWeight: 700, marginTop: 4 }}>{driver.name}</div></div><button className="adm-drawer-close" onClick={onClose}><X size={14} /></button></div>
+        <div className="adm-drawer-product"><div className="adm-drawer-product-icon"><Truck size={20} /></div><div><div style={{ fontWeight: 600, fontSize: 14 }}>{driver.vehicle}</div><div style={{ fontSize: 12, color: "var(--adm-fg-3)", marginTop: 4 }}>{driver.city}</div></div></div>
+        <div className="adm-drawer-row"><span>تحویل‌ها</span><span className="tnum">{fa(driver.deliveries)}</span></div>
+        <div className="adm-drawer-row"><span>امتیاز</span><span style={{ display: "flex", alignItems: "center", gap: 4 }}><Star size={14} style={{ color: "#f5a623" }} />{fa(driver.rating)}</span></div>
+        <div className="adm-drawer-row" style={{ borderTop: "1px solid var(--adm-border)", paddingTop: 13, marginTop: 4 }}><span>وضعیت</span><span className={`pill ${driver.available ? "pill--shipped" : "pill--cancel"}`}>{driver.available ? "فعال" : "غیرفعال"}</span></div>
+        <button className="adm-drawer-btn" onClick={() => { onToggle(driver.id); onClose() }}>{driver.available ? "غیرفعال کردن" : "فعال کردن"}</button>
+    </aside></>)
+}
+
+export default function DriversManagementPage() {
+    const [q, setQ] = useState(""); const [list, setList] = useState<any[]>([]); const [loading, setLoading] = useState(true); const [open, setOpen] = useState<any>(null)
+    useEffect(() => {
+        usersService.findAll({ role: 'driver' })
+            .then((data: any) => setList(Array.isArray(data) ? data : []))
+            .catch(() => {})
+            .finally(() => setLoading(false))
+    }, [])
+    const filtered = list.filter((d: any) => !q || d.name?.includes(q) || d.vehicle?.includes(q))
+    const toggleAvail = (id: string) => setList(prev => prev.map((d: any) => d.id === id ? { ...d, available: !d.available } : d))
+    if (loading) return <div className="adm-loading"><Loader2 size={24} className="spin" /></div>
+    return (<>
+        <h1 className="adm-page-title">مدیریت رانندگان</h1>
+        <div className="adm-stat-grid">
+            <div className="adm-stat"><div className="adm-stat__top"><div className="adm-stat__label"><Users size={18} />کل رانندگان</div></div><div className="adm-stat__value">{fa(list.length)}<span className="adm-stat__unit">نفر</span></div></div>
+            <div className="adm-stat"><div className="adm-stat__top"><div className="adm-stat__label"><Truck size={18} />فعال</div><span className="adm-stat__delta up"><TrendingUp size={12} />{fa(Math.round(list.filter((d: any) => d.available).length / (list.length || 1) * 100))}٪</span></div><div className="adm-stat__value">{fa(list.filter((d: any) => d.available).length)}<span className="adm-stat__unit">نفر</span></div><div className="adm-stat__compare">از {fa(list.length)} راننده</div></div>
+            <div className="adm-stat"><div className="adm-stat__top"><div className="adm-stat__label"><Navigation size={18} />کل تحویل‌ها</div></div><div className="adm-stat__value">{fa(list.reduce((s: number, d: any) => s + (d.deliveries || 0), 0))}</div><div className="adm-stat__compare">میانگین امتیاز: ★ {fa(4.5)}</div></div>
+        </div>
+        <div style={{ display: "flex", gap: 12, marginBottom: 16 }}><div style={{ position: "relative", flex: 1, maxWidth: 320 }}><Search size={14} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", color: "var(--adm-fg-3)" }} /><input className="adm-field-input" placeholder="جستجو..." value={q} onChange={e => setQ(e.target.value)} style={{ paddingRight: 36 }} /></div></div>
+        <h2 className="adm-section-title">لیست رانندگان</h2>
+        {filtered.length === 0 ? <div className="adm-empty">هیچ راننده‌ای یافت نشد.</div> :
+        <div className="adm-table-card"><div className="adm-table-wrap"><table className="adm-table"><thead><tr><th>راننده</th><th>خودرو</th><th>شهر</th><th>تحویل‌ها</th><th>امتیاز</th><th>وضعیت</th></tr></thead>
+            <tbody>{filtered.map((d: any) => (<tr key={d.id} className="clickable" onClick={() => setOpen(d)}><td style={{ fontWeight: 500 }}>{d.name || d.firstName + ' ' + d.lastName}</td><td>{d.vehicle || d.vehicleType || '—'}</td><td>{d.city || '—'}</td><td className="tnum">{fa(d.deliveries ?? d.ordersDelivered ?? 0)}</td><td className="tnum"><span style={{ display: "flex", alignItems: "center", gap: 4 }}><Star size={12} style={{ color: "#f5a623" }} />{fa(d.rating ?? d.ratingAvg ?? 0)}</span></td><td>{d.available ?? d.isAvailable ?? true ? <span className="pill pill--shipped"><CheckCircle size={11} /> فعال</span> : <span className="pill pill--cancel"><XCircle size={11} /> غیرفعال</span>}</td></tr>))}</tbody></table></div></div>}
+        <DriverDrawer driver={open} onClose={() => setOpen(null)} onToggle={toggleAvail} />
+    </>)
+}

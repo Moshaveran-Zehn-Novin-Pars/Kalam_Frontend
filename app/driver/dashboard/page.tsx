@@ -1,7 +1,9 @@
 "use client"
 import { useState, useEffect } from "react"
-import { CheckCircle, Clock, Wallet, TrendingUp, Truck } from "lucide-react"
+import { CheckCircle, Clock, Wallet, TrendingUp, Truck, Loader2 } from "lucide-react"
 import Link from "next/link"
+import { deliveryService } from "@/services/delivery"
+import type { Delivery } from "@/types"
 
 function fa(n: number | string) {
     return String(n).replace(/[0-9]/g, d => "۰۱۲۳۴۵۶۷۸۹"[+d])
@@ -48,27 +50,35 @@ function StatCard({ icon, label, value, unit, delta, dir }: any) {
     )
 }
 
-const PENDING = [
-    { id: "DLV-041", buyer: "سوپرمارکت ستاره", address: "تهران، نیاوران",   weight: "۱۸۰ کیلو", slot: "۱۴:۰۰–۱۶:۰۰", status: "pending" as const },
-    { id: "DLV-042", buyer: "رستوران آرمان",   address: "تهران، ونک",       weight: "۶۰ کیلو",  slot: "۱۶:۰۰–۱۸:۰۰", status: "pending" as const },
-]
-
 const STATUS_MAP: Record<string, { label: string; cls: string }> = {
-    pending: { label: "در انتظار", cls: "pill--pending" },
-    active:  { label: "در مسیر",   cls: "pill--prep" },
-    done:    { label: "تحویل شده", cls: "pill--shipped" },
+    PENDING_ASSIGNMENT: { label: "در انتظار", cls: "pill--pending" },
+    ASSIGNED: { label: "اختصاص داده شده", cls: "pill--prep" },
+    PICKING_UP: { label: "در مسیر", cls: "pill--prep" },
+    IN_TRANSIT: { label: "در مسیر", cls: "pill--prep" },
+    DELIVERED: { label: "تحویل شده", cls: "pill--shipped" },
+    FAILED: { label: "ناموفق", cls: "pill--cancel" },
 }
 
 export default function DriverDashboard() {
+    const [deliveries, setDeliveries] = useState<Delivery[]>([])
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        deliveryService.getMyDeliveries().then(setDeliveries).catch(() => {}).finally(() => setLoading(false))
+    }, [])
+
+    const todayDeliveries = deliveries.filter(d => d.status === "DELIVERED")
+    const pendingDeliveries = deliveries.filter(d => ["PENDING_ASSIGNMENT", "ASSIGNED"].includes(d.status))
+
     return (
         <>
             <h1 className="adm-page-title">خوش آمدی، علی جان 👋</h1>
 
             <div className="adm-stat-grid" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
-                <StatCard icon={<CheckCircle size={18} />} label="تحویل امروز"   value={5}     unit="" />
-                <StatCard icon={<Clock size={18} />}       label="در انتظار"     value={2}     unit="" />
-                <StatCard icon={<Wallet size={18} />}      label="درآمد امروز"   value="۴۸۰,۰۰۰" unit="تومان" />
-                <StatCard icon={<Truck size={18} />}       label="کل تحویل‌ها"   value={234}   unit="" delta="12" dir="up" />
+                <StatCard icon={<CheckCircle size={18} />} label="تحویل امروز"   value={todayDeliveries.length} unit="" />
+                <StatCard icon={<Clock size={18} />}       label="در انتظار"     value={pendingDeliveries.length} unit="" />
+                <StatCard icon={<Wallet size={18} />}      label="درآمد امروز"   value="—" unit="تومان" />
+                <StatCard icon={<Truck size={18} />}       label="کل تحویل‌ها"   value={deliveries.length} unit="" />
             </div>
 
             <h2 className="adm-section-title">تحویل‌های امروز</h2>
@@ -79,23 +89,23 @@ export default function DriverDashboard() {
                             <tr>
                                 <th>خریدار</th>
                                 <th>آدرس</th>
-                                <th>وزن</th>
-                                <th>زمان تحویل</th>
                                 <th>وضعیت</th>
                                 <th>عملیات</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {PENDING.map(d => (
+                            {loading ? (
+                                <tr><td colSpan={4} style={{ textAlign: "center", padding: 32 }}><Loader2 size={20} className="animate-spin inline-block" /></td></tr>
+                            ) : deliveries.length === 0 ? (
+                                <tr><td colSpan={4} style={{ textAlign: "center", padding: 32, color: "var(--adm-fg-3)" }}>تحویلی وجود ندارد</td></tr>
+                            ) : deliveries.slice(0, 5).map(d => {
+                                const s = STATUS_MAP[d.status] || { label: d.status, cls: "" }
+                                return (
                                 <tr key={d.id}>
-                                    <td style={{ fontWeight: 500 }}>{d.buyer}</td>
-                                    <td style={{ color: "var(--adm-fg-3)" }}>{d.address}</td>
-                                    <td className="tnum">{d.weight}</td>
-                                    <td className="tnum">{d.slot}</td>
+                                    <td style={{ fontWeight: 500 }}>{d.orderId || "—"}</td>
+                                    <td style={{ color: "var(--adm-fg-3)" }}>{(d as any).address || "—"}</td>
                                     <td>
-                                        <span className={`pill ${STATUS_MAP[d.status].cls}`}>
-                                            {STATUS_MAP[d.status].label}
-                                        </span>
+                                        <span className={`pill ${s.cls}`}>{s.label}</span>
                                     </td>
                                     <td>
                                         <Link href={`/driver/active?id=${d.id}`}
@@ -105,7 +115,7 @@ export default function DriverDashboard() {
                                         </Link>
                                     </td>
                                 </tr>
-                            ))}
+                            )})}
                         </tbody>
                     </table>
                 </div>

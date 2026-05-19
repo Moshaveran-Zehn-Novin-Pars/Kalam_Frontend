@@ -16,12 +16,13 @@ function fa(n: string | number) {
 }
 
 const SIDEBAR_ITEMS = [
-    { href: "/driver/dashboard",  label: "داشبورد",     icon: LayoutDashboard },
-    { href: "/driver/deliveries", label: "سفارش‌ها",    icon: Package },
-    { href: "/driver/active",     label: "تحویل فعال",  icon: Navigation },
-    { href: "/driver/history",    label: "تاریخچه",     icon: History },
-    { href: "/driver/earnings",   label: "درآمد",       icon: Wallet },
-    { href: "/driver/profile",    label: "پروفایل",     icon: User },
+    { href: "/driver/dashboard",     label: "داشبورد",         icon: LayoutDashboard },
+    { href: "/driver/orders/pending", label: "درخواست‌های حمل", icon: Package },
+    { href: "/driver/deliveries",    label: "همه سفارش‌ها",    icon: History },
+    { href: "/driver/active",        label: "تحویل فعال",      icon: Navigation },
+    { href: "/driver/history",       label: "تاریخچه",         icon: History },
+    { href: "/driver/earnings",      label: "درآمد",           icon: Wallet },
+    { href: "/driver/profile",       label: "پروفایل",         icon: User },
 ]
 
 const TOP_NAV = [

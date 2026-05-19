@@ -1,49 +1,48 @@
 import type { QualityGrade, ProductStatus } from './enums'
-import type { FarmerProfile } from './farmer'
-import type { User } from './user'
+import type { VendorSummary } from './vendor'
 import type { Category } from './category'
 
 export interface Product {
     id: string
-    farmerId: string
-    categoryId: string
+    farmerId?: string
+    categoryId?: string
     name: string
     slug: string
-    description: string | null
+    description?: string | null
     origin: string | null
-    harvestDate: string | null
+    harvestDate?: string | null
     qualityGrade: QualityGrade
     unit: string
     pricePerUnit: string
     minOrderQty: string
-    maxOrderQty: string | null
+    maxOrderQty?: string | null
     stockQty: string
-    reservedQty: string
+    reservedQty?: string
     status: ProductStatus
     requiresColdChain: boolean
-    storageTempMin: number | null
-    storageTempMax: number | null
-    shelfLifeDays: number | null
-    viewsCount: number
+    storageTempMin?: number | null
+    storageTempMax?: number | null
+    shelfLifeDays?: number | null
+    viewsCount?: number
     salesCount: number
     createdAt: string
-    updatedAt: string
-    farmer?: FarmerProfile & { user?: Pick<User, 'firstName' | 'lastName' | 'avatar'> }
+    updatedAt?: string
+    vendor?: VendorSummary
     category?: Category
     images?: ProductImage[]
     priceHistory?: PriceHistory[]
 }
 
 export interface ProductImage {
-    id: string
-    productId: string
+    id?: string
+    productId?: string
     url: string
-    fileName: string | null
-    fileSize: number | null
-    mimeType: string | null
-    order: number
-    isPrimary: boolean
-    createdAt: string
+    fileName?: string | null
+    fileSize?: number | null
+    mimeType?: string | null
+    order?: number
+    isPrimary?: boolean
+    createdAt?: string
 }
 
 export interface PriceHistory {

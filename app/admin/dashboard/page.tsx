@@ -5,6 +5,7 @@ import { ShoppingBag, Wallet, Users, TrendingUp, TrendingDown, Package, X } from
 import {
   LineChart, Line, ResponsiveContainer, XAxis, YAxis, CartesianGrid, ReferenceArea, Tooltip
 } from "recharts"
+import { adminService } from "@/services/admin"
 
 function fa(n: string | number) { return String(n).replace(/[0-9]/g, d => "۰۱۲۳۴۵۶۷۸۹"[+d]) }
 function faNum(n: number) { return new Intl.NumberFormat("fa-IR").format(n) }
@@ -25,21 +26,6 @@ function useCountUp(target: number, duration = 900) {
   return val
 }
 
-const PERIOD_DATA: Record<string, { m: string; v: number }[]> = {
-  year: [
-    { m: "فروردین", v: 48 },{ m: "اردیبهشت", v: 56 },{ m: "خرداد", v: 72 },
-    { m: "تیر", v: 60 },{ m: "مرداد", v: 50 },{ m: "شهریور", v: 65.5 },
-    { m: "مهر", v: 48 },{ m: "آبان", v: 55 },{ m: "آذر", v: 62 },
-    { m: "دی", v: 51 },{ m: "بهمن", v: 78 },{ m: "اسفند", v: 58 },
-  ],
-  half: [
-    { m: "مهر", v: 48 },{ m: "آبان", v: 55 },{ m: "آذر", v: 62 },
-    { m: "دی", v: 51 },{ m: "بهمن", v: 78 },{ m: "اسفند", v: 58 },
-  ],
-  quarter: [
-    { m: "دی", v: 51 },{ m: "بهمن", v: 78 },{ m: "اسفند", v: 58 },
-  ],
-}
 const PERIODS = [
   { id: "year", label: "سال" },
   { id: "half", label: "شش ماه" },
@@ -79,18 +65,7 @@ const STATUS_MAP: Record<string, {label:string;cls:string}> = {
   cancel:  { label: "لغو شده",          cls: "pill--cancel"  },
 }
 
-const ORDERS = [
-  { id: "2345923", date: "1404/9/12", user: "سلحشور",  cat: "سبزیجات و صیفی‌جات", status: "pending", total: 1389000 },
-  { id: "2345924", date: "1404/9/12", user: "محمدی",    cat: "میوه‌ها",             status: "prep",    total: 2150000 },
-  { id: "2345925", date: "1404/9/12", user: "احمدی",    cat: "نان و غلات",          status: "prep",    total: 489000  },
-  { id: "2345926", date: "1404/9/11", user: "رضایی",    cat: "لبنیات",              status: "shipped", total: 1879000 },
-  { id: "2345927", date: "1404/9/11", user: "حسینی",   cat: "گوشت و پروتئین",      status: "shipped", total: 3290000 },
-  { id: "2345928", date: "1404/9/11", user: "کریمی",    cat: "سبزیجات",             status: "pending", total: 670000  },
-  { id: "2345929", date: "1404/9/10", user: "موسوی",    cat: "خشکبار",              status: "cancel",  total: 945000  },
-  { id: "2345930", date: "1404/9/10", user: "شریفی",    cat: "میوه‌ها",             status: "shipped", total: 1389000 },
-]
-
-type Order = typeof ORDERS[0]
+type Order = { id: string; date: string; user: string; cat: string; status: string; total: number }
 
 function StatCard({ icon, label, value, unit, delta, dir, compare }: any) {
   const v = useCountUp(value)
@@ -109,9 +84,9 @@ function StatCard({ icon, label, value, unit, delta, dir, compare }: any) {
   )
 }
 
-function RevenueChart() {
+function RevenueChart({ dataMap }: { dataMap: Record<string, { m: string; v: number }[]> }) {
   const [period, setPeriod] = useState("year")
-  const data = PERIOD_DATA[period]
+  const data = dataMap[period] || []
   const [hover, setHover] = useState<any>(null)
   const accent = "#4f9e6b"
   return (
@@ -187,16 +162,38 @@ function OrderDrawer({ order, onClose }: { order: Order | null; onClose: () => v
 }
 
 export default function DashboardPage() {
+  const [stats, setStats] = useState<any>(null)
+  const [chartData, setChartData] = useState<Record<string, { m: string; v: number }[]>>({ year: [], half: [], quarter: [] })
+  const [recentOrders, setRecentOrders] = useState<Order[]>([])
+  const [loading, setLoading] = useState(true)
   const [openOrder, setOpenOrder] = useState<Order | null>(null)
+
+  useEffect(() => {
+    Promise.all([
+      adminService.getDashboardStats(),
+      adminService.getRevenueChart(12),
+      adminService.getRevenueChart(6),
+      adminService.getRevenueChart(3),
+      adminService.getRecentOrders(10),
+    ])
+      .then(([s, year, half, quarter, orders]) => {
+        setStats(s)
+        setChartData({ year, half, quarter })
+        setRecentOrders(orders)
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
   return (
     <>
       <h1 className="adm-page-title">پیشخوان</h1>
       <div className="adm-stat-grid">
-        <StatCard icon={<ShoppingBag size={18} />} label="فروش کل" value={439} unit=" سفارش" delta="43" dir="up" compare={`ماه قبل: ${faNum(312)} سفارش`} />
-        <StatCard icon={<Wallet size={18} />} label="درآمد کل" value={198345650} unit=" تومان" delta="43" dir="up" compare={`ماه قبل: ${faNum(59389000)} تومان`} />
-        <StatCard icon={<Users size={18} />} label="مشتریان جدید" value={289} unit=" مشتری" delta="43" dir="down" compare={`ماه قبل: ${faNum(342)} مشتری`} />
+        <StatCard icon={<ShoppingBag size={18} />} label="فروش کل" value={stats?.totalOrders ?? 0} unit=" سفارش" delta="43" dir="up" compare={`ماه قبل: ${faNum(312)} سفارش`} />
+        <StatCard icon={<Wallet size={18} />} label="درآمد کل" value={stats ? +stats.totalRevenue : 0} unit=" تومان" delta="43" dir="up" compare={`ماه قبل: ${faNum(59389000)} تومان`} />
+        <StatCard icon={<Users size={18} />} label="مشتریان جدید" value={stats?.totalBuyers ?? 0} unit=" مشتری" delta="43" dir="down" compare={`ماه قبل: ${faNum(342)} مشتری`} />
       </div>
-      <RevenueChart />
+      <RevenueChart dataMap={chartData} />
       <h2 className="adm-section-title">سفارش‌های اخیر</h2>
       <div className="adm-table-card">
         <div className="adm-table-wrap">
@@ -206,16 +203,22 @@ export default function DashboardPage() {
               <th>دسته‌بندی</th><th>وضعیت</th><th>جمع کل</th>
             </tr></thead>
             <tbody>
-              {ORDERS.map(r => (
-                <tr key={r.id} className="clickable" onClick={() => setOpenOrder(r)}>
-                  <td className="oid tnum">#{fa(r.id)}</td>
-                  <td className="tnum">{fa(r.date)}</td>
-                  <td>{r.user}</td>
-                  <td>{r.cat}</td>
-                  <td><span className={`pill ${STATUS_MAP[r.status].cls}`}>{STATUS_MAP[r.status].label}</span></td>
-                  <td className="total">{faNum(r.total)}</td>
-                </tr>
-              ))}
+              {loading ? (
+                <tr><td colSpan={6} style={{ textAlign: "center", padding: 32, color: "var(--adm-fg-3)" }}>در حال بارگذاری...</td></tr>
+              ) : recentOrders.length === 0 ? (
+                <tr><td colSpan={6} style={{ textAlign: "center", padding: 32, color: "var(--adm-fg-3)" }}>هیچ سفارشی یافت نشد</td></tr>
+              ) : (
+                recentOrders.map(r => (
+                  <tr key={r.id} className="clickable" onClick={() => setOpenOrder(r)}>
+                    <td className="oid tnum">#{fa(r.id)}</td>
+                    <td className="tnum">{fa(r.date)}</td>
+                    <td>{r.user}</td>
+                    <td>{r.cat}</td>
+                    <td><span className={`pill ${STATUS_MAP[r.status].cls}`}>{STATUS_MAP[r.status].label}</span></td>
+                    <td className="total">{faNum(r.total)}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

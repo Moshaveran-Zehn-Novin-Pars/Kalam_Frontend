@@ -17,6 +17,7 @@ interface AddressStepProps {
     selectedTime: number
     onDayChange: (i: number) => void
     onTimeChange: (i: number) => void
+    onAddressChange?: (id: string) => void
 }
 
 export default function AddressStep({
@@ -24,6 +25,7 @@ export default function AddressStep({
                                         selectedTime,
                                         onDayChange,
                                         onTimeChange,
+                                        onAddressChange,
                                     }: AddressStepProps) {
     return (
         <div className="flex flex-col gap-8 text-right" dir="rtl">
