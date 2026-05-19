@@ -1193,9 +1193,12 @@ export function handleApiError(error: unknown): ApiError {
 
 ## 10. فازبندی
 
+> **وضعیت فعلی (بر اساس swagger audit):** ✅ = پیاده‌سازی شده در API و فرانت | ⚠️ = ناقص | ❌ = هنوز شروع نشده
+
 ### فاز 1: Foundation + Core MVP — هفته‌های 1 تا 10
 
 #### Sprint 1-2 (هفته 1-2): Setup & Design System
+> ✅ **وضعیت:** انجام شده — Next.js 16 + Tailwind CSS v4 + ESLint + CI pipeline فعال است.
 
 **UI/UX (همزمان):**
 - [ ] بازطراحی B2B در Figma
@@ -1217,6 +1220,7 @@ export function handleApiError(error: unknown): ApiError {
 **Deliverable:** 4 اپ قابل اجرا با design system کامل + Storybook
 
 #### Sprint 3-4 (هفته 3-4): Authentication & Layout
+> ✅ **وضعیت:** انجام شده — OTP login/register, JWT refresh, middleware, auth store, Header/Footer/Nav همه فعال.
 
 **UI/UX:**
 - [ ] طراحی صفحات Login, Register, OTP
@@ -1236,6 +1240,7 @@ export function handleApiError(error: unknown): ApiError {
 **Deliverable:** کاربر بتواند ثبت‌نام، ورود و خروج کند. 4 اپ با layout کامل.
 
 #### Sprint 5-6 (هفته 5-6): Product Catalog (Buyer)
+> ✅ **وضعیت:** انجام شده — Landing, PLP, PDP, Category, Search pages + productService متصل به API.
 
 **UI/UX:**
 - [ ] طراحی PLP با همه فیلترها
@@ -1266,6 +1271,7 @@ export function handleApiError(error: unknown): ApiError {
 **Deliverable:** خریدار می‌تواند محصولات را ببیند، فیلتر کند و جزئیات بخواند.
 
 #### Sprint 7-8 (هفته 7-8): Cart & Checkout
+> ⚠️ **وضعیت:** انجام شده در فرانت — cart, checkout, payment flow, success page وجود دارند. اما **Time Slot** در checkout پیاده‌سازی نشده (نیازمند time-slots service).
 
 **UI/UX:**
 - [ ] طراحی Cart page + Mini cart
@@ -1293,6 +1299,7 @@ export function handleApiError(error: unknown): ApiError {
 **Deliverable:** فرایند کامل خرید از سبد تا پرداخت.
 
 #### Sprint 9-10 (هفته 9-10): Account + Farmer Dashboard Basic
+> ⚠️ **وضعیت:** Buyer account pages (orders, addresses, profile, notifications) ساخته شده. Farmer dashboard وجود دارد ولی بیشتر صفحات هنوز از mock data استفاده می‌کنند. Vendor (میدان‌بار) به‌عنوان جایگزین farmer در v1.1 هنوز پیاده‌سازی نشده است.
 
 **UI/UX:**
 - [ ] طراحی Account (خریدار)
