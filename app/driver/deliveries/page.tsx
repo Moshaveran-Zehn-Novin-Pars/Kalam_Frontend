@@ -1,35 +1,38 @@
 "use client"
-import { useState } from "react"
-import { Truck, MapPin, Clock } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Truck, MapPin, Clock, Loader2 } from "lucide-react"
 import Link from "next/link"
+import { deliveryService } from "@/services/delivery"
+import type { Delivery } from "@/types"
 
 function fa(n: string | number) { return String(n).replace(/[0-9]/g, d => "۰۱۲۳۴۵۶۷۸۹"[+d]) }
 
-type Status = "pending" | "active" | "done"
-
-const ALL = [
-    { id: "DLV-041", buyer: "سوپرمارکت ستاره", address: "تهران، نیاوران",   weight: "۱۸۰ کیلو", slot: "۱۴:۰۰–۱۶:۰۰", status: "pending" as Status, orderId: "ORD-2041" },
-    { id: "DLV-042", buyer: "رستوران آرمان",   address: "تهران، ونک",       weight: "۶۰ کیلو",  slot: "۱۶:۰۰–۱۸:۰۰", status: "pending" as Status, orderId: "ORD-2042" },
-    { id: "DLV-039", buyer: "کافه سبز",        address: "تهران، جردن",      weight: "۳۰ کیلو",  slot: "۱۰:۰۰–۱۲:۰۰", status: "active"  as Status, orderId: "ORD-2039" },
-    { id: "DLV-038", buyer: "هایپرمارکت نور",  address: "تهران، شریعتی",    weight: "۳۵۰ کیلو", slot: "۰۸:۰۰–۱۰:۰۰", status: "done"    as Status, orderId: "ORD-2038" },
-]
-
-const STATUS_MAP: Record<Status, { label: string; cls: string }> = {
-    pending: { label: "در انتظار", cls: "pill--pending" },
-    active:  { label: "در مسیر",   cls: "pill--prep" },
-    done:    { label: "تحویل شده", cls: "pill--shipped" },
+const STATUS_MAP: Record<string, { label: string; cls: string }> = {
+    PENDING_ASSIGNMENT: { label: "در انتظار", cls: "pill--pending" },
+    ASSIGNED: { label: "اختصاص داده شده", cls: "pill--prep" },
+    PICKING_UP: { label: "در مسیر", cls: "pill--prep" },
+    IN_TRANSIT: { label: "در مسیر", cls: "pill--prep" },
+    DELIVERED: { label: "تحویل شده", cls: "pill--shipped" },
+    FAILED: { label: "ناموفق", cls: "pill--cancel" },
 }
 
 const FILTERS = [
     { id: "all", label: "همه" },
-    { id: "pending", label: "در انتظار" },
-    { id: "active",  label: "در مسیر" },
-    { id: "done",    label: "تحویل شده" },
+    { id: "PENDING_ASSIGNMENT", label: "در انتظار" },
+    { id: "IN_TRANSIT",  label: "در مسیر" },
+    { id: "DELIVERED",    label: "تحویل شده" },
 ]
 
 export default function DriverDeliveries() {
     const [filter, setFilter] = useState("all")
-    const list = filter === "all" ? ALL : ALL.filter(d => d.status === filter)
+    const [deliveries, setDeliveries] = useState<Delivery[]>([])
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        deliveryService.getMyDeliveries().then(setDeliveries).catch(() => {}).finally(() => setLoading(false))
+    }, [])
+
+    const list = filter === "all" ? deliveries : deliveries.filter(d => d.status === filter)
 
     return (
         <>
@@ -60,32 +63,34 @@ export default function DriverDeliveries() {
                             </tr>
                         </thead>
                         <tbody>
-                            {list.length === 0 && (
+                            {loading ? (
+                                <tr><td colSpan={7} style={{ textAlign: "center", padding: 48 }}><Loader2 size={20} className="animate-spin inline-block" /></td></tr>
+                            ) : list.length === 0 && (
                                 <tr>
                                     <td colSpan={7} style={{ textAlign: "center", padding: 48, color: "var(--adm-fg-3)" }}>
                                         موردی یافت نشد
                                     </td>
                                 </tr>
                             )}
-                            {list.map(d => {
-                                const s = STATUS_MAP[d.status]
+                            {list.map((d: any) => {
+                                const s = STATUS_MAP[d.status] || { label: d.status, cls: "" }
                                 return (
                                     <tr key={d.id}>
                                         <td className="oid tnum">{d.id}</td>
-                                        <td style={{ fontWeight: 500 }}>{d.buyer}</td>
-                                        <td style={{ color: "var(--adm-fg-3)" }}>{d.address}</td>
-                                        <td className="tnum">{d.weight}</td>
-                                        <td className="tnum">{d.slot}</td>
+                                        <td style={{ fontWeight: 500 }}>{d.orderId || "—"}</td>
+                                        <td style={{ color: "var(--adm-fg-3)" }}>{d.address || "—"}</td>
+                                        <td className="tnum">—</td>
+                                        <td className="tnum">—</td>
                                         <td><span className={`pill ${s.cls}`}>{s.label}</span></td>
                                         <td>
-                                            {d.status === "pending" && (
+                                            {d.status === "PENDING_ASSIGNMENT" && (
                                                 <Link href={`/driver/active?id=${d.id}`}
                                                       className="adm-btn adm-btn--filled"
                                                       style={{ fontSize: 12, padding: "5px 12px" }}>
                                                     شروع مسیر
                                                 </Link>
                                             )}
-                                            {d.status === "active" && (
+                                            {d.status === "IN_TRANSIT" && (
                                                 <button className="adm-btn adm-btn--outline"
                                                         style={{ fontSize: 12, padding: "5px 12px" }}>
                                                     تأیید تحویل

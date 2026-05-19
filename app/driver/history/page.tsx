@@ -1,16 +1,23 @@
 "use client"
+import { useState, useEffect } from "react"
+import { Loader2 } from "lucide-react"
+import { deliveryService } from "@/services/delivery"
+import type { Delivery } from "@/types"
 
 function fa(n: string | number) { return String(n).replace(/[0-9]/g, d => "۰۱۲۳۴۵۶۷۸۹"[+d]) }
 function faNum(n: number) { return new Intl.NumberFormat("fa-IR").format(n) }
 
-const HIST = [
-    { id:"DLV-098", date:"۱۴۰۳/۰۲/۱۵", buyer:"سوپرمارکت ستاره", address:"تهران، نیاوران",  weight:"۱۸۰ کیلو", earned:120000 },
-    { id:"DLV-097", date:"۱۴۰۳/۰۲/۱۵", buyer:"رستوران آرمان",   address:"تهران، ونک",      weight:"۶۰ کیلو",  earned:85000  },
-    { id:"DLV-096", date:"۱۴۰۳/۰۲/۱۴", buyer:"هایپرمارکت نور",  address:"تهران، شریعتی",   weight:"۳۵۰ کیلو", earned:220000 },
-    { id:"DLV-095", date:"۱۴۰۳/۰۲/۱۴", buyer:"کافه سبز",        address:"تهران، جردن",      weight:"۳۰ کیلو",  earned:55000  },
-]
-
 export default function DriverHistory() {
+    const [deliveries, setDeliveries] = useState<Delivery[]>([])
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        deliveryService.findAll({ status: "DELIVERED" })
+            .then(res => setDeliveries(res.items || []))
+            .catch(() => {})
+            .finally(() => setLoading(false))
+    }, [])
+
     return (
         <>
             <h1 className="adm-page-title">تاریخچه تحویل‌ها</h1>
@@ -21,22 +28,22 @@ export default function DriverHistory() {
                         <thead>
                             <tr>
                                 <th>شماره</th>
-                                <th>خریدار</th>
-                                <th>آدرس</th>
-                                <th>وزن</th>
+                                <th>سفارش</th>
+                                <th>وضعیت</th>
                                 <th>تاریخ</th>
-                                <th>درآمد</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {HIST.map(h => (
+                            {loading ? (
+                                <tr><td colSpan={4} style={{ textAlign: "center", padding: 48 }}><Loader2 size={20} className="animate-spin inline-block" /></td></tr>
+                            ) : deliveries.length === 0 ? (
+                                <tr><td colSpan={4} style={{ textAlign: "center", padding: 48, color: "var(--adm-fg-3)" }}>تحویلی وجود ندارد</td></tr>
+                            ) : deliveries.map((h: any) => (
                                 <tr key={h.id}>
                                     <td className="oid tnum">{h.id}</td>
-                                    <td style={{ fontWeight: 500 }}>{h.buyer}</td>
-                                    <td style={{ color: "var(--adm-fg-3)" }}>{h.address}</td>
-                                    <td className="tnum">{h.weight}</td>
-                                    <td className="tnum">{h.date}</td>
-                                    <td className="total">{faNum(h.earned)} تومان</td>
+                                    <td style={{ fontWeight: 500 }}>{h.orderId || "—"}</td>
+                                    <td><span className="pill pill--shipped">تحویل شده</span></td>
+                                    <td className="tnum">—</td>
                                 </tr>
                             ))}
                         </tbody>
