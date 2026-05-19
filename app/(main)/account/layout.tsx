@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
 import { ShoppingBag, MapPin, User, LogOut, Wallet, CreditCard, FileText, Bell, Settings, ChevronLeft } from "lucide-react"
+import { useAuthStore } from "@/store/authStore"
 import "./account.css"
 
 const NAV_ITEMS = [
@@ -16,11 +17,10 @@ const NAV_ITEMS = [
     { href: "/account/profile",   label: "اطلاعات حساب کاربری",  icon: User,        key: "profile"   },
 ]
 
-const MOCK_USER = { firstName: "سوگند", lastName: "سلحشور", phone: "۰۹۰۳۷۰۲۹۱۲۱" }
-
 export default function AccountLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname()
     const router = useRouter()
+    const { user } = useAuthStore()
 
     const activeKey = pathname.includes("wallet") ? "wallet"
         : pathname.includes("credit") ? "credit"
@@ -31,6 +31,10 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
         : pathname.includes("profile") ? "profile"
             : "orders"
 
+    const firstName = user?.firstName || "کاربر"
+    const lastName = user?.lastName || ""
+    const phone = user?.phone?.replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[parseInt(d)]) || ""
+
     return (
         <div dir="rtl" className="acc-root">
             <div className="acc-body">
@@ -39,11 +43,11 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
                 <aside className="acc-sidebar">
                     <div className="acc-profile">
                         <div className="acc-profile-avatar">
-                            {MOCK_USER.firstName[0]}
+                            {firstName[0]}
                         </div>
                         <div>
-                            <div className="acc-profile-name">{MOCK_USER.firstName} {MOCK_USER.lastName}</div>
-                            <div className="acc-profile-phone">{MOCK_USER.phone}</div>
+                            <div className="acc-profile-name">{firstName} {lastName}</div>
+                            <div className="acc-profile-phone">{phone}</div>
                         </div>
                     </div>
 

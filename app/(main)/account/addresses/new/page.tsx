@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { ChevronLeft, CheckCircle } from "lucide-react"
+import { ChevronLeft, CheckCircle, Loader2 } from "lucide-react"
+import { addressService } from "@/services/address"
 import "../../account.css"
 
 export default function NewAddressPage() {
@@ -10,8 +11,25 @@ export default function NewAddressPage() {
     const [form, setForm] = useState({
         title: "", province: "", city: "", fullAddress: "", postalCode: "", receiverName: "", receiverPhone: "",
     })
+    const [saving, setSaving] = useState(false)
     const [saved, setSaved] = useState(false)
     const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))
+
+    const handleSave = async () => {
+        setSaving(true)
+        try {
+            await addressService.create({
+                fullAddress: form.fullAddress,
+                receiverName: form.receiverName,
+                receiverPhone: form.receiverPhone,
+            } as any)
+            setSaved(true)
+        } catch {
+            setSaved(false)
+        } finally {
+            setSaving(false)
+        }
+    }
 
     if (saved) {
         return (
@@ -51,8 +69,9 @@ export default function NewAddressPage() {
                     <div><label className="acc-label">شماره تماس</label><input className="acc-input" value={form.receiverPhone} onChange={e => set("receiverPhone", e.target.value)} placeholder="۰۹۱۲۳۴۵۶۷۸۹" /></div>
                 </div>
 
-                <button onClick={() => setSaved(true)} className="acc-btn acc-btn--filled" style={{ justifyContent: "center", padding: "14px 18px", width: "100%" }}>
-                    ثبت آدرس
+                <button onClick={handleSave} disabled={saving}
+                    className="acc-btn acc-btn--filled" style={{ justifyContent: "center", padding: "14px 18px", width: "100%" }}>
+                    {saving ? <><Loader2 size={16} className="animate-spin" /> در حال ثبت...</> : "ثبت آدرس"}
                 </button>
             </div>
         </div>

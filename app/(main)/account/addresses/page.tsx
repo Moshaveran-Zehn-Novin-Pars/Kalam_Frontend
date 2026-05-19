@@ -1,59 +1,57 @@
 "use client"
 
-import { useState } from "react"
-import { MapPin, Pencil, Trash2, Plus, X } from "lucide-react"
+import { useState, useEffect } from "react"
+import { MapPin, Pencil, Trash2, Plus, X, Loader2 } from "lucide-react"
 import { AnimatePresence, motion } from "framer-motion"
-
-const MOCK_ADDRESSES = [
-  {
-    id: "1",
-    fullAddress: "خیابان بهشتی، خیابان سرافراز، کوچه یازدهم، پلاک ۱۰، واحد ۱۳",
-    receiverName: "سوگند سلحشور",
-    receiverPhone: "۰۹۴۳۸۴۷۵۷۲۱",
-  },
-  {
-    id: "2",
-    fullAddress: "خیابان بهشتی، خیابان سرافراز، کوچه یازدهم، پلاک ۱۰، واحد ۱۳",
-    receiverName: "سوگند سلحشور",
-    receiverPhone: "۰۹۴۳۸۴۷۵۷۲۱",
-  },
-]
+import { addressService } from "@/services/address"
+import type { Address } from "@/types"
 
 export default function AddressesPage() {
-  const [addresses, setAddresses]     = useState(MOCK_ADDRESSES)
+  const [addresses, setAddresses]     = useState<Address[]>([])
+  const [loading, setLoading]         = useState(true)
   const [showModal, setShowModal]     = useState(false)
   const [form, setForm]               = useState({ name: "", phone: "", address: "" })
 
-  const handleAdd = () => {
-    setAddresses((prev) => [...prev, {
-      id: String(Date.now()),
-      fullAddress: form.address,
-      receiverName: form.name,
-      receiverPhone: form.phone,
-    }])
-    setShowModal(false)
-    setForm({ name: "", phone: "", address: "" })
+  useEffect(() => {
+    addressService.findAll().then(setAddresses).catch(() => {}).finally(() => setLoading(false))
+  }, [])
+
+  const handleAdd = async () => {
+    try {
+      const newAddr = await addressService.create({
+        fullAddress: form.address,
+        receiverName: form.name,
+        receiverPhone: form.phone,
+      } as any)
+      setAddresses((prev) => [...prev, newAddr])
+      setShowModal(false)
+      setForm({ name: "", phone: "", address: "" })
+    } catch { /* ignore */ }
+  }
+
+  const handleDelete = async (id: string) => {
+    try {
+      await addressService.remove(id)
+      setAddresses((prev) => prev.filter(a => a.id !== id))
+    } catch { /* ignore */ }
   }
 
   return (
     <div className="flex flex-col gap-6">
 
-      {/* Header */}
       <div className="flex items-center justify-between">
-        <button
-          onClick={() => setShowModal(true)}
-          className="border border-[#51A46B] text-[#51A46B] text-[16px] font-medium px-5 py-3 rounded-[10px] hover:bg-[#E5F2E9] transition-colors flex items-center gap-2"
-        >
+        <button onClick={() => setShowModal(true)}
+          className="border border-[#51A46B] text-[#51A46B] text-[16px] font-medium px-5 py-3 rounded-[10px] hover:bg-[#E5F2E9] transition-colors flex items-center gap-2">
           <Plus size={16} />
           افزودن آدرس جدید
         </button>
         <h1 className="text-[24px] font-semibold text-black">آدرس ها</h1>
       </div>
 
-      {/* Empty state */}
-      {addresses.length === 0 ? (
+      {loading ? (
+        <div style={{ textAlign: "center", padding: 48 }}><Loader2 size={24} className="animate-spin inline-block" /></div>
+      ) : addresses.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 gap-6">
-          {/* Map illustration */}
           <div className="relative w-[280px] h-[280px]">
             <div className="absolute inset-8 rounded-full bg-emerald-50" />
             <div className="absolute top-12 left-16 w-6 h-6 rounded-full bg-emerald-50" />
@@ -67,10 +65,8 @@ export default function AddressesPage() {
             </svg>
           </div>
           <p className="text-[18px] font-semibold text-black">هنوز آدرسی ثبت نشده است.</p>
-          <button
-            onClick={() => setShowModal(true)}
-            className="border border-[#51A46B] text-[#51A46B] text-[16px] font-medium px-5 py-3 rounded-[10px] hover:bg-[#E5F2E9] transition-colors"
-          >
+          <button onClick={() => setShowModal(true)}
+            className="border border-[#51A46B] text-[#51A46B] text-[16px] font-medium px-5 py-3 rounded-[10px] hover:bg-[#E5F2E9] transition-colors">
             افزودن آدرس جدید
           </button>
         </div>
@@ -80,7 +76,7 @@ export default function AddressesPage() {
             <div key={addr.id} className="border border-[#E9E8E3] rounded-[20px] px-6 py-5">
               <div className="flex items-start justify-between">
                 <div className="flex gap-3">
-                  <button className="text-[#51A46B] hover:text-red-500 transition-colors">
+                  <button onClick={() => handleDelete(addr.id)} className="text-[#51A46B] hover:text-red-500 transition-colors">
                     <Trash2 size={20} />
                   </button>
                   <button className="text-[#51A46B] hover:text-[#417F56] transition-colors">
@@ -103,7 +99,6 @@ export default function AddressesPage() {
         </div>
       )}
 
-      {/* Modal افزودن آدرس */}
       <AnimatePresence>
         {showModal && (
           <motion.div className="fixed inset-0 z-50 flex items-center justify-center"
@@ -111,15 +106,13 @@ export default function AddressesPage() {
             <div className="absolute inset-0 bg-black/50" onClick={() => setShowModal(false)} />
             <motion.div
               className="relative bg-white rounded-[20px] w-[546px] p-8"
-              initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
-            >
+              initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}>
               <button onClick={() => setShowModal(false)} className="absolute top-4 left-4 hover:text-[#51A46B]">
                 <X size={22} />
               </button>
               <h2 className="text-[24px] font-semibold text-right mb-6">افزودن آدرس</h2>
 
               <div className="flex flex-col gap-4">
-                {/* Row: نام + نام خانوادگی */}
                 <div className="flex gap-4">
                   <div className="flex-1 relative border border-[#D1D5DB] rounded-[10px] h-[48px] flex items-center px-4">
                     <input placeholder="نام" className="w-full text-right outline-none text-[18px]"
@@ -130,23 +123,19 @@ export default function AddressesPage() {
                   </div>
                 </div>
 
-                {/* شماره موبایل */}
                 <div className="border border-[#D1D5DB] rounded-[10px] h-[48px] flex items-center px-4">
                   <input placeholder="شماره موبایل" dir="ltr" className="w-full outline-none text-[18px]"
                     value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
                 </div>
 
-                {/* آدرس */}
                 <div className="border border-[#D1D5DB] rounded-[10px] h-[48px] flex items-center px-4 gap-2">
                   <MapPin size={20} className="text-[#9CA3AF] shrink-0" />
                   <input placeholder="آدرس" className="w-full text-right outline-none text-[18px]"
                     value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
                 </div>
 
-                <button
-                  onClick={handleAdd}
-                  className="bg-[#51A46B] text-white text-[18px] h-[48px] rounded-[10px] hover:bg-[#417F56] transition-colors"
-                >
+                <button onClick={handleAdd}
+                  className="bg-[#51A46B] text-white text-[18px] h-[48px] rounded-[10px] hover:bg-[#417F56] transition-colors">
                   ثبت آدرس
                 </button>
               </div>
