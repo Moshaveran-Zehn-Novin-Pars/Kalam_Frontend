@@ -1,18 +1,14 @@
 "use client"
-import { useState } from "react"
-import { Search, DollarSign, CheckCircle, Clock, CreditCard, TrendingUp, X } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Search, DollarSign, CheckCircle, Clock, CreditCard, TrendingUp, X, Loader2 } from "lucide-react"
+import { paymentService } from "@/services/payment"
 
 function fa(n: string | number) { return String(n).replace(/[0-9]/g, d => "۰۱۲۳۴۵۶۷۸۹"[+d]) }
 function faNum(n: number) { return new Intl.NumberFormat("fa-IR").format(n) }
 
-const ALL = Array.from({ length: 10 }, (_, i) => ({
-    id: `pay${i}`, user: ["علی محمدی", "سوپرمارکت رضایی", "نرگس احمدی", "رستوران آرارات", "مهدی رضایی", "هایپرمی", "حسن کریمی", "کافه گلدن", "زهرا حسینی", "میوه فروشی محسن"][i],
-    amount: [50000000, 1389000, 25000000, 4500000, 12000000, 7600000, 32000000, 960000, 18500000, 2800000][i],
-    method: ["کارت به کارت", "درگاه", "کیف پول", "درگاه", "کارت به کارت", "کیف پول", "درگاه", "کارت به کارت", "کیف پول", "درگاه"][i],
-    date: "۱۴۰۴/۹/" + String(12 - i).padStart(2, "0"), status: ["success", "success", "success", "success", "failed", "success", "success", "success", "pending", "success"][i],
-}))
+const methodLabels: Record<string,string>={BANK_TRANSFER:"کارت به کارت",ONLINE_GATEWAY:"درگاه",WALLET:"کیف پول",CREDIT:"اعتبار",DEPOSIT:"واریز",WITHDRAWAL:"برداشت",PURCHASE:"خرید",REFUND:"استرداد",COMMISSION:"کمیسیون",PAYOUT:"پرداخت",ESCROW_HOLD:"مسدود",ESCROW_RELEASE:"آزاد"}
 
-function PayDrawer({ pay, onClose }: { pay: typeof ALL[0] | null; onClose: () => void }) {
+function PayDrawer({ pay, onClose }: { pay: any | null; onClose: () => void }) {
     if (!pay) return null
     return (<><div className="adm-drawer-overlay" onClick={onClose} /><aside className="adm-drawer open">
         <div className="adm-drawer-head"><div><div style={{ fontSize: 12, color: "var(--adm-fg-3)" }}>تراکنش</div><div style={{ fontSize: 18, fontWeight: 700, marginTop: 4 }}>{pay.user}</div></div><button className="adm-drawer-close" onClick={onClose}><X size={14} /></button></div>
