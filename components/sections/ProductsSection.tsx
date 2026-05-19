@@ -12,17 +12,19 @@ const TABS = [
 ]
 
 const MOCK: Product[] = Array.from({ length: 8 }, (_, i) => ({
-    id: `m${i}`, farmerId: "f1", categoryId: `c0`,
+    id: `m${i}`,
     name: "توت‌فرنگی خارجی",
-    slug: `product-${i}`, description: null, origin: "ایران", harvestDate: null,
+    slug: `product-${i}`,
+    origin: "ایران",
     qualityGrade: "A",
     unit: "کیلو",
     pricePerUnit: "128500",
-    minOrderQty: "1", maxOrderQty: null,
-    stockQty: "500", reservedQty: "0", status: "ACTIVE" as const,
-    requiresColdChain: false, storageTempMin: null, storageTempMax: null,
-    shelfLifeDays: null, viewsCount: 0, salesCount: 0,
-    createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+    minOrderQty: "1",
+    stockQty: "500",
+    status: "ACTIVE" as const,
+    requiresColdChain: false,
+    salesCount: 0,
+    createdAt: new Date().toISOString(),
     images: [],
 }))
 

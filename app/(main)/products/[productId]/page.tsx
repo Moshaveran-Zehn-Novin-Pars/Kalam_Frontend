@@ -18,6 +18,12 @@ function faPrice(n: number) {
     return fa(n.toLocaleString("en-US")).replace(/,/g, "،")
 }
 
+const UNIT_LABELS: Record<string, string> = {
+    KG: "کیلو",
+    TON: "تن",
+    GR: "گرم",
+}
+
 const WEIGHT_OPTIONS = [
     { id: "0.5", label: "۰.۵ کیلو", mult: 0.5 },
     { id: "1", label: "۱ کیلو", mult: 1 },
@@ -123,7 +129,7 @@ export default function ProductDetailPage() {
 
                     <div className="pdp-price-row">
                         <span className="tnum">{faPrice(displayPrice)} تومان</span>
-                        <span className="unit">/{product.unit}</span>
+                        <span className="unit">/{UNIT_LABELS[product.unit] || product.unit}</span>
                     </div>
 
                     <div className="pdp-weights">

@@ -6,6 +6,8 @@ import { SfIcon } from "@/components/shared/SfIcon"
 import { useCartStore } from "@/store/cartStore"
 import type { Product } from "@/types"
 
+const UNIT_LABELS: Record<string, string> = { KG: "کیلو", TON: "تن", GR: "گرم" }
+
 interface ProductCardProps {
     product: Partial<Product>
     withLink?: boolean
@@ -27,11 +29,7 @@ export default function ProductCard({
 }: ProductCardProps) {
     const addItem = useCartStore((s) => s.addItem)
 
-    const img =
-        (product.images as { url: string; isPrimary?: boolean }[] | undefined)
-            ?.find((i) => i.isPrimary)?.url ??
-        (product.images as { url: string }[] | undefined)?.[0]?.url ??
-        null
+    const img = product.images?.[0]?.url ?? null
 
     const price = parseFloat(product.pricePerUnit ?? "0")
     const href = `/products/${(product as Product).slug || product.id}`
@@ -56,7 +54,7 @@ export default function ProductCard({
             <div className="prod-card__divider" />
             <div className="prod-card__head">
                 <div className="prod-card__name">{product.name}</div>
-                <span className="prod-card__unit">هر {product.unit}</span>
+                <span className="prod-card__unit">هر {product.unit ? (UNIT_LABELS[product.unit] || product.unit) : ""}</span>
             </div>
             <div className="prod-card__foot">
                 <button

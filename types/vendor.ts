@@ -1,3 +1,11 @@
+// Subset returned in product list responses
+export interface VendorSummary {
+    id: string
+    businessName: string
+    ratingAvg: string
+    verifiedAt: string | null
+}
+
 export interface VendorProfile {
     id: string
     userId: string
@@ -17,7 +25,7 @@ export interface VendorProfile {
     createdAt: string
     updatedAt: string
     branches?: VendorBranch[]
-    certificates?: Certificate[]
+    certificates?: VendorCertificate[]
 }
 
 export interface VendorBranch {
@@ -33,7 +41,7 @@ export interface VendorBranch {
     updatedAt: string
 }
 
-export interface Certificate {
+export interface VendorCertificate {
     id: string
     vendorId: string
     type: string

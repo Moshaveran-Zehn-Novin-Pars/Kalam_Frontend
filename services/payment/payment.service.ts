@@ -1,7 +1,7 @@
 import { apiGet, apiGetPaginated, apiPost } from '@/services/api'
 import type {
-  Wallet,
-  WalletTransaction,
+  PaymentWallet,
+  PaymentWalletTransaction,
   Payment,
   InitiatePaymentDto,
   WalletDepositDto,
@@ -9,20 +9,20 @@ import type {
 } from '@/types'
 
 export const paymentService = {
-  async getWallet(): Promise<Wallet> {
-    return apiGet<Wallet>('/payments/wallet')
+  async getWallet(): Promise<PaymentWallet> {
+    return apiGet<PaymentWallet>('/payments/wallet')
   },
 
-  async getTransactions(params?: { page?: number; pageSize?: number }): Promise<PaginatedResponse<WalletTransaction>> {
-    const res = await apiGetPaginated<PaginatedResponse<WalletTransaction>>(
+  async getTransactions(params?: { page?: number; pageSize?: number }): Promise<PaginatedResponse<PaymentWalletTransaction>> {
+    const res = await apiGetPaginated<PaymentWalletTransaction[]>(
       '/payments/wallet/transactions',
       { params }
     )
-    return res.data as PaginatedResponse<WalletTransaction>
+    return { items: res.data, meta: res.meta! }
   },
 
-  async depositToWallet(dto: WalletDepositDto): Promise<Wallet> {
-    return apiPost<Wallet>('/payments/wallet/deposit', dto)
+  async depositToWallet(dto: WalletDepositDto): Promise<PaymentWallet> {
+    return apiPost<PaymentWallet>('/payments/wallet/deposit', dto)
   },
 
   async initiatePayment(dto: InitiatePaymentDto): Promise<Payment> {

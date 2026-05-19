@@ -4,8 +4,8 @@ import type { Product, QueryProductsParams, PaginatedResponse, CreateProductDto,
 export const productService = {
     // Public: list products with filters + pagination
     async getProducts(params?: QueryProductsParams): Promise<PaginatedResponse<Product>> {
-        const res = await apiGetPaginated<PaginatedResponse<Product>>('/products', { params })
-        return res.data as PaginatedResponse<Product>
+        const res = await apiGetPaginated<Product[]>('/products', { params })
+        return { items: res.data, meta: res.meta! }
     },
 
     // Public: get product by id or slug
@@ -20,8 +20,8 @@ export const productService = {
 
     // FARMER: my products
     async getMyProducts(params?: QueryProductsParams): Promise<PaginatedResponse<Product>> {
-        const res = await apiGetPaginated<PaginatedResponse<Product>>('/products/my', { params })
-        return res.data as PaginatedResponse<Product>
+        const res = await apiGetPaginated<Product[]>('/products/my', { params })
+        return { items: res.data, meta: res.meta! }
     },
 
     async createProduct(dto: CreateProductDto): Promise<Product> {
@@ -42,7 +42,7 @@ export const productService = {
 
     // ADMIN: all products
     async findAllAdmin(params?: QueryProductsParams): Promise<PaginatedResponse<Product>> {
-        const res = await apiGetPaginated<PaginatedResponse<Product>>('/products/admin/all', { params })
-        return res.data as PaginatedResponse<Product>
+        const res = await apiGetPaginated<Product[]>('/products/admin/all', { params })
+        return { items: res.data, meta: res.meta! }
     },
 }
