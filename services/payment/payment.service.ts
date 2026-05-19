@@ -34,10 +34,10 @@ export const paymentService = {
   },
 
   async releaseEscrow(orderId: string): Promise<Payment> {
-    return apiPost<Payment>(`/payments/escrow/${orderId}/release`)
+    return apiPost<Payment>(`/payments/order/${orderId}/release-escrow`)
   },
 
   async refundPayment(orderId: string): Promise<Payment> {
-    return apiPost<Payment>(`/payments/escrow/${orderId}/refund`)
+    return apiPost<Payment>(`/payments/order/${orderId}/refund`)
   },
 }
