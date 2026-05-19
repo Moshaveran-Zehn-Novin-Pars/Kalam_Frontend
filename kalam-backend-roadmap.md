@@ -1524,11 +1524,14 @@ products/
 
 ## 8. فازبندی کامل بکند
 
+> **وضعیت فعلی (بر اساس swagger audit):** ✅ = اندپوینت‌ها در swagger موجود است | ⚠️ = ناقص | ❌ = در swagger نیست
+
 ### فاز 1: Core MVP — هفته‌های 1 تا 10
 
 **هدف:** یه باغدار بتونه محصول بذاره، یه خریدار بتونه بخره. پرداخت manual.
 
 #### Sprint 1-2 (هفته 1-2): Setup & Foundation
+> ✅ **وضعیت:** انجام شده — swagger.json موجود است، health check endpoints فعال.
 
 - [ ] راه‌اندازی پروژه NestJS با ساختار کامل
 - [ ] Setup Docker Compose (Postgres + Redis + MinIO)
@@ -1545,6 +1548,7 @@ products/
 **Deliverable:** پروژه قابل اجرا با `docker-compose up` + swagger روی `/api/docs`
 
 #### Sprint 3-4 (هفته 3-4): Auth & Users
+> ✅ **وضعیت:** انجام شده — 5 auth endpoints + 7 user endpoints + 3 KYC endpoints + 5 farmer/buyer/driver endpoints در swagger موجود است. RBAC از طریق `access-token` security scheme پیاده‌سازی شده.
 
 - [ ] ماژول `auth`: ثبت‌نام با OTP
 - [ ] اتصال به کاوه‌نگار یا ملی‌پیامک
@@ -1560,6 +1564,7 @@ products/
 **Deliverable:** کاربر بتواند ثبت‌نام، ورود، و پروفایل خود را مدیریت کند.
 
 #### Sprint 5-6 (هفته 5-6): Products & Catalog
+> ✅ **وضعیت:** انجام شده — 9 product endpoints + 6 category endpoints + 1 catalog endpoint + 4 storage endpoints در swagger موجود است. فیلترهای B2B، upload سرویس (MinIO)، و inventory مدیریت شده.
 
 - [ ] ماژول `categories`: CRUD سلسله‌مراتبی
 - [ ] ماژول `products`: CRUD کامل
@@ -1573,6 +1578,7 @@ products/
 **Deliverable:** باغدار محصول می‌گذارد، خریدار با فیلتر می‌تواند جستجو کند.
 
 #### Sprint 7-8 (هفته 7-8): Cart & Order Basic
+> ✅ **وضعیت:** انجام شده — 5 cart endpoints + 7 order endpoints + 3 escrow endpoints در swagger موجود است. State machine و محاسبه مالیات/حمل پیاده‌سازی شده.
 
 - [ ] ماژول `cart`: سبد خرید persistent
 - [ ] ماژول `orders`: ایجاد سفارش
@@ -1585,6 +1591,7 @@ products/
 **Deliverable:** خریدار می‌تواند سبد بسازد و سفارش ثبت کند (پرداخت dummy).
 
 #### Sprint 9-10 (هفته 9-10): Notifications & Admin
+> ✅ **وضعیت:** انجام شده — 5 notification endpoints + 9 admin dashboard endpoints + 7 user management endpoints در swagger موجود است. (توجه: برخی endpointهای admin مانند `/admin/payments` و `/admin/kyc` در swagger نیستند و باید با تیم بکند بررسی شوند.)
 
 - [ ] ماژول `notifications`: SMS + In-app
 - [ ] Event listener روی رویدادهای سفارش
