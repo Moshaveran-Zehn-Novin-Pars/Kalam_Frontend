@@ -1,9 +1,11 @@
 # 📘 داکیومنت کامل بکند - پروژه کلم (Kalam)
 
 > **پلتفرم B2B خرید و فروش عمده میوه و تره‌بار**
-> نسخه: 1.0
+> نسخه: 1.1
 > مخاطب: تیم بکند (NestJS)
 > مدل درآمدی: کمیسیونی (Commission-based Marketplace)
+> مدل فروشنده: **میدان‌بار** (باغدار فعلاً حذف شده)
+> ویژگی‌های جدید v1.1: Time Slot تحویل | سفارش سریع | منطقه‌بندی راننده | سطوح مدیریت (SuperAdmin / Admin / Support)
 
 ---
 
@@ -35,6 +37,17 @@
 
 ساخت یک API قوی، مقیاس‌پذیر و امن که بعنوان مغز متفکر پلتفرم کلم عمل کنه. باید بتونه از MVP کوچیک با 10 کاربر به پلتفرم ملی با 100K+ کاربر رشد کنه **بدون بازنویسی کامل**.
 
+> **⚠️ تصمیم معماری کلیدی (v1.1):**
+>
+> | موضوع | تصمیم |
+> |---|---|
+> | **فروشنده** | فعلاً فقط **میدان‌بار** (یک Vendor مرکزی) — باغدار فعلاً حذف است |
+> | **راننده‌ها** | تحویل فقط در **محدوده جغرافیایی** مشخص (zone-based) |
+> | **زمانبندی** | **Time Slot** اجباری برای هر سفارش |
+> | **تعطیلات** | جمعه‌ها و تعطیلات رسمی میدان‌بار تعطیل است — slot در این روزها نیست |
+> | **سفارش سریع** | قابلیت Quick Order برای راحتی خریداران |
+> | **مدیریت** | سه سطح: **SuperAdmin** (همه دسترسی‌ها) / **Admin** / **Support** |
+
 ### 1.2 اصول طراحی (خیلی مهم)
 
 - **Modular Monolith اول، Microservices بعد:** یک مونولیت خوب طراحی شده، بهتر از چند میکروسرویس بد طراحی شده است. فقط AI service از اول جداست.
@@ -61,12 +74,12 @@
 
 ### 2.1 تأثیر مدل کمیسیونی بر بکند
 
-مدل کمیسیونی یعنی: کلم از هر تراکنش موفق بین باغدار و خریدار، درصدی رو بعنوان کمیسیون برمی‌داره. این مدل تأثیرات فنی مهمی داره:
+مدل کمیسیونی یعنی: کلم از هر تراکنش موفق بین میدان‌بار و خریدار، درصدی رو بعنوان کمیسیون برمی‌داره. این مدل تأثیرات فنی مهمی داره:
 
 - **ضرورت Escrow:** پول خریدار تا تحویل کامل نزد پلتفرم می‌مونه
-- **Settlement Engine:** سیستم تسویه پیچیده‌تر (محاسبه سهم باغدار + کمیسیون + هزینه حمل + مالیات)
+- **Settlement Engine:** سیستم تسویه پیچیده‌تر (محاسبه سهم میدان‌بار + کمیسیون + هزینه حمل + مالیات)
 - **Commission Rules Engine:** درصدهای متفاوت برای دسته‌بندی‌ها و تیرهای مختلف
-- **Multi-party Accounting:** برای هر سفارش باید 3+ طرف حسابی داشت (خریدار، باغدار، راننده، پلتفرم)
+- **Multi-party Accounting:** برای هر سفارش باید 3+ طرف حسابی داشت (خریدار، میدان‌بار، راننده، پلتفرم)
 - **Financial Reporting:** گزارش‌گیری دقیق برای مالیات و حسابداری
 
 ### 2.2 استراتژی کمیسیون پیشنهادی
@@ -77,14 +90,14 @@
 ├── کمیسیون پلتفرم: 5-8% (قابل تنظیم per category)
 ├── هزینه حمل: محاسبه جدا
 ├── مالیات ارزش افزوده: طبق قانون
-└── سهم باغدار: قیمت محصول - کمیسیون
+└── سهم میدان‌بار: قیمت محصول - کمیسیون
 ```
 
 ### 2.3 جداول اضافه‌شده بخاطر مدل کمیسیونی
 
 - `commissions` - ذخیره نرخ کمیسیون هر دسته/تیر
-- `settlements` - تسویه‌حساب با باغداران
-- `payouts` - تراکنش‌های پرداختی به باغدار
+- `settlements` - تسویه‌حساب با میدان‌بار
+- `payouts` - تراکنش‌های پرداختی به میدان‌بار
 - `ledger_entries` - دفتر کل حسابداری دوطرفه (Double-Entry Bookkeeping)
 - `invoices` - فاکتور رسمی
 
@@ -258,27 +271,31 @@
  ┣ 📂 auth              → احراز هویت، OTP، JWT، refresh token
  ┣ 📂 users             → کاربران، پروفایل، نقش‌ها (RBAC)
  ┣ 📂 kyc               → احراز هویت با کدملی (شاهکار)
- ┣ 📂 farmers           → پروفایل باغدار، مدارک، تأیید
+ ┣ 📂 vendors           → ★ میدان‌بار: پروفایل، شعب، ساعات کاری (جایگزین farmers)
  ┣ 📂 buyers            → پروفایل خریدار (سوپرمارکت/رستوران)
  ┣ 📂 products          → محصولات، دسته‌بندی، قیمت‌گذاری
  ┣ 📂 inventory         → موجودی، stock management
  ┣ 📂 catalog           → جستجو، فیلتر، pagination
  ┣ 📂 cart              → سبد خرید
+ ┣ 📂 time-slots        → ★ جدید: بازه‌های تحویل + تعطیلات + ظرفیت هر slot
  ┣ 📂 orders            → سفارش + state machine
+ ┣ 📂 quick-orders      → ★ جدید: سفارش سریع (تکرار / قالب ذخیره‌شده)
  ┣ 📂 payments          → پرداخت، درگاه، کیف پول
  ┣ 📂 escrow            → نگهداری پول تا تحویل
  ┣ 📂 commissions       → محاسبه کمیسیون
- ┣ 📂 settlements       → تسویه‌حساب با باغدار
+ ┣ 📂 settlements       → تسویه‌حساب با میدان‌بار
  ┣ 📂 invoices          → فاکتور رسمی + مؤدیان
- ┣ 📂 deliveries        → حمل و نقل، درایور، tracking
+ ┣ 📂 deliveries        → ★ بروزشده: zone-based + cost optimization
+ ┣ 📂 delivery-zones    → ★ جدید: مناطق تحویل + هزینه + تخصیص راننده
  ┣ 📂 warehouses        → سردخانه، رزرو فضا
  ┣ 📂 auctions          → مزایده (فاز 4)
  ┣ 📂 subscriptions     → قرارداد دوره‌ای (فاز 4)
- ┣ 📂 reviews           → رتبه‌بندی دو طرفه
+ ┣ 📂 reviews           → رتبه‌بندی
  ┣ 📂 disputes          → حل اختلاف
  ┣ 📂 notifications     → SMS + Push + Email + In-app
  ┣ 📂 uploads           → مدیریت فایل (MinIO/S3)
- ┣ 📂 admin             → APIهای مخصوص ادمین
+ ┣ 📂 admin             → ★ بروزشده: SuperAdmin / Admin / Support
+ ┣ 📂 permissions       → ★ جدید: مدیریت دسترسی‌ها توسط SuperAdmin
  ┣ 📂 analytics         → گزارش‌ها و آمار
  ┣ 📂 ai-bridge         → ارتباط با AI service
  ┗ 📂 shared            → utilities, decorators, pipes, filters
@@ -302,12 +319,25 @@ User places order
       │
       ▼
 ┌──────────────┐
+│ Validate     │ ← بررسی time slot معتبر و ظرفیت خالی
+│ Time Slot    │ ← بررسی تعطیلی نبودن روز
+└──────┬───────┘
+       │
+       ▼
+┌──────────────┐
+│ Validate     │ ← آدرس در کدام delivery zone است؟
+│ Delivery Zone│ ← آیا آن zone فعال و دارای راننده است؟
+└──────┬───────┘
+       │
+       ▼
+┌──────────────┐
 │ Create Order │ (status: PENDING_PAYMENT)
 └──────┬───────┘
        │
        ▼
 ┌──────────────┐
 │Reserve Stock │ ← Redis lock
+│+ Reserve Slot│ ← افزایش booked در time slot
 └──────┬───────┘
        │
        ▼
@@ -322,17 +352,17 @@ User places order
        │
        ▼
 ┌──────────────┐
-│Notify Farmer │ ← SMS + in-app
+│Notify Vendor │ ← SMS + in-app به میدان‌بار
 └──────┬───────┘
        │
        ▼
 ┌──────────────┐
-│Farmer Confirm│ (status: CONFIRMED)
+│Vendor Confirm│ (status: CONFIRMED)
 └──────┬───────┘
        │
        ▼
 ┌──────────────┐
-│Assign Driver │
+│Assign Driver │ ← فقط راننده‌های آن zone
 └──────┬───────┘
        │
        ▼
@@ -360,11 +390,12 @@ User places order
        │
        ▼
 ┌──────────────┐
-│Payout Farmer │ (در cycle تسویه)
+│Payout Vendor │ (در cycle تسویه)
 └──────────────┘
 
 Compensation (در صورت خطا):
 - Release Stock reservation
+- Release Time Slot reservation (کاهش booked)
 - Refund payment
 - Cancel order
 ```
@@ -402,10 +433,11 @@ datasource db {
 
 enum UserRole {
   BUYER
-  FARMER
+  VENDOR        // میدان‌بار (جایگزین FARMER)
   DRIVER
   ADMIN
-  SUPPORT
+  SUPER_ADMIN   // ★ جدید: دسترسی کامل + مدیریت پرمیشن‌ها
+  SUPPORT       // ★ جدید: فقط مشاهده + پاسخ تیکت
 }
 
 enum UserStatus {
@@ -439,7 +471,7 @@ enum QualityGrade {
 enum OrderStatus {
   PENDING_PAYMENT
   PAID_HELD          // پول در escrow
-  CONFIRMED          // تأیید باغدار
+  CONFIRMED          // تأیید میدان‌بار
   PREPARING
   READY_FOR_PICKUP
   SHIPPING
@@ -491,6 +523,72 @@ enum DisputeStatus {
   CLOSED
 }
 
+// ★ جدید
+enum DeliveryZoneStatus {
+  ACTIVE
+  INACTIVE
+}
+
+// ★ جدید
+enum TimeSlotStatus {
+  AVAILABLE
+  FULL
+  CLOSED       // تعطیل / بسته توسط ادمین
+}
+
+// ★ جدید
+enum HolidayType {
+  FRIDAY
+  OFFICIAL     // تعطیل رسمی
+  CUSTOM       // تعطیل دستی توسط میدان‌بار
+}
+
+// ★ جدید
+enum QuickOrderType {
+  REPEAT_LAST     // تکرار آخرین سفارش
+  FROM_TEMPLATE   // از روی قالب ذخیره‌شده
+}
+
+// ★ جدید
+enum AdminPermission {
+  // User Management
+  VIEW_USERS
+  EDIT_USERS
+  SUSPEND_USERS
+  DELETE_USERS
+  // Order Management
+  VIEW_ORDERS
+  EDIT_ORDERS
+  CANCEL_ORDERS
+  REFUND_ORDERS
+  // Product Management
+  VIEW_PRODUCTS
+  APPROVE_PRODUCTS
+  EDIT_PRODUCTS
+  DELETE_PRODUCTS
+  // Financial
+  VIEW_FINANCIALS
+  MANAGE_SETTLEMENTS
+  MANAGE_REFUNDS
+  // Delivery
+  VIEW_DELIVERIES
+  MANAGE_DRIVERS
+  MANAGE_ZONES
+  // Time Slots
+  MANAGE_TIMESLOTS
+  MANAGE_HOLIDAYS
+  // Disputes
+  VIEW_DISPUTES
+  RESOLVE_DISPUTES
+  // Analytics
+  VIEW_ANALYTICS
+  EXPORT_REPORTS
+  // System (فقط SuperAdmin)
+  MANAGE_ADMINS
+  MANAGE_PERMISSIONS
+  MANAGE_SYSTEM_CONFIG
+}
+
 // ============================================
 // USERS & AUTH
 // ============================================
@@ -510,17 +608,20 @@ model User {
   referredBy      String?
 
   // Relations
-  farmer          Farmer?
+  vendor          Vendor?                  // اگر VENDOR باشد
   buyer           Buyer?
   driver          Driver?
   addresses       Address[]
-  orders          Order[]    @relation("BuyerOrders")
-  reviewsGiven    Review[]   @relation("ReviewAuthor")
-  reviewsReceived Review[]   @relation("ReviewTarget")
+  orders          Order[]                  @relation("BuyerOrders")
+  reviewsGiven    Review[]                 @relation("ReviewAuthor")
+  reviewsReceived Review[]                 @relation("ReviewTarget")
   wallet          Wallet?
   sessions        Session[]
   notifications   Notification[]
   disputes        Dispute[]
+  quickTemplates  QuickOrderTemplate[]     @relation("BuyerQuickTemplates") // ★ جدید
+  adminRoles      AdminRoleAssignment[]    @relation("AdminRoles")          // ★ جدید
+  adminLogs       AdminActionLog[]         @relation("AdminLogs")           // ★ جدید
 
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
@@ -565,26 +666,27 @@ model OtpCode {
 }
 
 // ============================================
-// FARMER
+// VENDOR (میدان‌بار) — جایگزین Farmer
 // ============================================
 
-model Farmer {
+// ★ یک Vendor می‌تواند چند شعبه (VendorBranch) داشته باشد
+model Vendor {
   id              String    @id @default(uuid())
   userId          String    @unique
   businessName    String
   description     String?
-  farmLocation    String?
-  farmLat         Decimal?  @db.Decimal(10, 7)
-  farmLng         Decimal?  @db.Decimal(10, 7)
+  logoUrl         String?
   iban            String?
   cardNumber      String?
   ratingAvg       Decimal   @default(0) @db.Decimal(3, 2)
   ratingCount     Int       @default(0)
   totalSales      Decimal   @default(0) @db.Decimal(18, 2)
-  commissionRate  Decimal?  @db.Decimal(5, 4) // override per-farmer
+  commissionRate  Decimal?  @db.Decimal(5, 4)
+  isActive        Boolean   @default(true)
   verifiedAt      DateTime?
 
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  branches        VendorBranch[]
   products        Product[]
   certificates    Certificate[]
   settlements     Settlement[]
@@ -594,19 +696,39 @@ model Farmer {
   updatedAt       DateTime  @updatedAt
   deletedAt       DateTime?
 
-  @@map("farmers")
+  @@map("vendors")
+}
+
+// شعبه‌های میدان‌بار (هر شعبه zone خودش رو دارد)
+model VendorBranch {
+  id          String   @id @default(uuid())
+  vendorId    String
+  name        String   // "میدان‌بار مرکزی", "انبار غرب"
+  address     String
+  lat         Decimal  @db.Decimal(10, 7)
+  lng         Decimal  @db.Decimal(10, 7)
+  phone       String?
+  isActive    Boolean  @default(true)
+
+  vendor      Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  zones       DeliveryZone[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("vendor_branches")
 }
 
 model Certificate {
   id         String   @id @default(uuid())
-  farmerId   String
+  vendorId   String
   type       String   // ORGANIC, GLOBAL_GAP, ...
   imageUrl   String
   issuedAt   DateTime
   expiresAt  DateTime?
   verified   Boolean  @default(false)
 
-  farmer     Farmer   @relation(fields: [farmerId], references: [id], onDelete: Cascade)
+  vendor     Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
 
   createdAt  DateTime @default(now())
   @@map("certificates")
@@ -661,6 +783,7 @@ model Driver {
 
   user              User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   deliveries        Delivery[]
+  zones             DriverZone[] // ★ جدید: مناطق این راننده
 
   createdAt         DateTime   @default(now())
   updatedAt         DateTime   @updatedAt
@@ -726,7 +849,7 @@ model Category {
 
 model Product {
   id                String         @id @default(uuid())
-  farmerId          String
+  vendorId          String         // ★ تغییر: farmerId → vendorId
   categoryId        String
   name              String
   slug              String         @unique
@@ -748,7 +871,7 @@ model Product {
   viewsCount        Int            @default(0)
   salesCount        Int            @default(0)
 
-  farmer            Farmer         @relation(fields: [farmerId], references: [id])
+  vendor            Vendor         @relation(fields: [vendorId], references: [id])
   category          Category       @relation(fields: [categoryId], references: [id])
   images            ProductImage[]
   priceHistory      PriceHistory[]
@@ -759,7 +882,7 @@ model Product {
   deletedAt         DateTime?
 
   @@index([categoryId, status])
-  @@index([farmerId])
+  @@index([vendorId])
   @@index([status])
   @@map("products")
 }
@@ -826,7 +949,10 @@ model Order {
   orderNumber         String       @unique   // KLM-2025-00001
   buyerId             String
   addressId           String
+  timeSlotId          String?      // ★ جدید: بازه زمانی تحویل (اجباری)
   status              OrderStatus  @default(PENDING_PAYMENT)
+  isQuickOrder        Boolean      @default(false) // ★ جدید: سفارش سریع؟
+  quickOrderTemplateId String?     // ★ جدید: از کدام قالب سریع ایجاد شده
   subtotal            Decimal      @db.Decimal(18, 2)
   deliveryFee         Decimal      @default(0) @db.Decimal(12, 2)
   tax                 Decimal      @default(0) @db.Decimal(12, 2)
@@ -839,6 +965,7 @@ model Order {
 
   buyer               User         @relation("BuyerOrders", fields: [buyerId], references: [id])
   address             Address      @relation(fields: [addressId], references: [id])
+  timeSlot            TimeSlot?    @relation(fields: [timeSlotId], references: [id])
   items               OrderItem[]
   payment             Payment?
   delivery            Delivery?
@@ -854,6 +981,7 @@ model Order {
   @@index([buyerId, status])
   @@index([status, createdAt])
   @@index([orderNumber])
+  @@index([timeSlotId])
   @@map("orders")
 }
 
@@ -861,7 +989,7 @@ model OrderItem {
   id             String   @id @default(uuid())
   orderId        String
   productId      String
-  farmerId       String          // snapshot - because products can change
+  vendorId       String          // ★ تغییر: farmerId → vendorId (snapshot)
   productName    String          // snapshot
   quantity       Decimal  @db.Decimal(10, 2)
   unit           String
@@ -874,7 +1002,7 @@ model OrderItem {
   product        Product  @relation(fields: [productId], references: [id])
 
   @@index([orderId])
-  @@index([farmerId])
+  @@index([vendorId])
   @@map("order_items")
 }
 
@@ -990,7 +1118,7 @@ model LedgerEntry {
 model CommissionRule {
   id              String    @id @default(uuid())
   categoryId      String?   // اگر null باشد، default است
-  farmerId        String?   // override per farmer
+  vendorId        String?   // ★ تغییر: farmerId → vendorId (override per vendor)
   rate            Decimal   @db.Decimal(5, 4) // 0.06 = 6%
   minAmount       Decimal?  @db.Decimal(18, 2)
   maxAmount       Decimal?  @db.Decimal(18, 2)
@@ -1002,35 +1130,35 @@ model CommissionRule {
   updatedAt       DateTime  @updatedAt
 
   @@index([categoryId, isActive])
-  @@index([farmerId])
+  @@index([vendorId])
   @@map("commission_rules")
 }
 
 model Settlement {
   id              String    @id @default(uuid())
-  farmerId        String
+  vendorId        String    // ★ تغییر: farmerId → vendorId
   periodStart     DateTime
   periodEnd       DateTime
-  grossAmount     Decimal   @db.Decimal(18, 2) // کل فروش
+  grossAmount     Decimal   @db.Decimal(18, 2)
   commissionAmount Decimal  @db.Decimal(18, 2)
   deliveryFees    Decimal   @default(0) @db.Decimal(18, 2)
   taxes           Decimal   @default(0) @db.Decimal(18, 2)
-  netAmount       Decimal   @db.Decimal(18, 2) // قابل پرداخت به باغدار
+  netAmount       Decimal   @db.Decimal(18, 2)
   status          String    @default("PENDING") // PENDING, PAID, FAILED
   paidAt          DateTime?
 
-  farmer          Farmer    @relation(fields: [farmerId], references: [id])
+  vendor          Vendor    @relation(fields: [vendorId], references: [id])
   payouts         Payout[]
 
   createdAt       DateTime  @default(now())
 
-  @@index([farmerId, status])
+  @@index([vendorId, status])
   @@map("settlements")
 }
 
 model Payout {
   id            String    @id @default(uuid())
-  farmerId      String
+  vendorId      String    // ★ تغییر: farmerId → vendorId
   settlementId  String
   amount        Decimal   @db.Decimal(18, 2)
   iban          String
@@ -1039,12 +1167,12 @@ model Payout {
   paidAt        DateTime?
   failureReason String?
 
-  farmer        Farmer    @relation(fields: [farmerId], references: [id])
+  vendor        Vendor     @relation(fields: [vendorId], references: [id])
   settlement    Settlement @relation(fields: [settlementId], references: [id])
 
   createdAt     DateTime  @default(now())
 
-  @@index([farmerId, status])
+  @@index([vendorId, status])
   @@map("payouts")
 }
 
@@ -1070,13 +1198,122 @@ model Invoice {
 }
 
 // ============================================
-// DELIVERY
+// ★ جدید: DELIVERY ZONES (منطقه‌بندی راننده)
+// ============================================
+
+// هر zone = یک محدوده جغرافیایی با هزینه و راننده‌های مخصوص خودش
+model DeliveryZone {
+  id              String             @id @default(uuid())
+  vendorBranchId  String             // کدام شعبه میدان‌بار این zone را پوشش می‌دهد
+  name            String             // "تهران غرب"، "کرج"
+  description     String?
+  // polygon مناطق به صورت JSON (آرایه‌ای از lat/lng)
+  polygon         Json               // [{lat, lng}, ...]
+  baseFee         Decimal            @db.Decimal(10, 2) // هزینه پایه تحویل
+  feePerKm        Decimal?           @db.Decimal(8, 2)  // هزینه اضافه per KM
+  minOrderAmount  Decimal?           @db.Decimal(18, 2) // حداقل سفارش برای این zone
+  status          DeliveryZoneStatus @default(ACTIVE)
+
+  branch          VendorBranch       @relation(fields: [vendorBranchId], references: [id])
+  drivers         DriverZone[]
+  deliveries      Delivery[]
+
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([vendorBranchId])
+  @@map("delivery_zones")
+}
+
+// جدول واسط: کدام راننده‌ها در کدام zone‌ها فعالند
+model DriverZone {
+  id        String       @id @default(uuid())
+  driverId  String
+  zoneId    String
+  priority  Int          @default(1)  // اولویت تخصیص (1 = بالاتر)
+  isActive  Boolean      @default(true)
+
+  driver    Driver       @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  zone      DeliveryZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+
+  @@unique([driverId, zoneId])
+  @@map("driver_zones")
+}
+
+// ============================================
+// ★ جدید: TIME SLOTS (بازه‌های زمانی تحویل)
+// ============================================
+
+// قالب time slot — تنظیم توسط ادمین
+model TimeSlotTemplate {
+  id            String   @id @default(uuid())
+  vendorId      String
+  dayOfWeek     Int      // 0=یکشنبه ... 6=شنبه (جمعه=5 همیشه بسته)
+  startTime     String   // "08:00"
+  endTime       String   // "12:00"
+  capacity      Int      // حداکثر سفارش در این slot
+  cutoffHours   Int      @default(12) // ★ چند ساعت قبل از slot باید سفارش داده شود
+  isActive      Boolean  @default(true)
+
+  vendor        Vendor   @relation(fields: [vendorId], references: [id])
+  slots         TimeSlot[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("time_slot_templates")
+}
+
+// slot های واقعی به ازای هر روز (generate شده از template)
+model TimeSlot {
+  id            String         @id @default(uuid())
+  templateId    String
+  date          DateTime       // تاریخ این slot (فقط روز)
+  startTime     String         // "08:00"
+  endTime       String         // "12:00"
+  capacity      Int
+  booked        Int            @default(0)  // تعداد رزرو شده
+  status        TimeSlotStatus @default(AVAILABLE)
+  cutoffAt      DateTime       // ★ مهلت ثبت سفارش برای این slot
+
+  template      TimeSlotTemplate @relation(fields: [templateId], references: [id])
+  orders        Order[]
+
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@unique([templateId, date, startTime])
+  @@index([date, status])
+  @@map("time_slots")
+}
+
+// ★ جدید: تعطیلات میدان‌بار (جمعه‌ها + تعطیلات رسمی + تعطیلات دستی)
+model VendorHoliday {
+  id          String      @id @default(uuid())
+  vendorId    String
+  date        DateTime    // تاریخ تعطیل
+  type        HolidayType
+  description String?     // "نوروز"، "تعطیل اضطراری"
+  createdBy   String      // adminId
+
+  vendor      Vendor      @relation(fields: [vendorId], references: [id])
+
+  createdAt   DateTime    @default(now())
+
+  @@unique([vendorId, date])
+  @@index([vendorId, date])
+  @@map("vendor_holidays")
+}
+
+// ============================================
+// DELIVERY (بروزشده با zone و time slot)
 // ============================================
 
 model Delivery {
   id              String          @id @default(uuid())
   orderId         String          @unique
   driverId        String?
+  zoneId          String?         // ★ جدید: در کدام zone تحویل داده می‌شود
   status          DeliveryStatus  @default(PENDING_ASSIGNMENT)
   pickupLat       Decimal         @db.Decimal(10, 7)
   pickupLng       Decimal         @db.Decimal(10, 7)
@@ -1087,19 +1324,21 @@ model Delivery {
   scheduledAt     DateTime?
   pickedUpAt      DateTime?
   deliveredAt     DateTime?
-  proofImage      String?         // عکس تحویل
+  proofImage      String?
   signatureImage  String?
   recipientName   String?
-  temperatureLog  Json?           // برای cold chain
+  temperatureLog  Json?
 
   order           Order           @relation(fields: [orderId], references: [id])
   driver          Driver?         @relation(fields: [driverId], references: [id])
+  zone            DeliveryZone?   @relation(fields: [zoneId], references: [id])
   locations       DeliveryLocation[]
 
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
   @@index([driverId, status])
+  @@index([zoneId, status])
   @@index([status])
   @@map("deliveries")
 }
@@ -1170,10 +1409,10 @@ model Review {
   id         String   @id @default(uuid())
   orderId    String
   authorId   String   // reviewer
-  targetId   String   // reviewed (farmer or buyer)
+  targetId   String   // reviewed (vendor or buyer)
   rating     Int      // 1-5
   comment    String?
-  type       String   // BUYER_REVIEWS_FARMER, FARMER_REVIEWS_BUYER
+  type       String   // BUYER_REVIEWS_VENDOR, VENDOR_REVIEWS_BUYER
 
   author     User     @relation("ReviewAuthor", fields: [authorId], references: [id])
   target     User     @relation("ReviewTarget", fields: [targetId], references: [id])
@@ -1254,6 +1493,89 @@ model AuditLog {
   @@index([userId, createdAt])
   @@index([entity, entityId])
   @@map("audit_logs")
+}
+
+// ============================================
+// ★ جدید: QUICK ORDER (سفارش سریع)
+// ============================================
+
+// قالب‌های ذخیره‌شده برای سفارش سریع هر خریدار
+model QuickOrderTemplate {
+  id          String   @id @default(uuid())
+  buyerId     String
+  name        String   // "سفارش هفتگی معمول"
+  items       Json     // [{productId, quantity, unit}, ...]
+  addressId   String?  // آدرس پیش‌فرض
+  isDefault   Boolean  @default(false)
+
+  buyer       User     @relation("BuyerQuickTemplates", fields: [buyerId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([buyerId])
+  @@map("quick_order_templates")
+}
+
+// ============================================
+// ★ جدید: ADMIN PERMISSION SYSTEM
+// ============================================
+
+// نقش‌های ادمین تعریف‌شده توسط SuperAdmin
+model AdminRole {
+  id          String   @id @default(uuid())
+  name        String   @unique  // "مدیر مالی"، "پشتیبان"، "ادمین عملیات"
+  description String?
+  permissions Json     // AdminPermission[] — آرایه‌ای از پرمیشن‌ها
+  isSystem    Boolean  @default(false) // نقش‌های پیش‌فرض سیستم (قابل حذف نیست)
+  createdBy   String   // superAdminId
+
+  assignments AdminRoleAssignment[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("admin_roles")
+}
+
+// تخصیص نقش به ادمین/سپورت توسط SuperAdmin
+model AdminRoleAssignment {
+  id        String    @id @default(uuid())
+  userId    String    // adminId یا supportId
+  roleId    String
+  grantedBy String    // superAdminId که این دسترسی را داده
+  expiresAt DateTime? // دسترسی موقت
+
+  user      User      @relation("AdminRoles", fields: [userId], references: [id], onDelete: Cascade)
+  role      AdminRole @relation(fields: [roleId], references: [id])
+
+  createdAt DateTime  @default(now())
+
+  @@unique([userId, roleId])
+  @@index([userId])
+  @@map("admin_role_assignments")
+}
+
+// لاگ تمام اقدامات ادمین‌ها (فراتر از audit log معمولی)
+model AdminActionLog {
+  id          String   @id @default(uuid())
+  adminId     String
+  permission  String   // کدام پرمیشن استفاده شد
+  action      String   // توضیح دقیق عملیات
+  targetType  String?  // User, Order, Product, ...
+  targetId    String?
+  before      Json?
+  after       Json?
+  ip          String?
+  userAgent   String?
+
+  admin       User     @relation("AdminLogs", fields: [adminId], references: [id])
+
+  createdAt   DateTime @default(now())
+
+  @@index([adminId, createdAt])
+  @@index([permission])
+  @@map("admin_action_logs")
 }
 ```
 
@@ -1471,6 +1793,11 @@ kalam-backend/
 │       │   ├── dto/
 │       │   ├── entities/
 │       │   └── tests/
+│       ├── vendors/             // ★ جدید (جایگزین farmers/)
+│       ├── time-slots/          // ★ جدید
+│       ├── delivery-zones/      // ★ جدید
+│       ├── quick-orders/        // ★ جدید
+│       ├── permissions/         // ★ جدید (SuperAdmin)
 │       ├── products/
 │       ├── orders/
 │       ├── payments/
@@ -1524,14 +1851,11 @@ products/
 
 ## 8. فازبندی کامل بکند
 
-> **وضعیت فعلی (بر اساس swagger audit):** ✅ = اندپوینت‌ها در swagger موجود است | ⚠️ = ناقص | ❌ = در swagger نیست
-
 ### فاز 1: Core MVP — هفته‌های 1 تا 10
 
-**هدف:** یه باغدار بتونه محصول بذاره، یه خریدار بتونه بخره. پرداخت manual.
+**هدف:** میدان‌بار بتونه محصول بذاره، یه خریدار بتونه بخره. پرداخت manual.
 
 #### Sprint 1-2 (هفته 1-2): Setup & Foundation
-> ✅ **وضعیت:** انجام شده — swagger.json موجود است، health check endpoints فعال.
 
 - [ ] راه‌اندازی پروژه NestJS با ساختار کامل
 - [ ] Setup Docker Compose (Postgres + Redis + MinIO)
@@ -1548,23 +1872,22 @@ products/
 **Deliverable:** پروژه قابل اجرا با `docker-compose up` + swagger روی `/api/docs`
 
 #### Sprint 3-4 (هفته 3-4): Auth & Users
-> ✅ **وضعیت:** انجام شده — 5 auth endpoints + 7 user endpoints + 3 KYC endpoints + 5 farmer/buyer/driver endpoints در swagger موجود است. RBAC از طریق `access-token` security scheme پیاده‌سازی شده.
 
 - [ ] ماژول `auth`: ثبت‌نام با OTP
 - [ ] اتصال به کاوه‌نگار یا ملی‌پیامک
 - [ ] JWT + Refresh Token
 - [ ] Rate limiting روی OTP
 - [ ] ماژول `users`: CRUD + پروفایل
-- [ ] RBAC (Role-Based Access Control) با Guards
+- [ ] RBAC با Guards (SUPER_ADMIN / ADMIN / SUPPORT / BUYER / VENDOR / DRIVER)
 - [ ] Session management در Redis
 - [ ] ماژول `kyc`: آپلود مدارک
-- [ ] ماژول `farmers` + `buyers` + `drivers`: پروفایل تخصصی
+- [ ] ★ ماژول `vendors`: پروفایل میدان‌بار + شعب (VendorBranch)
+- [ ] ماژول `buyers` + `drivers`: پروفایل تخصصی
 - [ ] آدرس‌ها (addresses)
 
 **Deliverable:** کاربر بتواند ثبت‌نام، ورود، و پروفایل خود را مدیریت کند.
 
 #### Sprint 5-6 (هفته 5-6): Products & Catalog
-> ✅ **وضعیت:** انجام شده — 9 product endpoints + 6 category endpoints + 1 catalog endpoint + 4 storage endpoints در swagger موجود است. فیلترهای B2B، upload سرویس (MinIO)، و inventory مدیریت شده.
 
 - [ ] ماژول `categories`: CRUD سلسله‌مراتبی
 - [ ] ماژول `products`: CRUD کامل
@@ -1575,10 +1898,9 @@ products/
 - [ ] Cache layer برای لیست محصولات
 - [ ] Price history tracking
 
-**Deliverable:** باغدار محصول می‌گذارد، خریدار با فیلتر می‌تواند جستجو کند.
+**Deliverable:** میدان‌بار محصول می‌گذارد، خریدار با فیلتر می‌تواند جستجو کند.
 
 #### Sprint 7-8 (هفته 7-8): Cart & Order Basic
-> ✅ **وضعیت:** انجام شده — 5 cart endpoints + 7 order endpoints + 3 escrow endpoints در swagger موجود است. State machine و محاسبه مالیات/حمل پیاده‌سازی شده.
 
 - [ ] ماژول `cart`: سبد خرید persistent
 - [ ] ماژول `orders`: ایجاد سفارش
@@ -1590,19 +1912,31 @@ products/
 
 **Deliverable:** خریدار می‌تواند سبد بسازد و سفارش ثبت کند (پرداخت dummy).
 
-#### Sprint 9-10 (هفته 9-10): Notifications & Admin
-> ✅ **وضعیت:** انجام شده — 5 notification endpoints + 9 admin dashboard endpoints + 7 user management endpoints در swagger موجود است. (توجه: برخی endpointهای admin مانند `/admin/payments` و `/admin/kyc` در swagger نیستند و باید با تیم بکند بررسی شوند.)
+#### Sprint 9-10 (هفته 9-10): Time Slots + Quick Order + Admin
 
+- [ ] ماژول `time-slots`: ساخت template و generate کردن slot های روزانه
+- [ ] مدیریت تعطیلات (جمعه‌ها خودکار + تعطیلات رسمی + دستی)
+- [ ] Cron job برای generate کردن slot های هفته آینده
+- [ ] validation: ثبت سفارش فقط با slot معتبر و ظرفیت خالی
+- [ ] ماژول `quick-orders`: سفارش سریع
+  - [ ] "تکرار آخرین سفارش"
+  - [ ] ذخیره و مدیریت قالب سفارش
 - [ ] ماژول `notifications`: SMS + In-app
 - [ ] Event listener روی رویدادهای سفارش
 - [ ] BullMQ queue برای ارسال async
-- [ ] ماژول `admin`: APIهای مخصوص
-- [ ] مدیریت محصولات (تأیید محصول باغدار)
+- [ ] ★ ماژول `admin` با سه سطح **SuperAdmin / Admin / Support**
+  - [ ] SuperAdmin: ساخت نقش + تخصیص پرمیشن
+  - [ ] Admin: اقدامات بر اساس پرمیشن
+  - [ ] Support: مشاهده + پاسخ تیکت
+- [ ] ★ ماژول `permissions`: RBAC پیشرفته با AdminRole و AdminRoleAssignment
+- [ ] PermissionGuard و RequirePermission decorator
+- [ ] AdminActionLog برای تمام اقدامات مدیریتی
+- [ ] مدیریت محصولات (تأیید محصول vendor)
 - [ ] مدیریت کاربران (verify, suspend)
 - [ ] Dashboard ابتدایی (آمار کلی)
 - [ ] Audit logging
 
-**Deliverable:** MVP کاربردی با Admin Panel ابتدایی.
+**Deliverable:** MVP کاربردی با Time Slot، Quick Order، و Admin Panel چند سطحی.
 
 ---
 
@@ -1623,18 +1957,21 @@ products/
 
 - [ ] ماژول `escrow`: hold و release
 - [ ] ماژول `commissions`: Rule engine
-- [ ] کمیسیون per-category + per-farmer
+- [ ] کمیسیون per-category + per-vendor
 - [ ] محاسبه خودکار در موقع checkout
 - [ ] ماژول `settlements`: محاسبه weekly/monthly
 - [ ] Cron job برای settlement
-- [ ] ماژول `payouts`: پرداخت به IBAN باغدار
+- [ ] ماژول `payouts`: پرداخت به IBAN میدان‌بار
 
-#### Sprint 15-16 (هفته 15-16): Delivery Core
+#### Sprint 15-16 (هفته 15-16): Delivery Core + Zone-based
 
+- [ ] ماژول `delivery-zones`: تعریف مناطق جغرافیایی (polygon)
+- [ ] تخصیص راننده به zone (`driver_zones`)
+- [ ] محاسبه خودکار zone خریدار بر اساس آدرس
 - [ ] ماژول `deliveries`: ایجاد و تخصیص
-- [ ] الگوریتم تخصیص راننده (nearest + capacity)
+- [ ] ★ الگوریتم تخصیص راننده: فقط راننده‌های همان zone + نزدیک‌ترین + ظرفیت
+- [ ] محاسبه delivery fee بر اساس zone (baseFee + feePerKm)
 - [ ] محاسبه distance با نشان/بلد
-- [ ] محاسبه delivery fee
 - [ ] WebSocket برای real-time tracking
 - [ ] اپ راننده: accept/reject، update location
 - [ ] Proof of delivery (image + signature)
@@ -2244,6 +2581,71 @@ updates:
 - **Expiry:** 2 دقیقه
 - **Hashed storage:** کد OTP هش شده ذخیره بشه (bcrypt)
 
+### 11.4 ★ سیستم مدیریت دسترسی (SuperAdmin / Admin / Support)
+
+#### سطوح مدیریتی
+
+| سطح | نقش | توضیح |
+|---|---|---|
+| **SuperAdmin** | `SUPER_ADMIN` | دسترسی کامل به همه چیز + می‌تواند نقش بسازد و دسترسی بدهد/بگیرد |
+| **Admin** | `ADMIN` | دسترسی‌های تعریف‌شده توسط SuperAdmin |
+| **Support** | `SUPPORT` | معمولاً فقط مشاهده + پاسخ تیکت + resolve dispute |
+
+#### منطق کار
+
+```
+SuperAdmin
+  ├── می‌تواند AdminRole بسازد (مثلاً "مدیر مالی"، "ادمین انبار")
+  ├── می‌تواند پرمیشن‌ها را به هر نقش اختصاص دهد
+  ├── می‌تواند نقش را به یک کاربر Admin/Support بدهد
+  ├── می‌تواند دسترسی را expire date داشته باشد (موقت)
+  └── همه اقدامات در AdminActionLog ثبت می‌شود
+
+Admin (نمونه نقش "ادمین عملیات"):
+  ├── VIEW_ORDERS ✅
+  ├── CANCEL_ORDERS ✅
+  ├── MANAGE_DRIVERS ✅
+  ├── MANAGE_ZONES ✅
+  ├── VIEW_FINANCIALS ❌ (ندارد)
+  └── MANAGE_ADMINS ❌ (فقط SuperAdmin)
+
+Support (نمونه نقش "پشتیبان"):
+  ├── VIEW_ORDERS ✅
+  ├── VIEW_DISPUTES ✅
+  ├── RESOLVE_DISPUTES ✅
+  ├── CANCEL_ORDERS ❌
+  └── VIEW_FINANCIALS ❌
+```
+
+#### Guard ها
+
+```typescript
+// بررسی نقش
+@Roles(UserRole.SUPER_ADMIN)
+@UseGuards(JwtAuthGuard, RolesGuard)
+
+// بررسی پرمیشن خاص
+@RequirePermission(AdminPermission.MANAGE_SETTLEMENTS)
+@UseGuards(JwtAuthGuard, PermissionGuard)
+
+// SuperAdmin همه چیز رو bypass می‌کند
+// Admin/Support فقط پرمیشن‌های تخصیص‌یافته‌شان را دارند
+```
+
+#### پرمیشن‌های کامل
+
+```
+📋 User Management:     VIEW_USERS | EDIT_USERS | SUSPEND_USERS | DELETE_USERS
+📋 Order Management:    VIEW_ORDERS | EDIT_ORDERS | CANCEL_ORDERS | REFUND_ORDERS
+📋 Product Management:  VIEW_PRODUCTS | APPROVE_PRODUCTS | EDIT_PRODUCTS | DELETE_PRODUCTS
+📋 Financial:           VIEW_FINANCIALS | MANAGE_SETTLEMENTS | MANAGE_REFUNDS
+📋 Delivery:            VIEW_DELIVERIES | MANAGE_DRIVERS | MANAGE_ZONES
+📋 Time Slots:          MANAGE_TIMESLOTS | MANAGE_HOLIDAYS
+📋 Disputes:            VIEW_DISPUTES | RESOLVE_DISPUTES
+📋 Analytics:           VIEW_ANALYTICS | EXPORT_REPORTS
+🔒 System (SuperAdmin): MANAGE_ADMINS | MANAGE_PERMISSIONS | MANAGE_SYSTEM_CONFIG
+```
+
 ### 11.4 Secrets Management
 
 - هرگز secrets در کد نذارید
@@ -2262,21 +2664,56 @@ updates:
 
 ## 12. API Design
 
-### 12.1 REST Conventions
+### 12.1 Complete API Reference
 
-```
-GET    /api/v1/products              → List
-GET    /api/v1/products/:id          → Get one
-POST   /api/v1/products              → Create
-PATCH  /api/v1/products/:id          → Partial update
-PUT    /api/v1/products/:id          → Full update
-DELETE /api/v1/products/:id          → Soft delete
+> 📄 **Detailed endpoint registry with all 170+ endpoints:** `docs/swagger-endpoint-registry.md`
+>
+> **Source:** `swagger.json` — نگه‌داری شده توسط `@nestjs/swagger`
 
-# Sub-resources
-GET    /api/v1/farmers/:id/products  → Farmer's products
-POST   /api/v1/orders/:id/confirm    → Action (verb for non-CRUD)
-POST   /api/v1/orders/:id/cancel
-```
+#### Summary by Module
+
+| Module | # Endpoints | Auth | Frontend Service |
+|--------|------------|------|-----------------|
+| **Auth** | 5 | Partial (3 public, 2 protected) | ✅ `auth.service.ts` |
+| **Users** | 7 | All protected (Admin) | ✅ `users.service.ts` |
+| **Addresses** | 6 | All protected | ✅ `address.service.ts` |
+| **KYC** | 3 | All protected | ❌ Missing |
+| **Farmers** | 5 | Mixed | ✅ `farmer.service.ts` |
+| **Vendors** | 7 | Mixed | ❌ Missing (v1.1 feature) |
+| **Buyers** | 7 | All protected | ⚠️ Partial (`buyer.service.ts` has 2/7) |
+| **Drivers** | 3 | Mixed | ✅ `driver.service.ts` |
+| **Products** | 9 | Mixed | ✅ `productService.ts` |
+| **Categories** | 6 | Mixed | ✅ `categoryService.ts` |
+| **Catalog** | 1 | Public | ❌ Missing |
+| **Cart** | 5 | All protected | ✅ `cart.service.ts` |
+| **Orders** | 7 | All protected | ✅ `order.service.ts` |
+| **Payments** | 10 | All protected | ⚠️ Partial (path mismatches) |
+| **Wallet (v2)** | 6 | All protected | ❌ Missing (separate from Payments) |
+| **Escrow** | 3 | All protected | ❌ Missing |
+| **Deliveries** | 12 | All protected | ⚠️ Partial (2 missing methods) |
+| **Delivery Zones** | 7 | All protected | ❌ Missing |
+| **TimeSlots** | 7 | Mixed | ❌ Missing (v1.1 feature) |
+| **Notifications** | 5 | All protected | ✅ `notification.service.ts` |
+| **Invoices** | 7 | All protected | ⚠️ Partial (3 missing methods) |
+| **Commissions** | 4 | All protected | ✅ `commission.service.ts` |
+| **Settlements** | 5 | All protected | ✅ `settlement.service.ts` |
+| **Disputes** | 6 | All protected | ✅ `dispute.service.ts` |
+| **Reviews** | 3 | Mixed | ✅ `review.service.ts` |
+| **Subscriptions** | 5 | All protected | ✅ `subscription.service.ts` |
+| **Auctions** | 5 | Mixed | ✅ `auction.service.ts` |
+| **Pre-Harvest Orders** | 7 | All protected | ❌ Missing |
+| **Warehouses** | 6 | Mixed | ✅ `warehouse.service.ts` |
+| **Wishlist** | 5 | All protected | ✅ `wishlist.service.ts` |
+| **Storage** | 4 | All protected | ✅ `storage.service.ts` |
+| **AI** | 5 | All protected | ✅ `ai.service.ts` |
+| **Admin Dashboard** | 9 | All protected | ✅ `admin.service.ts` |
+| **Analytics** | 5 | All protected | ❌ Missing |
+| **Health** | 2 | Public | ❌ Missing |
+
+#### Coverage Stats
+- ✅ **Fully covered (service + matching path):** ~110 endpoints (22 modules)
+- ⚠️ **Partial / path mismatch:** ~15 endpoints (4 modules)
+- 🔴 **No frontend service:** ~50 endpoints (12 modules)
 
 ### 12.2 Response Format
 
@@ -2634,7 +3071,179 @@ Stage 5: Multi-region deployment
 
 ---
 
-## 17. چک‌لیست نهایی
+## 17. ★ ویژگی‌های جدید v1.1 — مستندات تکمیلی
+
+### 17.1 میدان‌بار به جای باغدار
+
+در این نسخه، مفهوم **Farmer** کاملاً حذف شده و جای خود را به **Vendor (میدان‌بار)** داده است.
+
+| جدول قبلی | جدول جدید | توضیح |
+|---|---|---|
+| `farmers` | `vendors` | پروفایل فروشنده |
+| `certificates` | `certificates` | گواهی‌ها (vendorId) |
+| `settlements` (farmerId) | `settlements` (vendorId) | تسویه‌حساب |
+| `payouts` (farmerId) | `payouts` (vendorId) | پرداخت |
+| `order_items` (farmerId) | `order_items` (vendorId) | snapshot سفارش |
+
+**مزیت این طراحی:** در آینده اگر بخواهیم باغدار مستقیم هم اضافه کنیم، کافیست `vendorType` به `Vendor` اضافه کنیم.
+
+### 17.2 سیستم Time Slot تحویل
+
+#### منطق کار
+
+```
+1. SuperAdmin/Admin قالب‌های slot می‌سازد (TimeSlotTemplate)
+   مثلاً: هر روز شنبه تا پنج‌شنبه: 8-12 و 13-17 (ظرفیت 50 سفارش)
+
+2. Cron job هر شب slot های 7 روز آینده را generate می‌کند (TimeSlot)
+   → جمعه‌ها اصلاً generate نمی‌شوند
+   → تعطیلات رسمی (VendorHoliday) از تقویم چک می‌شود
+
+3. مشتری هنگام checkout:
+   → لیست slot های موجود برای چند روز آینده را می‌بیند
+   → cutoffAt را سیستم چک می‌کند (مثلاً 12 ساعت قبل از slot)
+   → بعد از cutoffAt دیگر نمی‌توان در آن slot سفارش داد
+
+4. هنگام reserve stock:
+   → booked در TimeSlot هم افزایش می‌یابد
+   → اگر booked >= capacity → slot FULL می‌شود
+
+5. اگر سفارش cancel شود:
+   → booked کاهش می‌یابد
+   → slot دوباره AVAILABLE می‌شود (اگر قبل از cutoffAt باشد)
+```
+
+#### API های Time Slot
+
+```
+GET  /api/v1/time-slots/available?date=2025-04-15&zoneId=xxx
+     → لیست slot های موجود برای آن روز در آن zone
+
+GET  /api/v1/time-slots/available-dates?days=7&zoneId=xxx
+     → تاریخ‌هایی که slot دارند (برای calendar picker)
+
+POST /api/v1/admin/time-slots/templates        (نیاز: MANAGE_TIMESLOTS)
+POST /api/v1/admin/time-slots/generate         (generate دستی)
+POST /api/v1/admin/holidays                    (نیاز: MANAGE_HOLIDAYS)
+DELETE /api/v1/admin/holidays/:id
+```
+
+### 17.3 Delivery Zones (منطقه‌بندی راننده)
+
+#### منطق کار
+
+```
+1. SuperAdmin/Admin چند zone تعریف می‌کند (polygon روی نقشه)
+   مثلاً: "تهران شمال"، "تهران جنوب"، "کرج"
+
+2. هر zone به یک VendorBranch متصل است
+   (کدام انبار میدان‌بار این zone را تأمین می‌کند)
+
+3. راننده‌ها به zone ها assign می‌شوند (DriverZone)
+   یک راننده می‌تواند در چند zone باشد
+
+4. هنگام ثبت سفارش:
+   → آدرس خریدار geocode می‌شود
+   → بررسی می‌شود در کدام polygon قرار دارد
+   → zone مناسب پیدا می‌شود
+   → delivery fee بر اساس baseFee + feePerKm محاسبه می‌شود
+
+5. هنگام assign راننده:
+   → فقط راننده‌های آن zone + isAvailable=true انتخاب می‌شوند
+   → بر اساس priority و نزدیکی به pickup تخصیص می‌یابد
+```
+
+#### API های Delivery Zone
+
+```
+GET  /api/v1/delivery-zones/check?lat=35.7&lng=51.4
+     → آیا این آدرس در zone ما هست؟ چقدر هزینه تحویل؟
+
+GET  /api/v1/admin/delivery-zones              (نیاز: MANAGE_ZONES)
+POST /api/v1/admin/delivery-zones
+PUT  /api/v1/admin/delivery-zones/:id
+POST /api/v1/admin/delivery-zones/:id/drivers  (تخصیص راننده به zone)
+```
+
+### 17.4 سفارش سریع (Quick Order)
+
+#### دو حالت
+
+**حالت ۱: تکرار آخرین سفارش**
+```
+GET  /api/v1/quick-orders/last-order-preview
+     → نمایش محصولات آخرین سفارش + قیمت فعلی + موجودی
+
+POST /api/v1/quick-orders/repeat-last
+     {
+       timeSlotId: "...",
+       addressId: "..."
+     }
+     → سفارش جدید با همان آیتم‌ها (اگر موجود باشد)
+```
+
+**حالت ۲: قالب ذخیره‌شده**
+```
+GET  /api/v1/quick-orders/templates           → لیست قالب‌های من
+POST /api/v1/quick-orders/templates           → ذخیره قالب جدید
+DELETE /api/v1/quick-orders/templates/:id
+
+GET  /api/v1/quick-orders/templates/:id/preview
+     → نمایش قالب + قیمت فعلی + موجودی + هشدار کمبود
+
+POST /api/v1/quick-orders/from-template/:id
+     {
+       timeSlotId: "...",
+       addressId: "...",
+       notes: "..."
+     }
+```
+
+#### نکات مهم Quick Order
+
+- اگر محصولی از قالب out of stock باشد → هشدار می‌دهد، از آیتم حذف می‌کند
+- قیمت همیشه از DB واقعی خوانده می‌شود (نه از قالب)
+- `isQuickOrder: true` در order ذخیره می‌شود (برای analytics)
+
+### 17.5 سیستم SuperAdmin
+
+#### راه‌اندازی اولیه
+
+```bash
+# در seed.ts — ساخت SuperAdmin اول
+pnpm prisma db seed
+# SUPER_ADMIN_PHONE از env خوانده می‌شود
+```
+
+#### نقش‌های پیش‌فرض سیستم (isSystem: true)
+
+| نقش | پرمیشن‌ها |
+|---|---|
+| `full_admin` | همه پرمیشن‌ها به جز MANAGE_ADMINS و MANAGE_PERMISSIONS |
+| `operations_admin` | VIEW/MANAGE: ORDERS, DELIVERIES, DRIVERS, ZONES, TIMESLOTS |
+| `financial_admin` | VIEW/MANAGE: FINANCIALS, SETTLEMENTS, REFUNDS + VIEW_ORDERS |
+| `support_agent` | VIEW_ORDERS, VIEW_DISPUTES, RESOLVE_DISPUTES, VIEW_USERS |
+| `content_admin` | VIEW/APPROVE/EDIT/DELETE: PRODUCTS + VIEW_USERS |
+
+#### API های مدیریت دسترسی (فقط SuperAdmin)
+
+```
+GET    /api/v1/super-admin/roles                  → لیست نقش‌ها
+POST   /api/v1/super-admin/roles                  → ساخت نقش جدید
+PUT    /api/v1/super-admin/roles/:id              → ویرایش پرمیشن‌های نقش
+DELETE /api/v1/super-admin/roles/:id              → حذف نقش (غیر system)
+
+GET    /api/v1/super-admin/admins                 → لیست ادمین‌ها
+POST   /api/v1/super-admin/admins/:userId/roles   → تخصیص نقش
+DELETE /api/v1/super-admin/admins/:userId/roles/:roleId
+
+GET    /api/v1/super-admin/action-logs            → لاگ اقدامات ادمین‌ها
+GET    /api/v1/super-admin/system-config          → تنظیمات سیستم
+```
+
+---
+
+## 18. چک‌لیست نهایی
 
 ### 17.1 قبل از شروع هر sprint
 
@@ -2765,6 +3374,16 @@ TAX_RATE=0.09
 # Maps
 NESHAN_API_KEY=
 
+# ★ Time Slot Config
+TIMESLOT_GENERATE_DAYS_AHEAD=7   # چند روز جلوتر slot بسازد
+TIMESLOT_DEFAULT_CUTOFF_HOURS=12 # پیش‌فرض: 12 ساعت قبل
+
+# ★ Delivery Zone Config
+ZONE_DETECTION_PROVIDER=neshan   # یا google
+
+# ★ SuperAdmin Bootstrap
+SUPER_ADMIN_PHONE=                # شماره سوپرادمین اول (برای seed)
+
 # Monitoring
 SENTRY_DSN=
 LOG_LEVEL=debug
@@ -2800,7 +3419,7 @@ LOG_LEVEL=debug
 **روز 3:**
 - پروژه NestJS Setup
 - Docker Compose
-- Prisma با schema اولیه
+- Prisma با schema اولیه (vendors، time_slots، delivery_zones)
 - CI workflow پایه
 
 **روز 4:**
@@ -2810,7 +3429,8 @@ LOG_LEVEL=debug
 - اولین commit با ساختار کامل
 
 **روز 5:**
-- شروع ماژول `auth` + `users`
+- شروع ماژول `auth` + `users` + `vendors`
+- ★ Seed کردن SuperAdmin اول
 - اتصال اولیه به کاوه‌نگار
 - تست اول OTP
 
