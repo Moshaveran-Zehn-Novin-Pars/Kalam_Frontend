@@ -13,4 +13,10 @@ export const driverService = {
     async updateStatus(dto: UpdateDriverDto): Promise<DriverProfile> {
         return apiPatch<DriverProfile>('/drivers/me/status', dto)
     },
+    async getMyEarnings(params?: { from?: string; to?: string }): Promise<any[]> {
+        return apiGet<any[]>('/drivers/me/earnings', { params })
+    },
+    async getEarningsSummary(): Promise<any> {
+        return apiGet<any>('/drivers/me/earnings/summary')
+    },
 }
