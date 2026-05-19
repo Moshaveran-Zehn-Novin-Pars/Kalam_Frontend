@@ -30,7 +30,7 @@ interface UserRow {
   status: string
 }
 
-function UserDetail({ user, onBack }: { user: User; onBack: ()=>void }) {
+function UserDetail({ user, onBack }: { user: UserRow; onBack: ()=>void }) {
   return (
     <>
       <div className="adm-detail-head">
