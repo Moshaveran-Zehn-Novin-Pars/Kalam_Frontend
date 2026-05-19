@@ -48,3 +48,14 @@ export interface ConfirmDeliveryDto {
     signatureImage?: string
     recipientName?: string
 }
+
+export interface TemperatureLog {
+    temperature: number
+    timestamp: string
+    location?: { lat: number; lng: number }
+}
+
+export interface AutoAssignDto {
+    zoneId?: string
+    priority?: 'nearest' | 'least_busy'
+}

@@ -1,5 +1,5 @@
 import { apiGet, apiPost, apiPatch } from '@/services/api'
-import type { Delivery, AssignDriverDto, UpdateLocationDto, ConfirmDeliveryDto } from '@/types'
+import type { Delivery, AssignDriverDto, UpdateLocationDto, ConfirmDeliveryDto, TemperatureLog, AutoAssignDto } from '@/types'
 
 export const deliveryService = {
     async findAll(params?: { status?: string }): Promise<Delivery[]> {
@@ -36,5 +36,17 @@ export const deliveryService = {
 
     async getLiveTracking(orderId: string): Promise<Delivery> {
         return apiGet<Delivery>(`/deliveries/track/${orderId}`)
+    },
+
+    async autoAssign(id: string, dto?: AutoAssignDto): Promise<Delivery> {
+        return apiPost<Delivery>(`/deliveries/${id}/auto-assign`, dto)
+    },
+
+    async getTemperature(id: string): Promise<TemperatureLog[]> {
+        return apiGet<TemperatureLog[]>(`/deliveries/${id}/temperature`)
+    },
+
+    async updateTemperature(id: string, dto: TemperatureLog): Promise<void> {
+        return apiPost(`/deliveries/${id}/temperature`, dto)
     },
 }
