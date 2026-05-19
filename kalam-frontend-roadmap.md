@@ -1301,6 +1301,47 @@ export function handleApiError(error: unknown): ApiError {
 }
 ```
 
+### 9.6 Service Coverage Matrix (from swagger audit)
+
+> 📄 **Full endpoint registry:** `docs/swagger-endpoint-registry.md`
+>
+> **Detailed mismatches report:** `docs/api-mismatches-audit.md`
+
+| Service | Methods | Swagger Match | Status |
+|---------|---------|---------------|--------|
+| `auth.service.ts` | 5/5 | ✅ Full match | ✅ |
+| `users.service.ts` | 7/7 | ✅ Full match | ✅ |
+| `address.service.ts` | 6/6 | ✅ Full match | ✅ |
+| `farmer.service.ts` | 5/5 | ✅ Full match | ✅ |
+| `buyer.service.ts` | 2/7 | ✅ 2 match, 5 missing | ⚠️ Add `getAll`, `getById`, `blockCredit`, `updateCreditLimit`, `updatePaymentTerms` |
+| `driver.service.ts` | 3/5 | ⚠️ 3 match, 2 missing from swagger (`/drivers/me/earnings`) | ⚠️ Verify paths with backend |
+| `productService.ts` | 8/9 | ✅ 8 match, 1 missing (`/products/search/suggestions`) | ✅ |
+| `categoryService.ts` | 6/6 | ✅ Full match | ✅ |
+| `cart.service.ts` | 5/5 | ✅ Full match | ✅ |
+| `order.service.ts` | 7/7 | ✅ Full match | ✅ |
+| `payment.service.ts` | 8/10 | ⚠️ 2 path mismatches (`releaseEscrow`, `refundPayment`) | ⚠️ Fix paths |
+| `delivery.service.ts` | 9/11 | ⚠️ 2 missing (`auto-assign`, `temperature`) | ⚠️ Add methods |
+| `notification.service.ts` | 5/5 | ✅ Full match | ✅ |
+| `invoice.service.ts` | 4/7 | ✅ 4 match, 3 missing (`download`, `status`, `credit-note`) | ⚠️ Add methods |
+| `commission.service.ts` | 4/4 | ✅ Full match | ✅ |
+| `settlement.service.ts` | 5/5 | ✅ Full match | ✅ |
+| `dispute.service.ts` | 6/6 | ✅ Full match | ✅ |
+| `review.service.ts` | 3/3 | ✅ Full match | ✅ |
+| `subscription.service.ts` | 5/5 | ✅ Full match | ✅ |
+| `auction.service.ts` | 5/5 | ✅ Full match | ✅ |
+| `warehouse.service.ts` | 5/6 | ✅ Full match | ✅ |
+| `wishlist.service.ts` | 5/5 | ✅ Full match | ✅ |
+| `ai.service.ts` | 5/5 | ✅ Full match | ✅ |
+| `admin.service.ts` | 18/18 | ⚠️ 9 match swagger, 9 use custom paths not in swagger | ⚠️ Verify with backend |
+| `storage.service.ts` | 4/4 | ✅ Full match | ✅ |
+| ❌ `vendors.service.ts` | 0/7 | 🔴 Missing entirely | 🔴 Create (P0) |
+| ❌ `time-slots.service.ts` | 0/7 | 🔴 Missing entirely | 🔴 Create (P0) |
+| ❌ `delivery-zones.service.ts` | 0/7 | 🔴 Missing entirely | 🔴 Create (P1) |
+| ❌ `wallet.service.ts` (v2) | 0/6 | 🔴 Missing entirely | 🔴 Create (P1) |
+| ❌ `kyc.service.ts` | 0/3 | 🔴 Missing entirely | 🔴 Create (P1) |
+| ❌ `analytics.service.ts` | 0/5 | 🔴 Missing entirely | 🔴 Create (P2) |
+| ❌ `pre-harvest-orders.service.ts` | 0/7 | 🔴 Missing entirely | 🔴 Create (P2) |
+
 ---
 
 ## 10. فازبندی
