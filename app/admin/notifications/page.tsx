@@ -1,9 +1,11 @@
 "use client"
 import { useState } from "react"
-import { Bell, Send } from "lucide-react"
+import { Bell, Send, Loader2 } from "lucide-react"
+import { notificationService } from "@/services/notification"
 
 export default function AdminNotificationsPage() {
-    const [title, setTitle] = useState(""); const [message, setMessage] = useState(""); const [target, setTarget] = useState("all"); const [sent, setSent] = useState(false)
+    const [title, setTitle] = useState(""); const [message, setMessage] = useState(""); const [target, setTarget] = useState("all"); const [sending, setSending] = useState(false); const [sent, setSent] = useState(false)
+    const handleSend=()=>{if(!title||!message||sending)return;setSending(true);notificationService.sendNotification({title,message,target}).then(()=>{setSent(true);setSending(false)}).catch(()=>{setSending(false);alert("خطا در ارسال اعلان")})}
     if (sent) return (
         <div style={{textAlign:"center",padding:48}}>
             <div style={{width:64,height:64,borderRadius:"50%",background:"var(--adm-shipped-bg)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px"}}><Send size={28} style={{color:"var(--adm-shipped-fg)"}}/></div>
@@ -36,8 +38,8 @@ export default function AdminNotificationsPage() {
                 <label className="adm-field-label">متن پیام</label>
                 <textarea className="adm-field-textarea" value={message} onChange={e=>setMessage(e.target.value)} rows={4} placeholder="متن اعلان را وارد کنید..." style={{marginTop:6}}/>
             </div>
-            <button className="adm-btn adm-btn--filled" onClick={()=>setSent(true)} disabled={!title||!message} style={{opacity:(!title||!message)?0.5:1}}>
-                <Send size={14}/> ارسال اعلان
+            <button className="adm-btn adm-btn--filled" onClick={handleSend} disabled={!title||!message||sending} style={{opacity:(!title||!message||sending)?0.5:1}}>
+                {sending ? <Loader2 size={14} className="animate-spin"/> : <Send size={14}/>} ارسال اعلان
             </button>
         </div>
     </>)
