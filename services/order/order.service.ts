@@ -3,8 +3,8 @@ import type { Order, CreateOrderDto, QueryOrdersParams, PaginatedResponse } from
 
 export const orderService = {
   async getMyOrders(params?: QueryOrdersParams): Promise<PaginatedResponse<Order>> {
-    const res = await apiGetPaginated<PaginatedResponse<Order>>('/orders', { params })
-    return res.data as PaginatedResponse<Order>
+    const res = await apiGetPaginated<Order[]>('/orders', { params })
+    return { items: res.data, meta: res.meta! }
   },
 
   async getOrder(id: string): Promise<Order> {
@@ -29,7 +29,7 @@ export const orderService = {
 
   // ADMIN
   async getAllOrders(params?: QueryOrdersParams): Promise<PaginatedResponse<Order>> {
-    const res = await apiGetPaginated<PaginatedResponse<Order>>('/orders/admin', { params })
-    return res.data as PaginatedResponse<Order>
+    const res = await apiGetPaginated<Order[]>('/orders/admin', { params })
+    return { items: res.data, meta: res.meta! }
   },
 }

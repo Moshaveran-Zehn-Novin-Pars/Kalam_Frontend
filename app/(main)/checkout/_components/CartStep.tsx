@@ -3,6 +3,8 @@
 import { Plus, Minus } from "lucide-react"
 import { useCartStore } from "@/store/cartStore"
 
+const UNIT_LABELS: Record<string, string> = { KG: "کیلو", TON: "تن", GR: "گرم" }
+
 interface CartStepProps {
     discountCode: string
     onDiscountChange: (val: string) => void
@@ -35,7 +37,7 @@ export default function CartStep({ discountCode, onDiscountChange }: CartStepPro
                             {/* اطلاعات */}
                             <div className="flex-1 text-right">
                                 <p className="text-[15px] font-bold text-[#212121]">{item.product.name}</p>
-                                <p className="text-[13px] text-[#505050]">{item.quantity} {item.product.unit}</p>
+                                <p className="text-[13px] text-[#505050]">{item.quantity} {UNIT_LABELS[item.product.unit] || item.product.unit}</p>
                                 <p className="text-[13px] text-[#51A46B] font-medium">قیمت کل: {f} تومان</p>
                             </div>
 

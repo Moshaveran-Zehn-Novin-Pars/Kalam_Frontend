@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo, useCallback } from "react"
+import { useState, useEffect, useMemo, useCallback, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { SfIcon } from "@/components/shared/SfIcon"
 import ProductCard from "@/components/shared/ProductCard/ProductCard"
@@ -8,9 +8,9 @@ import { productService } from "@/services/product"
 import type { Product } from "@/types"
 
 const CATEGORIES = [
-    { id: "fruit", label: "میوه" },
+    { id: "fruits", label: "میوه" },
     { id: "vegetables", label: "سبزیجات" },
-    { id: "greens", label: "صیفی‌جات" },
+    { id: "citrus", label: "مرکبات" },
 ]
 
 const USE_CASES = [
@@ -33,6 +33,14 @@ function fa(n: string | number) {
 }
 
 export default function ProductsPage() {
+    return (
+        <Suspense fallback={<div className="sf-page"><div className="plp-layout"><section className="plp-main"><div className="plp-toolbar"><h1 className="plp-toolbar__title">محصولات</h1></div><div className="grid grid-cols-2 md:grid-cols-3 gap-4 p-4">{Array.from({ length: 6 }).map((_, i) => (<div key={i} className="border border-[#E9E8E3] rounded-[16px] p-4 animate-pulse"><div className="w-full aspect-square bg-gray-100 rounded-[12px] mb-3" /><div className="h-4 bg-gray-100 rounded w-3/4 mb-2" /><div className="h-4 bg-gray-100 rounded w-1/2" /></div>))}</div></section></div></div>}>
+            <ProductsPageInner />
+        </Suspense>
+    )
+}
+
+function ProductsPageInner() {
     const searchParams = useSearchParams()
     const router = useRouter()
     const initialCat = searchParams.get("category")
@@ -61,7 +69,7 @@ export default function ProductsPage() {
         let list = allProducts.slice()
 
         if (selectedCats.length) {
-            list = list.filter((p) => selectedCats.includes(p.categoryId))
+            list = list.filter((p) => selectedCats.includes(p.category?.slug ?? ''))
         }
 
         if (selectedUses.length) {

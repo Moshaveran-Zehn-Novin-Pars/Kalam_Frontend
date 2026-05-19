@@ -16,7 +16,7 @@ export interface Payment {
     updatedAt: string
 }
 
-export interface Wallet {
+export interface PaymentWallet {
     id: string
     userId: string
     balance: string
@@ -26,9 +26,9 @@ export interface Wallet {
     updatedAt: string
 }
 
-export interface WalletTransaction {
+export interface PaymentWalletTransaction {
     id: string
-    walletId: string
+    paymentWalletId: string
     type: TransactionType
     amount: string
     balanceAfter: string

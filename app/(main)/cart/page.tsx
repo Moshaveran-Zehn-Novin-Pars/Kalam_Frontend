@@ -8,6 +8,8 @@ import { cartService } from "@/services/cart"
 
 function faNum(n: number) { return new Intl.NumberFormat("fa-IR").format(n) }
 
+const UNIT_LABELS: Record<string, string> = { KG: "کیلو", TON: "تن", GR: "گرم" }
+
 export default function CartPage() {
     const { items, updateItem, removeItem, clearCart, totalPrice, hydrateFromBackend } = useCartStore()
     const [loading, setLoading] = useState(true)
@@ -76,7 +78,7 @@ export default function CartPage() {
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <Link href={`/products/${item.product.slug}`} className="text-[15px] font-bold text-[#212121] hover:text-[#51A46B] transition-colors line-clamp-1">{item.product.name}</Link>
-                                        <p className="text-[12px] text-[#8A8A8A] mt-1">{priceFormatted} تومان / {item.product.unit}</p>
+                                        <p className="text-[12px] text-[#8A8A8A] mt-1">{priceFormatted} تومان / {UNIT_LABELS[item.product.unit] || item.product.unit}</p>
                                     </div>
                                     <div className="flex items-center border border-[#E9E8E3] rounded-[10px] overflow-hidden shrink-0">
                                         <button onClick={() => handleUpdate(item.productId, item.quantity - 1)} className="w-8 h-8 flex items-center justify-center hover:bg-[#F5F5F5] text-[#505050]"><Minus size={14} /></button>

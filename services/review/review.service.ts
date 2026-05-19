@@ -7,12 +7,12 @@ export const reviewService = {
     },
 
     async getUserReviews(userId: string, params?: { page?: number; pageSize?: number }): Promise<PaginatedResponse<Review>> {
-        const res = await apiGetPaginated<PaginatedResponse<Review>>(`/reviews/user/${userId}`, { params })
-        return res.data as PaginatedResponse<Review>
+        const res = await apiGetPaginated<Review[]>(`/reviews/user/${userId}`, { params })
+        return { items: res.data, meta: res.meta! }
     },
 
     async getFarmerReviews(farmerId: string, params?: { page?: number; pageSize?: number }): Promise<PaginatedResponse<Review>> {
-        const res = await apiGetPaginated<PaginatedResponse<Review>>(`/reviews/farmer/${farmerId}`, { params })
-        return res.data as PaginatedResponse<Review>
+        const res = await apiGetPaginated<Review[]>(`/reviews/farmer/${farmerId}`, { params })
+        return { items: res.data, meta: res.meta! }
     },
 }
