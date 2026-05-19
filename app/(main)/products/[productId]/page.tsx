@@ -1,93 +1,175 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useParams } from "next/navigation"
 import Link from "next/link"
-import { Home, ChevronLeft, Plus, Minus, ShoppingCart, Star, MapPin, Award } from "lucide-react"
+import { SfIcon } from "@/components/shared/SfIcon"
+import ProductCard from "@/components/shared/ProductCard/ProductCard"
 import { useCartStore } from "@/store/cartStore"
 import { productService } from "@/services/product"
 import type { Product } from "@/types"
-import ProductCard from "@/components/shared/ProductCard/ProductCard"
-import { formatPrice } from "@/lib/utils"
 
-function faNum(n: number) { return new Intl.NumberFormat("fa-IR").format(n) }
+function fa(n: string | number) {
+    if (n === null || n === undefined) return ""
+    return String(n).replace(/\d/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[parseInt(d)])
+}
 
-export default function ProductDetailPage({ params }: { params: { productId: string } }) {
+function faPrice(n: number) {
+    return fa(n.toLocaleString("en-US")).replace(/,/g, "،")
+}
+
+const WEIGHT_OPTIONS = [
+    { id: "0.5", label: "۰.۵ کیلو", mult: 0.5 },
+    { id: "1", label: "۱ کیلو", mult: 1 },
+    { id: "2", label: "۲ کیلو", mult: 2 },
+    { id: "5", label: "۵ کیلو", mult: 5 },
+]
+
+export default function ProductDetailPage() {
+    const params = useParams()
+    const productId = params.productId as string
+    const { addItem } = useCartStore()
+
     const [product, setProduct] = useState<Product | null>(null)
     const [related, setRelated] = useState<Product[]>([])
     const [loading, setLoading] = useState(true)
+    const [weight, setWeight] = useState("1")
     const [qty, setQty] = useState(1)
-    const { addItem } = useCartStore()
 
     useEffect(() => {
         setLoading(true)
-        productService.getProduct(params.productId)
+        productService
+            .getProduct(productId)
             .then((data) => {
                 setProduct(data)
-                return productService.getProducts({ pageSize: 4 })
+                return productService.getProducts({ pageSize: 8 })
             })
             .then((res) => setRelated(res.items || []))
             .catch(() => setProduct(null))
             .finally(() => setLoading(false))
-    }, [params.productId])
+    }, [productId])
 
-    if (loading) return <div className="w-[90%] md:w-4/5 mx-auto py-8"><div className="animate-pulse"><div className="h-8 bg-gray-100 rounded w-1/3 mb-8" /><div className="h-64 bg-gray-100 rounded mb-4" /><div className="h-4 bg-gray-100 rounded w-3/4 mb-2" /><div className="h-4 bg-gray-100 rounded w-1/2" /></div></div>
-    if (!product) return <div className="w-[90%] md:w-4/5 mx-auto py-20 text-center"><h1 className="text-[24px] font-bold text-[#212121] mb-4">محصول یافت نشد</h1><Link href="/products" className="text-[#51A46B] font-medium">بازگشت به محصولات</Link></div>
+    const selectedWeight = WEIGHT_OPTIONS.find((w) => w.id === weight)
 
-    const price = parseFloat(product.pricePerUnit)
-    const priceFormatted = new Intl.NumberFormat("fa-IR").format(Math.round(price / 10))
+    const displayPrice = useMemo(() => {
+        if (!product) return 0
+        const base = parseFloat(product.pricePerUnit)
+        return selectedWeight ? Math.round(base * selectedWeight.mult) : base
+    }, [product, selectedWeight])
+
+    if (loading) {
+        return (
+            <main className="sf-page pdp-page-bg">
+                <div className="w-[90%] md:w-4/5 mx-auto py-8">
+                    <div className="animate-pulse">
+                        <div className="h-8 bg-gray-100 rounded w-1/3 mb-8" />
+                        <div className="aspect-square bg-gray-100 rounded-[28px] mb-4" />
+                        <div className="h-4 bg-gray-100 rounded w-3/4 mb-2" />
+                        <div className="h-4 bg-gray-100 rounded w-1/2" />
+                    </div>
+                </div>
+            </main>
+        )
+    }
+
+    if (!product) {
+        return (
+            <main className="sf-page">
+                <div className="w-[90%] md:w-4/5 mx-auto py-20 text-center">
+                    <h1 className="text-[24px] font-bold text-[#212121] mb-4">محصول یافت نشد</h1>
+                    <Link href="/products" className="text-[#51A46B] font-medium">بازگشت به محصولات</Link>
+                </div>
+            </main>
+        )
+    }
+
+    const categoryName = product.category?.name || "محصولات"
 
     return (
-        <div className="w-[90%] md:w-4/5 mx-auto py-8">
-            <div className="flex items-center gap-2 text-[13px] text-[#8A8A8A] mb-6">
-                <Link href="/" className="hover:text-[#51A46B] flex items-center gap-1"><Home size={14} />خانه</Link>
-                <ChevronLeft size={14} /><Link href="/products" className="hover:text-[#51A46B]">محصولات</Link>
-                <ChevronLeft size={14} /><span className="text-[#212121]">{product.name}</span>
-            </div>
+        <main className="sf-page pdp-page-bg">
+            <nav className="pdp-crumbs" aria-label="مسیر">
+                <span className="pdp-crumbs__home"><SfIcon.Home size={16} /></span>
+                <Link href="/">خانه</Link>
+                <span className="pdp-crumbs__sep"><SfIcon.ChevronLeft /></span>
+                <Link href="/products">{categoryName}</Link>
+                <span className="pdp-crumbs__sep"><SfIcon.ChevronLeft /></span>
+                <span className="pdp-crumbs__current">{product.name}</span>
+            </nav>
 
-            <div className="flex flex-col md:flex-row gap-8 mb-12">
-                <div className="w-full md:w-1/2 aspect-square rounded-[20px] bg-[#F5F9F6] flex items-center justify-center overflow-hidden">
-                    {product.images?.[0]?.url ? <img src={product.images[0].url} alt={product.name} className="w-full h-full object-contain" /> : <span className="text-6xl opacity-30">🍎</span>}
+            <section className="pdp-layout">
+                <div className="pdp-gallery">
+                    {product.images?.[0]?.url ? (
+                        <img
+                            src={product.images[0].url}
+                            alt={product.name}
+                            className="pdp-gallery__img"
+                        />
+                    ) : (
+                        <img
+                            src="/images/product-pomegranate.png"
+                            alt={product.name}
+                            className="pdp-gallery__img"
+                        />
+                    )}
                 </div>
 
-                <div className="flex-1">
-                    <h1 className="text-[28px] font-extrabold text-[#212121] mb-2">{product.name}</h1>
-                    {product.origin && <p className="text-[#8A8A8A] text-[14px] flex items-center gap-1 mb-4"><MapPin size={14} />{product.origin}</p>}
-
-                    <div className="flex items-center gap-4 mb-6">
-                        <span className="text-[28px] font-bold text-[#51A46B]">{priceFormatted}<span className="text-[14px] font-medium mr-1">تومان / {product.unit}</span></span>
-                        {product.qualityGrade && (
-                            <span className={`text-[12px] px-3 py-1 rounded-full font-medium ${product.qualityGrade === "A" ? "bg-green-100 text-green-700" : product.qualityGrade === "B" ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-gray-600"}`}>
-                                درجه {product.qualityGrade}
-                            </span>
-                        )}
+                <div className="pdp-info">
+                    <div className="pdp-card">
+                        <div className="pdp-card__title">{product.name}</div>
+                        <p className="pdp-card__body">
+                            {product.description || "این محصول به‌صورت تازه و دست‌چین‌شده از باغ‌های سالم و پاک برداشت شده است."}
+                        </p>
                     </div>
 
-                    {product.description && <p className="text-[#505050] text-[14px] leading-7 mb-6">{product.description}</p>}
+                    <div className="pdp-price-row">
+                        <span className="tnum">{faPrice(displayPrice)} تومان</span>
+                        <span className="unit">/{product.unit}</span>
+                    </div>
 
-                    <div className="border-t border-[#E9E8E3] pt-6 mb-6">
-                        <div className="flex items-center gap-3">
-                            <button onClick={() => setQty(Math.max(1, qty - 1))} className="w-10 h-10 border border-[#E9E8E3] rounded-[10px] flex items-center justify-center hover:bg-gray-50 transition-colors"><Minus size={16} /></button>
-                            <span className="w-16 text-center text-[18px] font-bold">{faNum(qty)}</span>
-                            <button onClick={() => setQty(qty + 1)} className="w-10 h-10 border border-[#E9E8E3] rounded-[10px] flex items-center justify-center hover:bg-gray-50 transition-colors"><Plus size={16} /></button>
-                            <span className="text-[13px] text-[#8A8A8A] mr-4">حداقل سفارش: {faNum(parseFloat(product.minOrderQty))} {product.unit}</span>
+                    <div className="pdp-weights">
+                        {WEIGHT_OPTIONS.map((w) => (
+                            <button
+                                key={w.id}
+                                className={`pdp-weight ${weight === w.id ? "is-active" : ""}`}
+                                onClick={() => setWeight(w.id)}
+                            >
+                                {w.label}
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className="pdp-actions">
+                        <div className="pdp-stepper">
+                            <button onClick={() => setQty((q) => q + 1)} aria-label="افزایش"><SfIcon.Plus /></button>
+                            <div className="pdp-stepper__val">{fa(qty)}</div>
+                            <button onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label="کاهش"><SfIcon.Minus /></button>
                         </div>
+                        <button
+                            className="pdp-add"
+                            onClick={() => {
+                                addItem(product, qty)
+                            }}
+                        >
+                            افزودن به سبد خرید
+                        </button>
                     </div>
-
-                    <button onClick={() => { addItem(product, qty); (window as any).__openCart?.() }} className="w-full bg-[#51A46B] text-white py-4 rounded-[12px] font-bold text-[16px] hover:bg-[#417F56] transition-colors flex items-center justify-center gap-2">
-                        <ShoppingCart size={20} /> افزودن به سبد خرید
-                    </button>
                 </div>
-            </div>
+            </section>
 
             {related.length > 0 && (
-                <>
-                    <h2 className="text-[20px] font-bold text-[#212121] mb-6">محصولات مشابه</h2>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                        {related.slice(0, 4).map((p) => (<ProductCard key={p.id} product={p} />))}
+                <section className="pdp-related">
+                    <div className="pdp-related__head">
+                        <h2>محصولات مشابه</h2>
                     </div>
-                </>
+                    <div className="pdp-related__rail">
+                        <div className="pdp-related__rail-inner">
+                            {related.map((p) => (
+                                <ProductCard key={p.id} product={p} />
+                            ))}
+                        </div>
+                    </div>
+                </section>
             )}
-        </div>
+        </main>
     )
 }
