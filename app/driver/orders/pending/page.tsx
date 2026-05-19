@@ -17,7 +17,7 @@ export default function PendingOrdersPage() {
 
     useEffect(() => {
         deliveryService.findAll({ status: "PENDING_ASSIGNMENT" })
-            .then(res => setDeliveries(res.items || []))
+            .then(res => setDeliveries(Array.isArray(res) ? res : (res as any).items || []))
             .catch(() => {})
             .finally(() => setLoading(false))
     }, [])

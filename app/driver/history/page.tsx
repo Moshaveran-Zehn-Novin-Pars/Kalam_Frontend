@@ -13,7 +13,7 @@ export default function DriverHistory() {
 
     useEffect(() => {
         deliveryService.findAll({ status: "DELIVERED" })
-            .then(res => setDeliveries(res.items || []))
+            .then(res => setDeliveries(Array.isArray(res) ? res : (res as any).items || []))
             .catch(() => {})
             .finally(() => setLoading(false))
     }, [])
