@@ -1,29 +1,26 @@
 "use client"
-import { useState } from "react"
-import { AlertTriangle, MessageSquare, Check, X, Clock, CheckCircle } from "lucide-react"
+import { useState, useEffect } from "react"
+import { AlertTriangle, MessageSquare, Check, X, Clock, CheckCircle, Loader2 } from "lucide-react"
+import { disputeService } from "@/services/dispute"
 
 function fa(n: string | number) { return String(n).replace(/[0-9]/g, d => "۰۱۲۳۴۵۶۷۸۹"[+d]) }
 
-const ALL = [
-    { id:"dp1", order:"ORD-2040", buyer:"سوپرمارکت رضایی", farmer:"علی محمدی", reason:"کیفیت مطابق انتظار نبود", date:"۱۴۰۴/۹/۱۴", status:"open" },
-    { id:"dp2", order:"ORD-2038", buyer:"رستوران آرارات", farmer:"نرگس احمدی", reason:"محصول آسیب دیده بود", date:"۱۴۰۴/۹/۱۰", status:"review" },
-    { id:"dp3", order:"ORD-2035", buyer:"هایپرمی", farmer:"مهدی رضایی", reason:"تأخیر در تحویل", date:"۱۴۰۴/۹/۵", status:"resolved" },
-    { id:"dp4", order:"ORD-2032", buyer:"کافه گلدن", farmer:"حسن کریمی", reason:"مقدار کمتر از سفارش", date:"۱۴۰۴/۸/۲۸", status:"open" },
-]
 export default function DisputesPage() {
+    const [all,setAll]=useState<any[]>([]); const [loading,setLoading]=useState(true)
     const [filter,setFilter]=useState("all"); const [detail,setDetail]=useState<any>(null)
-    const filtered=ALL.filter(d=>filter==="all"||d.status===filter)
+    useEffect(()=>{disputeService.findAll().then(setAll).catch(()=>{}).finally(()=>setLoading(false))},[])
+    const filtered=all.filter(d=>filter==="all"||d.status===filter)
     if(detail)return <DisputeDetail dispute={detail} onBack={()=>setDetail(null)}/>
     return (<>
         <h1 className="adm-page-title">اعتراضات</h1>
         <div className="adm-stat-grid">
-            <div className="adm-stat"><div className="adm-stat__top"><div className="adm-stat__label"><AlertTriangle size={18}/>کل اعتراضات</div></div><div className="adm-stat__value">{fa(ALL.length)}</div></div>
-            <div className="adm-stat"><div className="adm-stat__top"><div className="adm-stat__label"><Clock size={18}/>باز</div></div><div className="adm-stat__value" style={{color:"var(--adm-pending-fg)"}}>{fa(ALL.filter(d=>d.status==="open").length)}</div><div className="adm-stat__compare">در بررسی: {fa(ALL.filter(d=>d.status==="review").length)}</div></div>
-            <div className="adm-stat"><div className="adm-stat__top"><div className="adm-stat__label"><CheckCircle size={18}/>حل شده</div></div><div className="adm-stat__value" style={{color:"var(--adm-accent)"}}>{fa(ALL.filter(d=>d.status==="resolved").length)}</div></div>
+            <div className="adm-stat"><div className="adm-stat__top"><div className="adm-stat__label"><AlertTriangle size={18}/>کل اعتراضات</div></div><div className="adm-stat__value">{fa(all.length)}</div></div>
+            <div className="adm-stat"><div className="adm-stat__top"><div className="adm-stat__label"><Clock size={18}/>باز</div></div><div className="adm-stat__value" style={{color:"var(--adm-pending-fg)"}}>{fa(all.filter(d=>d.status==="open").length)}</div><div className="adm-stat__compare">در بررسی: {fa(all.filter(d=>d.status==="review").length)}</div></div>
+            <div className="adm-stat"><div className="adm-stat__top"><div className="adm-stat__label"><CheckCircle size={18}/>حل شده</div></div><div className="adm-stat__value" style={{color:"var(--adm-accent)"}}>{fa(all.filter(d=>d.status==="resolved").length)}</div></div>
         </div>
         <div className="adm-filters" style={{marginBottom:16}}>{["all","open","review","resolved"].map(f=>(<button key={f} className={`adm-filter-btn ${filter===f?"active":""}`} onClick={()=>setFilter(f)}>{f==="all"?"همه":f==="open"?"باز":f==="review"?"در بررسی":"حل شده"}</button>))}</div>
         <div className="adm-table-card"><div className="adm-table-wrap"><table className="adm-table"><thead><tr><th>سفارش</th><th>خریدار</th><th>باغدار</th><th>دلیل</th><th>تاریخ</th><th>وضعیت</th></tr></thead>
-            <tbody>{filtered.map(d=>(<tr key={d.id} className="clickable" onClick={()=>setDetail(d)}><td className="oid tnum">{d.order}</td><td>{d.buyer}</td><td>{d.farmer}</td><td style={{fontSize:12,color:"var(--adm-fg-3)"}}>{d.reason}</td><td className="tnum">{fa(d.date)}</td>
+            <tbody>{loading?<tr><td colSpan={6} style={{textAlign:"center",padding:32}}><Loader2 size={20} className="animate-spin inline-block"/></td></tr>:filtered.length===0?<tr><td colSpan={6} style={{textAlign:"center",padding:48,color:"var(--adm-fg-3)"}}>موردی یافت نشد</td></tr>:filtered.map(d=>(<tr key={d.id} className="clickable" onClick={()=>setDetail(d)}><td className="oid tnum">{(d as any).orderId || d.id}</td><td>{(d as any).buyer?.fullName || "—"}</td><td>{(d as any).farmer?.fullName || "—"}</td><td style={{fontSize:12,color:"var(--adm-fg-3)"}}>{d.reason || "—"}</td><td className="tnum">—</td>
                 <td>{d.status==="open"?<span className="pill pill--pending">باز</span>:d.status==="review"?<span className="pill pill--prep">در بررسی</span>:<span className="pill pill--shipped">حل شده</span>}</td>
             </tr>))}</tbody></table></div></div>
     </>)
