@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
-import { ChevronDown } from "lucide-react"
+import { useState, useEffect } from "react"
+import { ChevronDown, Loader2 } from "lucide-react"
+import { usersService } from "@/services/users"
 
 function fa(n: string | number) { return String(n).replace(/[0-9]/g, d => "۰۱۲۳۴۵۶۷۸۹"[+d]) }
 function faNum(n: number) { return new Intl.NumberFormat("fa-IR").format(n) }
@@ -13,30 +14,21 @@ const STATUS_MAP: Record<string, {label:string;cls:string}> = {
   cancel:  { label: "لغو شده",          cls: "pill--cancel"  },
 }
 
-const USERS = Array.from({ length: 11 }, (_, i) => ({
-  id: "u" + i,
-  name: ["سوگند سلحشور","علی محمدی","نرگس احمدی","مهدی رضایی","زهرا حسینی","حسن کریمی","فرید موسوی","مریم شریفی","رضا کریمی","آیدا احمدی","سینا نوری"][i],
-  phone: "0924775375" + i,
-  orders: [12,8,24,3,0,17,5,9,14,2,6][i],
-  lastSeen: "1404/10/3",
-  registered: "1401/4/29",
-  status: i === 2 ? "VIP" : i === 4 ? "غیرفعال" : "فعال",
-}))
-
-const USER_ORDERS = [
-  { id: "2345923", date: "1404/9/12", cat: "سبزیجات", status: "pending", total: 1389000 },
-  { id: "2345924", date: "1404/9/10", cat: "میوه‌ها",  status: "prep",    total: 2100000 },
-  { id: "2345925", date: "1404/9/8",  cat: "لبنیات",   status: "shipped", total: 890000  },
-  { id: "2345926", date: "1404/9/5",  cat: "نان",      status: "cancel",  total: 340000  },
-]
-
 function statusColor(s: string) {
   if (s === "VIP") return "var(--adm-accent)"
   if (s === "غیرفعال") return "var(--adm-fg-3)"
   return "var(--adm-up)"
 }
 
-type User = typeof USERS[0]
+interface UserRow {
+  id: string
+  name: string
+  phone: string
+  orders: number
+  lastSeen: string
+  registered: string
+  status: string
+}
 
 function UserDetail({ user, onBack }: { user: User; onBack: ()=>void }) {
   return (
@@ -65,7 +57,7 @@ function UserDetail({ user, onBack }: { user: User; onBack: ()=>void }) {
               <th>شماره سفارش</th><th>تاریخ</th><th>دسته‌بندی</th><th>وضعیت</th><th>جمع کل</th>
             </tr></thead>
             <tbody>
-              {USER_ORDERS.map((o, i) => {
+              {([/* user orders would appear here */] as any[]).map((o: any, i: number) => {
                 const s = STATUS_MAP[o.status]
                 return (
                   <tr key={i} className="clickable">
@@ -86,7 +78,24 @@ function UserDetail({ user, onBack }: { user: User; onBack: ()=>void }) {
 }
 
 export default function UsersPage() {
-  const [detail, setDetail] = useState<User | null>(null)
+  const [detail, setDetail] = useState<UserRow | null>(null)
+  const [users, setUsers] = useState<UserRow[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    usersService.findAll()
+      .then(data => setUsers(data.map(u => ({
+        id: u.id,
+        name: [u.firstName, u.lastName].filter(Boolean).join(" "),
+        phone: u.phone,
+        orders: 0,
+        lastSeen: u.updatedAt,
+        registered: u.createdAt,
+        status: u.status === "ACTIVE" ? "فعال" : u.status === "SUSPENDED" || u.status === "BANNED" ? "غیرفعال" : "VIP",
+      }))))
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
 
   if (detail) return <UserDetail user={detail} onBack={() => setDetail(null)} />
 
@@ -111,7 +120,11 @@ export default function UsersPage() {
               <th>تعداد سفارش</th><th>آخرین ورود</th><th>تاریخ ثبت نام</th>
             </tr></thead>
             <tbody>
-              {USERS.map(u => (
+              {loading ? (
+                <tr><td colSpan={6} style={{ textAlign: "center", padding: 48 }}><Loader2 size={20} className="animate-spin inline-block" /></td></tr>
+              ) : users.length === 0 ? (
+                <tr><td colSpan={6} style={{ textAlign: "center", padding: 48, color: "var(--adm-fg-3)" }}>کاربری یافت نشد</td></tr>
+              ) : users.map(u => (
                 <tr key={u.id} className="clickable" onClick={() => setDetail(u)}>
                   <td>
                     <div style={{ width: 36, height: 36, borderRadius: "50%", background: "var(--adm-accent-50)", color: "var(--adm-accent)", display: "grid", placeItems: "center", fontWeight: 600, fontSize: 14 }}>
