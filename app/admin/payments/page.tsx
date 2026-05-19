@@ -1,10 +1,18 @@
 "use client"
-import { useState, useEffect } from "react"
-import { Search, DollarSign, CheckCircle, Clock, CreditCard, TrendingUp, X, Loader2 } from "lucide-react"
-import { paymentService } from "@/services/payment"
+import { useState } from "react"
+import { Search, DollarSign, Clock, CreditCard, TrendingUp, X } from "lucide-react"
 
 function fa(n: string | number) { return String(n).replace(/[0-9]/g, d => "۰۱۲۳۴۵۶۷۸۹"[+d]) }
 function faNum(n: number) { return new Intl.NumberFormat("fa-IR").format(n) }
+
+const ALL: any[] = [
+    { id:"1", user:"علی محمدی", amount:1200000, method:"درگاه", date:"۱۴۰۴/۹/۱۵", status:"success" },
+    { id:"2", user:"نرگس احمدی", amount:850000, method:"کارت به کارت", date:"۱۴۰۴/۹/۱۵", status:"success" },
+    { id:"3", user:"مهدی رضایی", amount:2200000, method:"درگاه", date:"۱۴۰۴/۹/۱۴", status:"pending" },
+    { id:"4", user:"حسن کریمی", amount:550000, method:"کیف پول", date:"۱۴۰۴/۹/۱۴", status:"success" },
+    { id:"5", user:"سوگند سلحشور", amount:670000, method:"کارت به کارت", date:"۱۴۰۴/۹/۱۳", status:"failed" },
+    { id:"6", user:"رضا امیری", amount:3500000, method:"درگاه", date:"۱۴۰۴/۹/۱۳", status:"success" },
+]
 
 const methodLabels: Record<string,string>={BANK_TRANSFER:"کارت به کارت",ONLINE_GATEWAY:"درگاه",WALLET:"کیف پول",CREDIT:"اعتبار",DEPOSIT:"واریز",WITHDRAWAL:"برداشت",PURCHASE:"خرید",REFUND:"استرداد",COMMISSION:"کمیسیون",PAYOUT:"پرداخت",ESCROW_HOLD:"مسدود",ESCROW_RELEASE:"آزاد"}
 
@@ -28,7 +36,7 @@ export default function PaymentsPage() {
         <h1 className="adm-page-title">تراکنش‌ها</h1>
         <div className="adm-stat-grid">
             <div className="adm-stat"><div className="adm-stat__top"><div className="adm-stat__label"><CreditCard size={18} />کل تراکنش‌ها</div><span className="adm-stat__delta up"><TrendingUp size={12} />{fa(12)}٪</span></div><div className="adm-stat__value">{fa(ALL.length)}</div><div className="adm-stat__compare">موفق: {fa(ALL.filter(p => p.status === "success").length)} · ناموفق: {fa(ALL.filter(p => p.status === "failed").length)}</div></div>
-            <div className="adm-stat"><div className="adm-stat__top"><div className="adm-stat__label"><DollarSign size={18} />مجموع موفق</div></div><div className="adm-stat__value">{faNum(successTotal)}<span className="adm-stat__unit">تومان</span></div><div className="adm-stat__compare">میانگین: {faNum(Math.round(successTotal / ALL.filter(p => p.status === "success").length))} تومان</div></div>
+            <div className="adm-stat"><div className="adm-stat__top"><div className="adm-stat__label"><DollarSign size={18} />مجموع موفق</div></div><div className="adm-stat__value">{faNum(successTotal)}<span className="adm-stat__unit">تومان</span></div><div className="adm-stat__compare">{ALL.filter(p => p.status === "success").length > 0 ? `میانگین: ${faNum(Math.round(successTotal / ALL.filter(p => p.status === "success").length))} تومان` : '—'}</div></div>
             <div className="adm-stat"><div className="adm-stat__top"><div className="adm-stat__label"><Clock size={18} />در انتظار</div></div><div className="adm-stat__value" style={{ color: "var(--adm-pending-fg)" }}>{fa(ALL.filter(p => p.status === "pending").length)}</div><div className="adm-stat__compare">{faNum(pendingTotal)} تومان</div></div>
         </div>
         <div style={{ display: "flex", gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
