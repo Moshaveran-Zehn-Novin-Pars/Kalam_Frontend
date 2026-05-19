@@ -1,9 +1,11 @@
 # 🎨 داکیومنت کامل فرانت‌اند - پروژه کلم (Kalam)
 
 > **پلتفرم B2B خرید و فروش عمده میوه و تره‌بار**
-> نسخه: 1.0
+> نسخه: 1.1
 > مخاطب: تیم فرانت‌اند (Next.js + UI/UX)
 > مدل درآمدی: کمیسیونی (Commission-based Marketplace)
+> مدل فروشنده: **میدان‌بار** (باغدار فعلاً حذف شده)
+> ویژگی‌های جدید v1.1: Time Slot تحویل | سفارش سریع | منطقه‌بندی راننده | Admin سه‌سطحی
 
 ---
 
@@ -36,14 +38,19 @@
 
 ساخت 4 اپلیکیشن فرانت قدرتمند و یکپارچه:
 - **🛒 اپ خریدار** (Web + PWA) - سوپرمارکت، رستوران، هتل
-- **🌱 اپ باغدار** (Web + PWA) - مدیریت محصولات و فروش
-- **🚚 اپ راننده** (PWA موبایل) - تخصیص و تحویل بار
-- **⚙️ پنل ادمین** (Web) - مدیریت کل پلتفرم
+- **🏪 اپ میدان‌بار** (Web + PWA) - مدیریت محصولات، سفارش‌ها، موجودی (جایگزین اپ باغدار)
+- **🚚 اپ راننده** (PWA موبایل) - تخصیص zone-based و تحویل بار
+- **⚙️ پنل ادمین** (Web) - سه سطح: SuperAdmin / Admin / Support
+
+> **⚠️ تصمیم v1.1:**
+> اپ `farmer` کاملاً حذف و جای خود را به اپ `vendor` داده است.
+> چون فروشنده در این مدل **میدان‌بار** است، UI آن متفاوت از باغدار انفرادی است
+> (مدیریت شعب، time slot ها، zone ها، تیم عملیاتی).
 
 ### 1.2 اصول طراحی
 
 - **B2B-First:** همه چیز برای خرید عمده (نه خرده‌فروشی)
-- **Mobile-First Responsive:** باغداران و رانندگان اکثراً موبایل استفاده می‌کنن
+- **Mobile-First Responsive:** اپراتورهای میدان‌بار و رانندگان اکثراً موبایل استفاده می‌کنن
 - **RTL First:** زبان اصلی فارسی، راست به چپ
 - **Performance-First:** زیر 3 ثانیه LCP
 - **Accessibility:** حداقل WCAG 2.1 AA
@@ -73,30 +80,35 @@
 |---|---|
 | واحد 0.5 کیلو | حداقل 100 کیلو، تن، باکس، پالت |
 | نبود MOQ | اضافه شدن Min Order Quantity |
-| نبود منشأ محصول | نمایش استان/شهر + نام باغدار |
+| نبود منشأ محصول | نمایش استان/شهر + نام میدان‌بار |
 | نبود درجه کیفیت | A, B, C با indicator رنگی |
 | پرداخت کارت به کارت | حذف - پرداخت آنلاین + اعتباری (Net 30/60) |
 | عدم نمایش گواهی‌ها | بخش گواهی کیفیت در PDP |
-| نبود پروفایل باغدار | پروفایل کامل با رتبه و سابقه |
-| Dashboard باغدار نیست | اضافه کردن داشبورد فروشنده |
+| نبود پروفایل فروشنده | پروفایل میدان‌بار با رتبه و سابقه |
+| Dashboard میدان‌بار نیست | اضافه کردن داشبورد vendor |
+| نبود انتخاب زمان تحویل | ★ Time Slot اجباری در checkout |
+| سفارش مجدد دشوار | ★ Quick Order (تکرار یا قالب) |
 
 ### 2.2 اصول B2B UI/UX
 
 #### خریدار B2B چی می‌خواد؟
 
 - **سرعت:** خرید عمده باید در 30 ثانیه انجام بشه
-- **اطلاعات تفصیلی:** منشأ، کیفیت، تاریخ برداشت، گواهی‌ها
+- **اطلاعات تفصیلی:** منشأ، کیفیت، گواهی‌ها
 - **قیمت پله‌ای:** 100 کیلو یه قیمت، 1 تن یه قیمت
 - **اعتبار خرید:** بتونه نسیه بخره
 - **فاکتور رسمی:** PDF قابل دانلود
-- **سابقه خرید:** چی از کی خریده، قیمت چند بوده
-- **سفارش مجدد سریع:** "دقیقاً مثل دفعه قبل"
+- **سابقه خرید:** چی از کجا خریده، قیمت چند بوده
+- **★ انتخاب Time Slot:** بازه زمانی تحویل (صبح/عصر) با مشخص بودن تعطیلات
+- **★ سفارش سریع:** "دقیقاً مثل دفعه قبل" یا از روی قالب ذخیره‌شده
 
-#### باغدار چی می‌خواد؟
+#### میدان‌بار چی می‌خواد؟
 
-- **داشبورد آمار فروش:** امروز، هفته، ماه
-- **مدیریت موجودی:** سریع + bulk
+- **داشبورد آمار:** سفارش‌ها، درآمد، امروز/هفته/ماه
+- **مدیریت موجودی:** سریع + bulk (همه محصولات)
 - **دریافت سفارش‌ها:** نوتیفیکیشن + تأیید سریع
+- **★ مدیریت Time Slot:** تنظیم ساعات، بستن روزهای تعطیل، ظرفیت هر slot
+- **★ مدیریت Zone ها:** کدام شعبه چه منطقه‌ای را پوشش می‌دهد
 - **گزارش مالی:** چقدر پول دریافت کرده و چقدر در راه
 - **پیش‌بینی قیمت AI:** قیمت بهینه چنده؟
 
@@ -104,7 +116,7 @@
 
 #### 🏠 Landing Page
 - hero B2B (نه B2C): "پلتفرم خرید و فروش عمده میوه و تره‌بار"
-- آمار: تعداد باغدار، خریدار، حجم تراکنش
+- آمار: تعداد خریدار، حجم تراکنش، محصولات فعال
 - پروسه ثبت‌نام برای دو طرف
 - testimonials از سوپرمارکت‌های معتبر
 
@@ -114,25 +126,22 @@
 - **MOQ حداقل**
 - **درجه کیفیت** (A/B/C)
 - **منشأ جغرافیایی** (استان)
-- **تاریخ برداشت** (فقط 7 روز گذشته)
 - **گواهی ارگانیک**
 - **نیاز به سردخانه**
-- امتیاز باغدار
-- فاصله (در صورت مهم بودن)
+- امتیاز میدان‌بار
 
 #### 📦 PDP (Product Detail)
 - گالری عکس با زوم
 - **منشأ + نقشه نشان دادن**
 - **درجه کیفیت با توضیح**
-- **تاریخ برداشت**
 - **قیمت پله‌ای** (جدول tier pricing)
 - **MOQ واضح** (نمی‌شه کمتر خرید)
-- **پروفایل باغدار** با rating
+- **پروفایل میدان‌بار** با rating
 - **گواهی‌های معتبر** (ارگانیک، بهداشتی)
 - **شرایط نگهداری** (دما، رطوبت)
 - **پیش‌بینی قیمت AI** (هفته آینده چنده؟)
-- **محصولات مشابه** از باغدارای دیگه
-- **سؤال بپرس** (message to farmer)
+- **محصولات مشابه** از همین میدان‌بار
+- **سؤال بپرس** (پیام به میدان‌بار)
 
 #### 🛒 Cart & Checkout
 - سبد سه ستونه (در دسکتاپ):
@@ -141,7 +150,7 @@
   - روش پرداخت
 - محاسبه auto:
   - Subtotal
-  - هزینه حمل (بر اساس منطقه + وزن + سردخانه)
+  - هزینه حمل (بر اساس zone + وزن + سردخانه)
   - مالیات
   - **کمیسیون (مخفی - فقط فاکتور مشخص)**
   - جمع کل
@@ -149,26 +158,44 @@
   - درگاه آنلاین
   - اعتبار (Net 30/60)
   - کیف پول
-- زمان تحویل: تقویم + slot (صبح/ظهر/عصر)
+- **★ Time Slot اجباری:**
+  - تقویم تاریخ‌های موجود (روزهای تعطیل غیرفعال)
+  - بازه‌های زمانی هر روز (صبح/عصر) با ظرفیت باقی‌مانده
+  - نمایش cutoff time ("مهلت ثبت سفارش برای این بازه: ۲ ساعت دیگر")
+  - هشدار وقتی slot تقریباً پر است
 
-#### 👤 Account
-- **داشبورد:** سفارش‌های جاری، هشدارها، آمار ماه
+#### ⚡ Quick Order (جدید)
+- دکمه "سفارش سریع" در داشبورد خریدار
+- **حالت ۱:** تکرار آخرین سفارش
+  - نمایش پیش‌نمایش آیتم‌ها + قیمت فعلی
+  - هشدار برای محصولات out of stock
+  - انتخاب Time Slot جدید + تأیید
+- **حالت ۲:** قالب‌های ذخیره‌شده
+  - لیست قالب‌ها (نام‌گذاری شده)
+  - پیش‌نمایش + ویرایش مقدار
+  - انتخاب Time Slot + سفارش
+
+#### 👤 Account خریدار
+- **داشبورد:** سفارش‌های جاری، هشدارها، آمار ماه، **دکمه Quick Order**
 - **سفارش‌ها:** با filter و search
 - **اعتبار خرید:** limit، استفاده شده، remaining
 - **فاکتورها:** دانلود PDF
 - **آدرس‌ها:** multiple addresses (چند شعبه)
 - **پروفایل کسب و کار:** مشخصات قانونی
+- **★ قالب‌های سریع:** مدیریت Quick Order templates
 
-#### 🌱 Dashboard باغدار (جدید - نیست!)
+#### 🏪 Dashboard میدان‌بار (جایگزین باغدار)
 - **آمار فروش:** جدول + نمودار
 - **سفارش‌های در انتظار:** تأیید سریع
 - **موجودی:** وضعیت همه محصولات
 - **درآمد:** پرداخت شده + در راه
 - **رتبه و نظرات:** با امکان پاسخ
-- **پیش‌بینی تقاضا AI:** چی باید بیشتر تولید کنم؟
+- **★ مدیریت Time Slot:** تنظیم، تعطیلات، ظرفیت
+- **★ مدیریت Zone + شعب:** کدام راننده کجا می‌رود
+- **پیش‌بینی تقاضا AI:** چی باید بیشتر تهیه کنم؟
 
 #### 🚚 داشبورد راننده (PWA موبایل)
-- سفارش‌های assigned
+- سفارش‌های assigned **(فقط در zone خودش)**
 - نقشه + مسیریابی (نشان)
 - اسکن QR برای pickup
 - دکمه "رسیدم"، "تحویل دادم"
@@ -494,7 +521,7 @@ badge: {
 **توصیه:** Monorepo با **Turborepo**
 
 دلایل:
-- 4 اپ فرانت (خریدار، باغدار، راننده، ادمین) با کامپوننت‌های مشترک
+- 4 اپ فرانت (خریدار، میدان‌بار، راننده، ادمین) با کامپوننت‌های مشترک
 - Shared design system, types, utilities
 - Deploy جداگانه هر کدوم
 - سرعت بالاتر با Turbo cache
@@ -505,9 +532,9 @@ badge: {
 kalam-frontend/  (monorepo root)
 ├── apps/
 │   ├── buyer/           # اپ خریدار (Main marketplace)
-│   ├── farmer/          # اپ باغدار (Dashboard + Product management)
+│   ├── vendor/          # ★ اپ میدان‌بار (جایگزین farmer)
 │   ├── driver/          # اپ راننده (PWA موبایل)
-│   └── admin/           # پنل ادمین
+│   └── admin/           # پنل ادمین (SuperAdmin / Admin / Support)
 ├── packages/
 │   ├── ui/              # کامپوننت‌های shared (Button, Card, ...)
 │   ├── config/          # tailwind, eslint, tsconfig مشترک
@@ -543,6 +570,8 @@ apps/buyer/src/
 │   ├── product-catalog/
 │   ├── cart/
 │   ├── checkout/
+│   ├── time-slot/       # ★ جدید: انتخاب بازه زمانی تحویل
+│   ├── quick-order/     # ★ جدید: سفارش سریع
 │   └── order-management/
 ├── widgets/             # بلوک‌های بزرگ UI
 │   ├── header/
@@ -552,7 +581,8 @@ apps/buyer/src/
 ├── entities/            # business entities
 │   ├── product/
 │   ├── user/
-│   └── order/
+│   ├── order/
+│   └── vendor/          # ★ جایگزین farmer/
 ├── shared/              # utilities, constants, types
 │   ├── config/
 │   ├── lib/
@@ -620,6 +650,7 @@ apps/buyer/
 │   │   │   ├── checkout/
 │   │   │   │   ├── page.tsx
 │   │   │   │   ├── address/page.tsx
+│   │   │   │   ├── time-slot/page.tsx  # ★ جدید: انتخاب بازه تحویل
 │   │   │   │   └── payment/page.tsx
 │   │   │   └── layout.tsx
 │   │   ├── (account)/
@@ -627,6 +658,9 @@ apps/buyer/
 │   │   │   ├── orders/
 │   │   │   │   ├── page.tsx
 │   │   │   │   └── [id]/page.tsx
+│   │   │   ├── quick-orders/           # ★ جدید
+│   │   │   │   ├── page.tsx            # لیست قالب‌های سریع
+│   │   │   │   └── [templateId]/page.tsx
 │   │   │   ├── addresses/page.tsx
 │   │   │   ├── credit/page.tsx
 │   │   │   ├── invoices/page.tsx
@@ -675,10 +709,31 @@ apps/buyer/
 │   │   │   ├── stores/
 │   │   │   │   └── cart.store.ts
 │   │   │   └── api/
+│   │   ├── time-slot/              # ★ جدید
+│   │   │   ├── components/
+│   │   │   │   ├── slot-calendar.tsx        # تقویم انتخاب روز
+│   │   │   │   ├── slot-picker.tsx          # بازه‌های موجود
+│   │   │   │   ├── slot-badge.tsx           # نشانه ظرفیت
+│   │   │   │   └── cutoff-countdown.tsx     # تایمر مهلت
+│   │   │   ├── hooks/
+│   │   │   │   └── use-time-slots.ts
+│   │   │   └── api/
+│   │   │       └── time-slots.api.ts
+│   │   ├── quick-order/            # ★ جدید
+│   │   │   ├── components/
+│   │   │   │   ├── quick-order-button.tsx   # دکمه float در داشبورد
+│   │   │   │   ├── repeat-last-order.tsx    # پیش‌نمایش آخرین سفارش
+│   │   │   │   ├── template-list.tsx        # لیست قالب‌ها
+│   │   │   │   └── template-preview.tsx     # پیش‌نمایش + ویرایش
+│   │   │   ├── hooks/
+│   │   │   │   └── use-quick-order.ts
+│   │   │   └── api/
+│   │   │       └── quick-orders.api.ts
 │   │   ├── checkout/
 │   │   ├── orders/
 │   │   ├── reviews/
 │   │   └── notifications/
+```
 │   ├── widgets/
 │   │   ├── header/
 │   │   │   ├── header.tsx
@@ -693,7 +748,7 @@ apps/buyer/
 │   │   │   └── types.ts
 │   │   ├── user/
 │   │   ├── order/
-│   │   └── farmer/
+│   │   └── vendor/          # ★ جایگزین farmer/
 │   ├── shared/
 │   │   ├── api/
 │   │   │   ├── client.ts          # Axios instance
@@ -780,23 +835,25 @@ packages/ui/
 - [ ] `/products` - PLP با filter
 - [ ] `/products/[slug]` - PDP
 - [ ] `/category/[slug]` - محصولات دسته
-- [ ] `/farmers/[slug]` - پروفایل باغدار
+- [ ] `/vendors/[slug]` - پروفایل میدان‌بار (★ جایگزین farmers/)
 - [ ] `/search?q=...` - جستجو
 - [ ] `/cart` - سبد خرید
 
 #### Checkout
 - [ ] `/checkout` - خلاصه سبد
 - [ ] `/checkout/address` - انتخاب آدرس
-- [ ] `/checkout/delivery` - زمان تحویل
+- [ ] `/checkout/time-slot` - ★ جدید: انتخاب بازه زمانی تحویل
 - [ ] `/checkout/payment` - پرداخت
 - [ ] `/checkout/success/[orderId]` - تأییدیه
 
 #### Account
-- [ ] `/dashboard` - داشبورد خریدار
+- [ ] `/dashboard` - داشبورد خریدار (با دکمه Quick Order)
 - [ ] `/orders` - لیست سفارش‌ها
 - [ ] `/orders/[id]` - جزئیات سفارش + tracking
 - [ ] `/orders/[id]/review` - ثبت نظر
 - [ ] `/orders/[id]/dispute` - ثبت اعتراض
+- [ ] `/quick-orders` - ★ جدید: مدیریت سفارش سریع
+- [ ] `/quick-orders/[templateId]` - ★ جدید: پیش‌نمایش + سفارش از قالب
 - [ ] `/addresses` - مدیریت آدرس‌ها
 - [ ] `/addresses/new` - آدرس جدید
 - [ ] `/credit` - اعتبار خرید
@@ -807,20 +864,21 @@ packages/ui/
 - [ ] `/profile` - پروفایل کسب و کار
 - [ ] `/settings` - تنظیمات
 
-### 7.2 اپ باغدار (Farmer) - لیست کامل صفحات
+### 7.2 اپ میدان‌بار (Vendor) — جایگزین اپ باغدار
 
-#### Auth (مشترک با Buyer، فقط role متفاوت)
+#### Auth (مشترک با Buyer، فقط role متفاوت: VENDOR)
 
 #### Dashboard
 - [ ] `/dashboard` - داشبورد اصلی
   - آمار فروش امروز/هفته/ماه
   - سفارش‌های در انتظار تأیید
+  - موجودی کم‌شده (هشدار)
   - پیش‌بینی تقاضا AI
   - گراف درآمد
 - [ ] `/analytics` - تحلیل‌های تفصیلی
 
 #### Products Management
-- [ ] `/products` - لیست محصولات من
+- [ ] `/products` - لیست محصولات
 - [ ] `/products/new` - افزودن محصول
 - [ ] `/products/[id]/edit` - ویرایش
 - [ ] `/products/bulk` - افزودن گروهی (CSV)
@@ -835,14 +893,32 @@ packages/ui/
 - [ ] `/orders/pending` - در انتظار تأیید
 - [ ] `/orders/shipping` - در حال ارسال
 
+#### ★ Time Slots Management (جدید)
+- [ ] `/time-slots` - مدیریت بازه‌های تحویل
+  - تقویم هفتگی با slot ها
+  - ویرایش ظرفیت هر slot
+  - بستن/باز کردن slot خاص
+- [ ] `/time-slots/templates` - قالب‌های slot (ساعات پایه)
+- [ ] `/time-slots/holidays` - مدیریت تعطیلات
+  - نمایش تعطیلات رسمی (خودکار)
+  - افزودن تعطیل دستی
+  - حذف تعطیل
+
+#### ★ Delivery Zones & Branches (جدید)
+- [ ] `/branches` - مدیریت شعب میدان‌بار
+- [ ] `/branches/[id]/zones` - مناطق تحویل هر شعبه
+  - نقشه با polygon رسم‌شده
+  - لیست راننده‌های آن zone
+  - هزینه تحویل zone
+
 #### Finance
 - [ ] `/finance` - خلاصه مالی
 - [ ] `/finance/settlements` - تسویه‌حساب‌ها
-- [ ] `/finance/payouts` - پرداخت‌ها به من
+- [ ] `/finance/payouts` - پرداخت‌ها به میدان‌بار
 - [ ] `/finance/commissions` - کمیسیون‌ها
 
 #### Profile & Certifications
-- [ ] `/profile` - پروفایل باغدار
+- [ ] `/profile` - پروفایل میدان‌بار
 - [ ] `/certificates` - گواهی‌ها
 - [ ] `/reviews` - نظرات خریداران
 
@@ -852,8 +928,9 @@ packages/ui/
 
 ### 7.3 اپ راننده (Driver) - PWA موبایل
 
-- [ ] `/` - داشبورد (سفارش‌های جاری)
-- [ ] `/orders/pending` - در انتظار قبول
+- [ ] `/` - داشبورد (سفارش‌های zone من)
+- [ ] `/zone` - ★ منطقه من (نقشه zone با محدوده)
+- [ ] `/orders/pending` - در انتظار قبول (فقط در zone)
 - [ ] `/orders/[id]` - جزئیات تحویل
 - [ ] `/orders/[id]/navigate` - نقشه + مسیریابی
 - [ ] `/orders/[id]/pickup` - تأیید pickup (اسکن QR)
@@ -862,35 +939,70 @@ packages/ui/
 - [ ] `/earnings` - درآمد
 - [ ] `/profile` - پروفایل
 
-### 7.4 پنل ادمین - لیست کامل صفحات
+### 7.4 پنل ادمین - سه سطح (SuperAdmin / Admin / Support)
 
-- [ ] `/dashboard` - آمار کلی پلتفرم
+> **★ مهم:** پنل ادمین یک اپ واحد است اما هر کاربر بر اساس نقش و پرمیشن‌هایش صفحات متفاوتی می‌بیند.
+
+#### 🔴 مخصوص SuperAdmin (همه صفحات زیر + ...)
+- [ ] `/super-admin/roles` - ساخت و مدیریت نقش‌های ادمین
+- [ ] `/super-admin/roles/new` - نقش جدید با انتخاب پرمیشن‌ها
+- [ ] `/super-admin/admins` - لیست همه ادمین‌ها و سپورت‌ها
+- [ ] `/super-admin/admins/[id]/assign-role` - تخصیص نقش به ادمین
+- [ ] `/super-admin/action-logs` - لاگ همه اقدامات مدیریتی
+- [ ] `/super-admin/system-config` - تنظیمات سیستم
+
+#### 🟠 داشبورد (بر اساس پرمیشن)
+- [ ] `/dashboard` - آمار کلی پلتفرم (VIEW_ANALYTICS)
+
+#### 🟡 کاربران (نیاز به VIEW_USERS)
 - [ ] `/users` - کاربران
   - [ ] `/users/buyers`
-  - [ ] `/users/farmers`
+  - [ ] `/users/vendors` - ★ جایگزین farmers
   - [ ] `/users/drivers`
   - [ ] `/users/[id]` - جزئیات
-- [ ] `/kyc` - احراز هویت
-  - [ ] `/kyc/pending` - در انتظار بررسی
+
+#### KYC
+- [ ] `/kyc/pending` - در انتظار بررسی (VIEW_USERS)
+
+#### محصولات (نیاز به VIEW_PRODUCTS)
 - [ ] `/products` - مدیریت محصولات
-  - [ ] `/products/pending` - در انتظار تأیید
+  - [ ] `/products/pending` - در انتظار تأیید (APPROVE_PRODUCTS)
   - [ ] `/products/categories` - دسته‌بندی
+
+#### سفارش‌ها (نیاز به VIEW_ORDERS)
 - [ ] `/orders` - همه سفارش‌ها
+- [ ] `/orders/[id]` - جزئیات + اقدام
+
+#### مالی (نیاز به VIEW_FINANCIALS)
 - [ ] `/payments` - تراکنش‌ها
-- [ ] `/settlements` - تسویه‌ها
+- [ ] `/settlements` - تسویه‌ها (MANAGE_SETTLEMENTS)
 - [ ] `/commissions` - قوانین کمیسیون
+
+#### اعتراضات (نیاز به VIEW_DISPUTES)
 - [ ] `/disputes` - اعتراضات
-- [ ] `/deliveries` - حمل و نقل
-  - [ ] `/deliveries/drivers` - رانندگان
-  - [ ] `/deliveries/vehicles` - خودروها
+- [ ] `/disputes/[id]` - بررسی + حل (RESOLVE_DISPUTES)
+
+#### ★ حمل و نقل (نیاز به VIEW_DELIVERIES)
+- [ ] `/deliveries` - همه تحویل‌ها
+  - [ ] `/deliveries/drivers` - رانندگان (MANAGE_DRIVERS)
+  - [ ] `/deliveries/zones` - ★ مناطق تحویل (MANAGE_ZONES)
+  - [ ] `/deliveries/zones/new` - zone جدید با رسم polygon روی نقشه
+  - [ ] `/deliveries/zones/[id]` - جزئیات zone + رانندگان
+
+#### ★ Time Slots (نیاز به MANAGE_TIMESLOTS)
+- [ ] `/time-slots` - مدیریت slot های سیستم
+- [ ] `/time-slots/holidays` - تعطیلات رسمی (MANAGE_HOLIDAYS)
+  - نمایش تعطیلات ایران (خودکار)
+  - افزودن دستی
+
+#### سایر
 - [ ] `/warehouses` - سردخانه‌ها
-- [ ] `/analytics` - گزارش‌ها
+- [ ] `/analytics` - گزارش‌ها (VIEW_ANALYTICS + EXPORT_REPORTS)
 - [ ] `/notifications` - ارسال notification
 - [ ] `/content` - مدیریت محتوا (بلاگ، FAQ)
-- [ ] `/settings` - تنظیمات سیستم
+- [ ] `/settings` - تنظیمات سیستم (MANAGE_SYSTEM_CONFIG)
   - [ ] `/settings/commissions` - نرخ کمیسیون
   - [ ] `/settings/fees` - هزینه‌ها
-  - [ ] `/settings/admins` - ادمین‌ها
 
 ---
 
@@ -934,7 +1046,7 @@ import { persist } from 'zustand/middleware';
 interface CartItem {
   productId: string;
   productName: string;
-  farmerId: string;
+  vendorId: string;      // ★ تغییر: farmerId → vendorId
   quantity: number;
   unit: string;
   pricePerUnit: number;
@@ -1193,22 +1305,20 @@ export function handleApiError(error: unknown): ApiError {
 
 ## 10. فازبندی
 
-> **وضعیت فعلی (بر اساس swagger audit):** ✅ = پیاده‌سازی شده در API و فرانت | ⚠️ = ناقص | ❌ = هنوز شروع نشده
-
 ### فاز 1: Foundation + Core MVP — هفته‌های 1 تا 10
 
 #### Sprint 1-2 (هفته 1-2): Setup & Design System
-> ✅ **وضعیت:** انجام شده — Next.js 16 + Tailwind CSS v4 + ESLint + CI pipeline فعال است.
 
 **UI/UX (همزمان):**
 - [ ] بازطراحی B2B در Figma
 - [ ] ایجاد Design Tokens
 - [ ] Component Library اولیه در Figma
 - [ ] Prototype Landing + PLP + PDP
+- [ ] ★ طراحی Time Slot picker component
 
 **Development:**
 - [ ] Setup Monorepo با Turborepo + pnpm workspaces
-- [ ] ایجاد apps: buyer, farmer, driver, admin
+- [ ] ایجاد apps: buyer, **vendor**, driver, admin (★ vendor نه farmer)
 - [ ] Setup Next.js 15 + TypeScript strict
 - [ ] Tailwind CSS + RTL config + فونت‌های فارسی
 - [ ] Setup Shadcn/ui
@@ -1220,7 +1330,6 @@ export function handleApiError(error: unknown): ApiError {
 **Deliverable:** 4 اپ قابل اجرا با design system کامل + Storybook
 
 #### Sprint 3-4 (هفته 3-4): Authentication & Layout
-> ✅ **وضعیت:** انجام شده — OTP login/register, JWT refresh, middleware, auth store, Header/Footer/Nav همه فعال.
 
 **UI/UX:**
 - [ ] طراحی صفحات Login, Register, OTP
@@ -1240,7 +1349,6 @@ export function handleApiError(error: unknown): ApiError {
 **Deliverable:** کاربر بتواند ثبت‌نام، ورود و خروج کند. 4 اپ با layout کامل.
 
 #### Sprint 5-6 (هفته 5-6): Product Catalog (Buyer)
-> ✅ **وضعیت:** انجام شده — Landing, PLP, PDP, Category, Search pages + productService متصل به API.
 
 **UI/UX:**
 - [ ] طراحی PLP با همه فیلترها
@@ -1260,22 +1368,23 @@ export function handleApiError(error: unknown): ApiError {
   - [ ] Image gallery با zoom
   - [ ] Quantity selector با MOQ validation
   - [ ] Price tier table
-  - [ ] Farmer profile widget
+  - [ ] **Vendor profile widget** (★ جایگزین Farmer)
   - [ ] Certifications display
-  - [ ] Product specs (منشأ، تاریخ، دما، ...)
+  - [ ] Product specs (منشأ، دما، ...)
   - [ ] Related products
   - [ ] "سؤال بپرس" dialog
 - [ ] Category pages
 - [ ] Search page
+- [ ] `/vendors/[slug]` - صفحه پروفایل میدان‌بار (★ جایگزین /farmers/)
 
 **Deliverable:** خریدار می‌تواند محصولات را ببیند، فیلتر کند و جزئیات بخواند.
 
-#### Sprint 7-8 (هفته 7-8): Cart & Checkout
-> ⚠️ **وضعیت:** انجام شده در فرانت — cart, checkout, payment flow, success page وجود دارند. اما **Time Slot** در checkout پیاده‌سازی نشده (نیازمند time-slots service).
+#### Sprint 7-8 (هفته 7-8): Cart & Checkout + Time Slot
 
 **UI/UX:**
 - [ ] طراحی Cart page + Mini cart
-- [ ] طراحی Checkout 3-step
+- [ ] طراحی Checkout 4-step (★ با Time Slot)
+- [ ] ★ طراحی Time Slot picker: تقویم + بازه‌های روز + ظرفیت + cutoff
 
 **Development:**
 - [ ] Mini cart (drawer از header)
@@ -1284,26 +1393,29 @@ export function handleApiError(error: unknown): ApiError {
   - [ ] Remove item
   - [ ] MOQ warnings
   - [ ] Summary sidebar
-- [ ] Checkout flow:
+- [ ] Checkout flow (4 مرحله):
   - [ ] Step 1: خلاصه سبد
-  - [ ] Step 2: آدرس + زمان تحویل
-  - [ ] Step 3: روش پرداخت
+  - [ ] Step 2: آدرس
+  - [ ] Step 3: ★ انتخاب Time Slot
+    - [ ] تقویم شمسی (روزهای تعطیل غیرفعال)
+    - [ ] بازه‌های موجود هر روز با ظرفیت باقی‌مانده
+    - [ ] نمایش cutoff time
+    - [ ] هشدار slot در حال پر شدن
+  - [ ] Step 4: روش پرداخت
   - [ ] Progress indicator
-- [ ] Address management:
-  - [ ] لیست آدرس‌ها
-  - [ ] آدرس جدید با نقشه
-  - [ ] Edit/Delete
+- [ ] Address management (لیست + نقشه + جدید)
 - [ ] Payment flow (گذرا از گیت‌وی)
 - [ ] Success page
 
-**Deliverable:** فرایند کامل خرید از سبد تا پرداخت.
+**Deliverable:** فرایند کامل خرید از سبد تا پرداخت با Time Slot اجباری.
 
-#### Sprint 9-10 (هفته 9-10): Account + Farmer Dashboard Basic
-> ⚠️ **وضعیت:** Buyer account pages (orders, addresses, profile, notifications) ساخته شده. Farmer dashboard وجود دارد ولی بیشتر صفحات هنوز از mock data استفاده می‌کنند. Vendor (میدان‌بار) به‌عنوان جایگزین farmer در v1.1 هنوز پیاده‌سازی نشده است.
+#### Sprint 9-10 (هفته 9-10): Account + Vendor Dashboard + Quick Order + Admin
 
 **UI/UX:**
 - [ ] طراحی Account (خریدار)
-- [ ] طراحی Dashboard باغدار
+- [ ] ★ طراحی Dashboard میدان‌بار (با time slot و zone)
+- [ ] ★ طراحی Quick Order flow
+- [ ] ★ طراحی Admin با نمایش سطح‌بندی
 
 **Development:**
 - [ ] Buyer Account:
@@ -1311,21 +1423,26 @@ export function handleApiError(error: unknown): ApiError {
   - [ ] Addresses
   - [ ] Profile
   - [ ] Notifications
-- [ ] Farmer Dashboard:
+  - [ ] ★ Quick Order: دکمه + repeat last order + قالب‌ها
+- [ ] ★ Vendor Dashboard (اپ جداگانه):
   - [ ] آمار پایه (فروش امروز، ماه)
   - [ ] نمودار ساده
-  - [ ] سفارش‌های در انتظار
-  - [ ] Quick actions
-- [ ] Farmer Products:
-  - [ ] لیست محصولاتم
+  - [ ] سفارش‌های در انتظار + تأیید سریع
+  - [ ] Quick actions (موجودی، محصول جدید)
+  - [ ] ★ Time Slot management: تقویم + ویرایش ظرفیت
+  - [ ] ★ تعطیلات: نمایش + افزودن دستی
+- [ ] Vendor Products:
+  - [ ] لیست محصولات
   - [ ] افزودن محصول (فرم کامل)
   - [ ] ویرایش
-- [ ] Admin Panel پایه:
-  - [ ] Login
-  - [ ] Dashboard با آمار کلی
+- [ ] ★ Admin Panel با سه سطح:
+  - [ ] Login → redirect بر اساس نقش
+  - [ ] UI پرمیشن‌محور (منوها و دکمه‌ها بر اساس نقش نمایش)
+  - [ ] SuperAdmin: صفحه مدیریت نقش‌ها + ادمین‌ها
+  - [ ] Dashboard با آمار کلی (برای صاحبین VIEW_ANALYTICS)
   - [ ] Users list
 
-**Deliverable:** MVP کامل با 3 اپ کاربردی.
+**Deliverable:** MVP کامل با 3 اپ کاربردی + Admin چند سطحی.
 
 ---
 
@@ -1337,7 +1454,7 @@ export function handleApiError(error: unknown): ApiError {
 - [ ] Buyer: صفحه جزئیات سفارش با tracking
 - [ ] Order status timeline
 - [ ] Real-time updates (polling یا WebSocket)
-- [ ] Farmer: confirm/reject order
+- [ ] **Vendor:** confirm/reject order (★ جایگزین Farmer)
 - [ ] Bulk actions برای orders
 
 #### Sprint 13-14: Payment UI
@@ -1350,27 +1467,33 @@ export function handleApiError(error: unknown): ApiError {
 - [ ] Invoice download
 - [ ] Credit limit page (Net 30/60)
 
-#### Sprint 15-16: Delivery & Tracking
+#### Sprint 15-16: Delivery & Tracking + Zone-based Driver
 
 **UI/UX:**
-- [ ] طراحی Driver App (PWA موبایل)
+- [ ] ★ طراحی Driver App (PWA موبایل) با zone display
 - [ ] طراحی نقشه tracking
+- [ ] ★ طراحی صفحه Zones در Admin
 
 **Development:**
 - [ ] Driver App (PWA):
-  - [ ] Dashboard
-  - [ ] Assigned orders
+  - [ ] Dashboard با zone خودش روی نقشه
+  - [ ] ★ `/zone` - نمایش محدوده zone راننده
+  - [ ] Assigned orders (فقط در zone)
   - [ ] Navigate (با اتصال به نشان)
   - [ ] QR scanner برای pickup
   - [ ] Proof capture (عکس + امضا)
   - [ ] Location tracking (Geolocation API)
 - [ ] Buyer: صفحه tracking با نقشه live
+- [ ] ★ Admin: Zone management
+  - [ ] رسم polygon روی نقشه (map drawing tool)
+  - [ ] تخصیص راننده به zone
+  - [ ] هزینه zone
 - [ ] Admin: Dispatch board
 
-#### Sprint 17-18: Admin Panel Advanced
+#### Sprint 17-18: Admin Panel Advanced + SuperAdmin
 
 **Development:**
-- [ ] User management (CRUD + verify)
+- [ ] User management (CRUD + verify) بر اساس پرمیشن
 - [ ] Product approval workflow
 - [ ] Order management
 - [ ] Dispute management
@@ -1378,6 +1501,13 @@ export function handleApiError(error: unknown): ApiError {
 - [ ] Commission rules UI
 - [ ] Settlements page
 - [ ] Analytics dashboards با charts
+- [ ] ★ SuperAdmin Panel:
+  - [ ] صفحه ساخت نقش + انتخاب checkbox پرمیشن‌ها
+  - [ ] صفحه assign نقش به ادمین
+  - [ ] لاگ اقدامات ادمین‌ها (AdminActionLog)
+- [ ] ★ Permission-driven UI: هر دکمه/منو با `canI(permission)` check
+- [ ] ★ Time Slot admin management (MANAGE_TIMESLOTS)
+- [ ] ★ تعطیلات رسمی (MANAGE_HOLIDAYS)
 
 ---
 
@@ -1390,7 +1520,7 @@ export function handleApiError(error: unknown): ApiError {
 - [ ] Price chart (روند قیمت + پیش‌بینی)
 - [ ] Product recommendations در homepage
 - [ ] "محصولات مشابه" در PDP
-- [ ] Farmer tool: پیش‌بینی تقاضا
+- [ ] **Vendor tool:** پیش‌بینی تقاضا (★ جایگزین Farmer tool)
 - [ ] Image quality check (upload + نمایش نتیجه)
 
 #### Sprint 21-22: Reviews & Trust
@@ -1399,7 +1529,7 @@ export function handleApiError(error: unknown): ApiError {
 - [ ] Rating component (5 ستاره)
 - [ ] Review form بعد از تحویل
 - [ ] Reviews display در PDP
-- [ ] Farmer profile با reviews
+- [ ] **Vendor profile** با reviews (★ جایگزین Farmer profile)
 - [ ] Moderation UI (admin)
 
 #### Sprint 23-24: Chatbot & Support
@@ -1427,7 +1557,7 @@ export function handleApiError(error: unknown): ApiError {
   - [ ] Live bid list (WebSocket)
   - [ ] Place bid
 - [ ] My auctions (winning + losing)
-- [ ] Farmer: create auction
+- [ ] **Vendor:** create auction (★ جایگزین Farmer)
 
 #### Sprint 28-30: Subscriptions
 
@@ -1437,11 +1567,11 @@ export function handleApiError(error: unknown): ApiError {
 - [ ] Manage subscriptions
 - [ ] Cancel/pause
 
-#### Sprint 31-32: Pre-Harvest
+#### Sprint 31-32: Pre-Order
 
 **Development:**
 - [ ] Pre-order landing
-- [ ] Farmer: announce pre-order
+- [ ] **Vendor:** announce pre-order (★ جایگزین Farmer)
 - [ ] Buyer: commit to pre-order
 - [ ] Timeline tracking
 
@@ -1518,7 +1648,7 @@ export function handleApiError(error: unknown): ApiError {
 - `ci` - CI
 
 **Scopes نمونه:**
-- `buyer`, `farmer`, `driver`, `admin`
+- `buyer`, `vendor`, `driver`, `admin`
 - `auth`, `cart`, `checkout`, `products`
 - `ui`, `api`, `config`
 
@@ -1526,7 +1656,7 @@ export function handleApiError(error: unknown): ApiError {
 ```
 feat(buyer): add price tier table to PDP
 
-ui(farmer): redesign dashboard stats cards
+ui(vendor): redesign dashboard stats cards
 
 fix(cart): prevent adding less than MOQ
 
@@ -1678,7 +1808,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        app: [buyer, farmer, driver, admin]
+        app: [buyer, vendor, driver, admin]
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v2
@@ -1722,7 +1852,7 @@ jobs:
         with:
           urls: |
             https://staging-buyer.kalam.ir
-            https://staging-farmer.kalam.ir
+            https://staging-vendor.kalam.ir
           uploadArtifacts: true
           temporaryPublicStorage: true
 
@@ -1754,7 +1884,7 @@ jobs:
     environment: staging
     strategy:
       matrix:
-        app: [buyer, farmer, driver, admin]
+        app: [buyer, vendor, driver, admin]
     steps:
       - uses: actions/checkout@v4
 
@@ -1994,7 +2124,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const product = await getProduct(params.slug);
 
   return {
-    title: `${product.name} - ${product.farmerName} | کلم`,
+    title: `${product.name} - ${product.vendorName} | کلم`,
     description: product.description.slice(0, 160),
     openGraph: {
       title: product.name,
@@ -2139,7 +2269,7 @@ pnpm install
 # Development
 pnpm dev                    # همه اپ‌ها (با turbo)
 pnpm --filter buyer dev     # فقط buyer
-pnpm --filter farmer dev    # فقط farmer
+pnpm --filter vendor dev    # فقط vendor
 
 # Build
 pnpm build
@@ -2199,6 +2329,9 @@ NEXT_PUBLIC_IMAGES_URL=https://images.kalam.ir
 # Feature Flags
 NEXT_PUBLIC_FEATURE_AUCTIONS=false
 NEXT_PUBLIC_FEATURE_AI_PREDICTIONS=true
+NEXT_PUBLIC_FEATURE_TIME_SLOTS=true       # ★ جدید
+NEXT_PUBLIC_FEATURE_QUICK_ORDER=true      # ★ جدید
+NEXT_PUBLIC_FEATURE_ZONE_DELIVERY=true    # ★ جدید
 
 # Payment (برای نمایش، نه key اصلی)
 NEXT_PUBLIC_ZARINPAL_MERCHANT=
@@ -2288,11 +2421,13 @@ NEXT_PUBLIC_ENV=development  # development | staging | production
 - [ ] Review کامل Figma فعلی
 - [ ] لیست تغییرات B2B رو بنویس
 - [ ] شروع بازطراحی Landing + PLP + PDP
+- [ ] ★ طراحی Time Slot picker (تقویم + بازه + ظرفیت)
+- [ ] ★ طراحی Quick Order flow (تکرار / قالب)
 
 **روز 3:**
 - [ ] Repository `kalam-frontend` در GitHub org
 - [ ] Setup monorepo با Turborepo
-- [ ] Create apps: buyer, farmer, driver, admin
+- [ ] Create apps: buyer, **vendor**, driver, admin (★ نه farmer)
 - [ ] Setup Tailwind + فونت‌های فارسی
 
 **روز 4:**
@@ -2304,6 +2439,7 @@ NEXT_PUBLIC_ENV=development  # development | staging | production
 **روز 5:**
 - [ ] Storybook setup
 - [ ] اولین کامپوننت‌ها: Button, Input, Card
+- [ ] ★ TimeSlotPicker در Storybook
 - [ ] Design tokens در Tailwind
 - [ ] README کامل
 
@@ -2319,7 +2455,11 @@ NEXT_PUBLIC_ENV=development  # development | staging | production
 
 2. **Monorepo با Turborepo**: 4 اپ جداگانه + کامپوننت‌های مشترک.
 
-3. **Mobile-First**: بخصوص برای باغدار و راننده.
+3. **Mobile-First**: بخصوص برای اپراتورهای میدان‌بار و رانندگان.
+
+4. **Time Slot از Sprint 7**: این ویژگی در checkout و vendor dashboard هر دو اجباری است.
+
+5. **SuperAdmin از Sprint 9**: Admin پنل از ابتدا permission-driven ساخته شود.
 
 4. **Performance از روز اول**: نه بعداً optimize.
 
