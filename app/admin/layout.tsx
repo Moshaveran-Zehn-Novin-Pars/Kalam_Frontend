@@ -1,14 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
 import {
   BarChart3, Pencil, ShoppingCart, Send, Users, LogOut,
   Search, Menu, X, Home, LayoutGrid, UserCircle, LogIn, ChevronLeft,
   Shield, CreditCard, Wallet, Scale, AlertTriangle, Truck,
-  Warehouse, TrendingUp, Bell, FileText, Settings, CheckSquare
+  Warehouse, TrendingUp, Bell, FileText, Settings, CheckSquare, Loader2
 } from "lucide-react"
+import { orderService } from "@/services/order"
 import "./admin.css"
 
 function fa(n: string | number) {
@@ -158,24 +159,38 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 }
 
 /* ── Search Modal ── */
-const SEARCH_ORDERS = [
-  { id: "2345923", user: "سلحشور",  cat: "سبزیجات",  status: "pending" },
-  { id: "2345924", user: "محمدی",    cat: "میوه‌ها",  status: "prep" },
-  { id: "2345925", user: "احمدی",    cat: "نان",      status: "shipped" },
-  { id: "2345926", user: "رضایی",    cat: "لبنیات",   status: "cancel" },
-]
 const STATUS_LABELS: Record<string, { label: string; cls: string }> = {
-  pending: { label: "در انتظار تایید", cls: "pill pill--pending" },
-  prep:    { label: "آماده‌سازی",       cls: "pill pill--prep"    },
-  shipped: { label: "ارسال شده",        cls: "pill pill--shipped" },
-  cancel:  { label: "لغو شده",          cls: "pill pill--cancel"  },
+  PENDING_PAYMENT: { label: "در انتظار تایید", cls: "pill pill--pending" },
+  PAID_HELD:      { label: "در انتظار تایید", cls: "pill pill--pending" },
+  CONFIRMED:       { label: "آماده‌سازی",       cls: "pill pill--prep"    },
+  PREPARING:       { label: "آماده‌سازی",       cls: "pill pill--prep"    },
+  READY_FOR_PICKUP: { label: "آماده بارگیری",   cls: "pill pill--prep"    },
+  SHIPPING:        { label: "ارسال شده",        cls: "pill pill--shipped" },
+  DELIVERED:       { label: "ارسال شده",        cls: "pill pill--shipped" },
+  COMPLETED:       { label: "تکمیل شده",        cls: "pill pill--shipped" },
+  CANCELLED:       { label: "لغو شده",          cls: "pill pill--cancel"  },
+  REFUNDED:        { label: "لغو شده",          cls: "pill pill--cancel"  },
+  DISPUTED:        { label: "مختومه",           cls: "pill pill--cancel"  },
 }
 
 function SearchModal({ onClose }: { onClose: () => void }) {
   const [q, setQ] = useState("")
+  const [orders, setOrders] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    orderService.getAllOrders({ pageSize: 50 })
+      .then((res: any) => setOrders(res?.items || []))
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
   const results = q.trim()
-    ? SEARCH_ORDERS.filter(o => o.id.includes(q) || o.user.includes(q) || o.cat.includes(q))
-    : SEARCH_ORDERS
+    ? orders.filter((o: any) =>
+        (o.orderNumber || o.id || '').includes(q) ||
+        (o.buyer?.firstName || o.buyer?.lastName || '').includes(q) ||
+        (o.items?.[0]?.productName || '').includes(q))
+    : orders
 
   return (
     <div className="adm-search-overlay" onClick={onClose}>
@@ -187,19 +202,26 @@ function SearchModal({ onClose }: { onClose: () => void }) {
             onKeyDown={e => e.key === "Escape" && onClose()} />
         </div>
         <div>
-          {results.length === 0 && <p style={{ padding: "20px", textAlign: "center", color: "var(--adm-fg-3)", fontSize: 13 }}>نتیجه‌ای یافت نشد</p>}
-          {results.map(r => {
-            const s = STATUS_LABELS[r.status]
-            return (
-              <button key={r.id} className="adm-search-result" onClick={onClose}>
-                <div>
-                  <div style={{ fontWeight: 500, fontSize: 13 }}>#{fa(r.id)} · {r.user}</div>
-                  <div style={{ fontSize: 12, color: "var(--adm-fg-3)", marginTop: 2 }}>{r.cat}</div>
-                </div>
-                <span className={s.cls}>{s.label}</span>
-              </button>
-            )
-          })}
+          {loading ? (
+            <div style={{ padding: 20, textAlign: "center" }}><Loader2 size={20} className="spin" style={{ color: "var(--adm-fg-3)" }} /></div>
+          ) : results.length === 0 ? (
+            <p style={{ padding: "20px", textAlign: "center", color: "var(--adm-fg-3)", fontSize: 13 }}>نتیجه‌ای یافت نشد</p>
+          ) : (
+            results.map((r: any) => {
+              const s = STATUS_LABELS[r.status] || { label: r.status, cls: "pill pill--pending" }
+              const userName = [r.buyer?.firstName, r.buyer?.lastName].filter(Boolean).join(' ') || '—'
+              const cat = r.items?.[0]?.productName || '—'
+              return (
+                <button key={r.id} className="adm-search-result" onClick={onClose}>
+                  <div>
+                    <div style={{ fontWeight: 500, fontSize: 13 }}>#{fa(r.orderNumber || r.id)} · {userName}</div>
+                    <div style={{ fontSize: 12, color: "var(--adm-fg-3)", marginTop: 2 }}>{cat}</div>
+                  </div>
+                  <span className={s.cls}>{s.label}</span>
+                </button>
+              )
+            })
+          )}
         </div>
       </div>
     </div>

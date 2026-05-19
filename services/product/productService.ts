@@ -42,7 +42,7 @@ export const productService = {
 
     // ADMIN: all products
     async findAllAdmin(params?: QueryProductsParams): Promise<PaginatedResponse<Product>> {
-        const res = await apiGetPaginated<PaginatedResponse<Product>>('/products/admin', { params })
+        const res = await apiGetPaginated<PaginatedResponse<Product>>('/products/admin/all', { params })
         return res.data as PaginatedResponse<Product>
     },
 }

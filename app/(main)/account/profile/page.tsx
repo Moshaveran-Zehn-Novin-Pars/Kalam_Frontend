@@ -1,15 +1,47 @@
 "use client"
 
-import { useState } from "react"
-import { User, Phone, Mail, MapPin } from "lucide-react"
+import { useState, useEffect } from "react"
+import { User, Phone, Mail, MapPin, Loader2 } from "lucide-react"
+import { useAuthStore } from "@/store/authStore"
+import { usersService } from "@/services/users"
+import { toast } from "sonner"
 import "../account.css"
 
 export default function ProfilePage() {
+    const { user, setUser } = useAuthStore()
     const [form, setForm] = useState({
-        firstName: "سوگند", lastName: "سلحشور",
-        phone: "۰۹۰۳۷۰۲۹۱۲۱", email: "", address: "",
+        firstName: "", lastName: "", email: "",
     })
+    const [saving, setSaving] = useState(false)
     const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))
+
+    useEffect(() => {
+        if (user) {
+            setForm({
+                firstName: user.firstName || "",
+                lastName: user.lastName || "",
+                email: (user as any).email || "",
+            })
+        }
+    }, [user])
+
+    const handleSave = async () => {
+        setSaving(true)
+        try {
+            const updated = await usersService.updateProfile({
+                firstName: form.firstName,
+                lastName: form.lastName,
+            } as any)
+            setUser(updated)
+            toast.success("پروفایل با موفقیت به‌روزرسانی شد")
+        } catch {
+            toast.error("خطا در ذخیره اطلاعات")
+        } finally {
+            setSaving(false)
+        }
+    }
+
+    const phoneDisplay = user?.phone?.replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[parseInt(d)]) || ""
 
     return (
         <div>
@@ -38,7 +70,7 @@ export default function ProfilePage() {
                         <label className="acc-label">شماره موبایل</label>
                         <div style={{ display: "flex", alignItems: "center", gap: 8, border: "1px solid var(--acc-border-s)", borderRadius: "var(--acc-r-sm)", padding: "0 12px", height: 48, background: "var(--acc-surface-2)" }}>
                             <Phone size={16} style={{ color: "var(--acc-fg-3)", flexShrink: 0 }} />
-                            <input className="acc-input" value={form.phone} readOnly style={{ border: "none", padding: 0, height: "100%", background: "transparent", color: "var(--acc-fg-3)" }} />
+                            <input className="acc-input" value={phoneDisplay} readOnly style={{ border: "none", padding: 0, height: "100%", background: "transparent", color: "var(--acc-fg-3)" }} />
                         </div>
                     </div>
                     <div>
@@ -50,15 +82,10 @@ export default function ProfilePage() {
                     </div>
                 </div>
 
-                <div>
-                    <label className="acc-label">آدرس</label>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, border: "1px solid var(--acc-border-s)", borderRadius: "var(--acc-r-sm)", padding: "0 12px", height: 48 }}>
-                        <MapPin size={16} style={{ color: "var(--acc-fg-3)", flexShrink: 0 }} />
-                        <input className="acc-input" value={form.address} onChange={e => set("address", e.target.value)} style={{ border: "none", padding: 0, height: "100%" }} />
-                    </div>
-                </div>
-
-                <button className="acc-btn acc-btn--filled" style={{ alignSelf: "flex-start" }}>ذخیره تغییرات</button>
+                <button onClick={handleSave} disabled={saving}
+                    className="acc-btn acc-btn--filled" style={{ alignSelf: "flex-start" }}>
+                    {saving ? <><Loader2 size={16} className="animate-spin" /> در حال ذخیره...</> : "ذخیره تغییرات"}
+                </button>
             </div>
         </div>
     )

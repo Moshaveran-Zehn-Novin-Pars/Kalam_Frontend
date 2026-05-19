@@ -4,6 +4,7 @@ import Link from "next/link"
 
 function fa(n: string | number) { return String(n).replace(/[0-9]/g, d => "۰۱۲۳۴۵۶۷۸۹"[+d]) }
 
+// NOTE: No vehicle service available — keeping static mock data
 const VEHICLES = [
     { id:"v1", type:"وانت نیسان", plate:"۱۲۳۴۵۶۷۸", capacity:"۱ تن", refrigerated:false, count:3, available:2 },
     { id:"v2", type:"کامیون ۱۰ تن", plate:"۸۷۶۵۴۳۲۱", capacity:"۱۰ تن", refrigerated:true, count:2, available:1 },

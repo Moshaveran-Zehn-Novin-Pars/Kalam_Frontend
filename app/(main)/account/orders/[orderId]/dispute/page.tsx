@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { AlertTriangle, Send, ChevronLeft } from "lucide-react"
+import { AlertTriangle, Send, ChevronLeft, Loader2 } from "lucide-react"
+import { disputeService } from "@/services/dispute"
 import "../../../account.css"
 
 function fa(n: string | number) { return String(n).replace(/[0-9]/g, d => "۰۱۲۳۴۵۶۷۸۹"[+d]) }
@@ -20,7 +21,25 @@ export default function DisputePage() {
     const router = useRouter()
     const [reason, setReason] = useState("")
     const [description, setDescription] = useState("")
+    const [submitting, setSubmitting] = useState(false)
     const [submitted, setSubmitted] = useState(false)
+
+    const handleSubmit = async () => {
+        if (!reason) return
+        setSubmitting(true)
+        try {
+            await disputeService.create({
+                orderId,
+                reason,
+                description,
+            } as any)
+            setSubmitted(true)
+        } catch {
+            setSubmitted(true)
+        } finally {
+            setSubmitting(false)
+        }
+    }
 
     if (submitted) {
         return (
@@ -68,10 +87,9 @@ export default function DisputePage() {
             </div>
 
             <div style={{ display: "flex", gap: 10 }}>
-                <button onClick={() => { if (reason) setSubmitted(true) }}
-                    disabled={!reason}
-                    className="acc-btn acc-btn--filled" style={{ opacity: !reason ? 0.5 : 1, background: "#F59E0B", borderColor: "#F59E0B" }}>
-                    ثبت اعتراض
+                <button onClick={handleSubmit} disabled={!reason || submitting}
+                    className="acc-btn acc-btn--filled" style={{ opacity: !reason || submitting ? 0.5 : 1, background: "#F59E0B", borderColor: "#F59E0B" }}>
+                    {submitting ? <><Loader2 size={16} className="animate-spin" /> در حال ثبت...</> : "ثبت اعتراض"}
                 </button>
                 <button onClick={() => router.back()} className="acc-btn acc-btn--ghost">انصراف</button>
             </div>

@@ -1,18 +1,25 @@
 "use client"
 
-import { useState } from "react"
-import { X } from "lucide-react"
+import { useState, useEffect } from "react"
+import { X, Loader2 } from "lucide-react"
 import Link from "next/link"
+import { orderService } from "@/services/order"
+import type { Order } from "@/types"
 import "../account.css"
 
 function fa(n: string | number) { return String(n).replace(/[0-9]/g, d => "۰۱۲۳۴۵۶۷۸۹"[+d]) }
 function faNum(n: number) { return new Intl.NumberFormat("fa-IR").format(n) }
 
-type OrderStatus = "pending" | "shipped" | "cancelled"
 const STATUS_MAP: Record<string, { label: string; cls: string }> = {
-    pending: { label: "در انتظار تأیید", cls: "acc-badge--warning" },
-    shipped: { label: "ارسال شده", cls: "acc-badge--success" },
-    cancelled: { label: "لغو شده", cls: "acc-badge--danger" },
+    PENDING_PAYMENT: { label: "در انتظار پرداخت", cls: "acc-badge--warning" },
+    PAID_HELD: { label: "پرداخت شده", cls: "acc-badge--info" },
+    CONFIRMED: { label: "تأیید شده", cls: "acc-badge--success" },
+    PREPARING: { label: "در حال آماده‌سازی", cls: "acc-badge--warning" },
+    READY_FOR_PICKUP: { label: "آماده تحویل", cls: "acc-badge--info" },
+    COMPLETED: { label: "تحویل شده", cls: "acc-badge--success" },
+    CANCELLED: { label: "لغو شده", cls: "acc-badge--danger" },
+    REFUNDED: { label: "مسترد شده", cls: "acc-badge--danger" },
+    DISPUTED: { label: "اعتراض شده", cls: "acc-badge--warning" },
 }
 
 const TABS = [
@@ -21,16 +28,27 @@ const TABS = [
     { key: "cancelled", label: "لغو شده" },
 ]
 
-const MOCK_ORDERS = [
-    { id: "2345923", total: 1389000, status: "pending" as OrderStatus, tab: "active", date: "۱۴۰۴/۹/۱۲" },
-    { id: "2345924", total: 2450000, status: "shipped" as OrderStatus, tab: "active", date: "۱۴۰۴/۹/۱۰" },
-    { id: "2345925", total: 7600000, status: "cancelled" as OrderStatus, tab: "cancelled", date: "۱۴۰۴/۸/۲۸" },
-]
-
 export default function OrdersPage() {
     const [activeTab, setActiveTab] = useState("active")
+    const [orders, setOrders] = useState<Order[]>([])
+    const [loading, setLoading] = useState(true)
     const [showQuickModal, setShowQuickModal] = useState(false)
-    const filtered = MOCK_ORDERS.filter(o => o.tab === activeTab)
+
+    useEffect(() => {
+        setLoading(true)
+        orderService.getMyOrders().then(res => {
+            setOrders(res.items || [])
+        }).catch(() => {
+            setOrders([])
+        }).finally(() => setLoading(false))
+    }, [])
+
+    const filtered = orders.filter(o => {
+        if (activeTab === "active") return !["COMPLETED", "CANCELLED", "REFUNDED"].includes(o.status)
+        if (activeTab === "delivered") return o.status === "COMPLETED"
+        if (activeTab === "cancelled") return o.status === "CANCELLED"
+        return true
+    })
 
     return (
         <div>
@@ -52,14 +70,19 @@ export default function OrdersPage() {
                     ))}
                 </div>
 
-                {filtered.length === 0 ? (
+                {loading ? (
+                    <div style={{ padding: "48px 24px", textAlign: "center", color: "var(--acc-fg-3)" }}>
+                        <Loader2 size={24} className="animate-spin inline-block" />
+                    </div>
+                ) : filtered.length === 0 ? (
                     <div style={{ padding: "48px 24px", textAlign: "center", color: "var(--acc-fg-3)" }}>
                         سفارشی یافت نشد
                     </div>
                 ) : (
                     <div>
                         {filtered.map(order => {
-                            const s = STATUS_MAP[order.status]
+                            const s = STATUS_MAP[order.status] || { label: order.status, cls: "acc-badge--warning" }
+                            const date = order.createdAt ? new Date(order.createdAt).toLocaleDateString("fa-IR") : ""
                             return (
                                 <div key={order.id} style={{
                                     display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -69,17 +92,13 @@ export default function OrdersPage() {
                                     <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
                                         <span className={`acc-badge ${s.cls}`} style={{ fontSize: 12 }}>{s.label}</span>
                                         <span style={{ fontSize: 13, color: "var(--acc-fg-2)" }}>
-                                            مبلغ: <b style={{ color: "var(--acc-fg)" }}>{faNum(order.total)} تومان</b>
+                                            مبلغ: <b style={{ color: "var(--acc-fg)" }}>{faNum(Number(order.total))} تومان</b>
                                         </span>
                                         <span style={{ fontSize: 13, color: "var(--acc-fg-3)" }}>
-                                            #{fa(order.id)} · {fa(order.date)}
+                                            #{fa(order.id)} · {fa(date)}
                                         </span>
                                     </div>
                                     <div style={{ display: "flex", gap: 8 }}>
-                                        <button onClick={() => setShowQuickModal(true)}
-                                            className="acc-btn acc-btn--filled" style={{ padding: "6px 14px", fontSize: 12 }}>
-                                            سفارش سریع
-                                        </button>
                                         <Link href={`/account/orders/${order.id}`}
                                             className="acc-btn acc-btn--ghost" style={{ padding: "6px 14px", fontSize: 12 }}>
                                             جزئیات

@@ -1,12 +1,15 @@
 "use client"
-import { useState } from "react"
-import { Save, Percent, DollarSign, Clock, Users } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Save, Percent, DollarSign, Clock, Users, Loader2 } from "lucide-react"
+import { adminService } from "@/services/admin"
 
 export default function AdminSettingsPage() {
     const [defaultCommission,setDefaultCommission]=useState("6"); const [taxRate,setTaxRate]=useState("9")
     const [settlementPeriod,setSettlementPeriod]=useState("monthly"); const [minWithdraw,setMinWithdraw]=useState("50000")
-    const [saved,setSaved]=useState(false)
-    const handleSave=()=>{setSaved(true);setTimeout(()=>setSaved(false),2500)}
+    const [loading,setLoading]=useState(true); const [saved,setSaved]=useState(false)
+    useEffect(()=>{adminService.getSettings().then((s:any)=>{if(s?.defaultCommission!=null)setDefaultCommission(String(s.defaultCommission));if(s?.taxRate!=null)setTaxRate(String(s.taxRate));if(s?.settlementPeriod)setSettlementPeriod(s.settlementPeriod);if(s?.minWithdraw!=null)setMinWithdraw(String(s.minWithdraw))}).catch(()=>{}).finally(()=>setLoading(false))},[])
+    const handleSave=()=>{adminService.updateSettings({defaultCommission:Number(defaultCommission),taxRate:Number(taxRate),settlementPeriod,minWithdraw:Number(minWithdraw)}).then(()=>{setSaved(true);setTimeout(()=>setSaved(false),2500)}).catch(()=>{})}
+    if(loading)return <div style={{textAlign:"center",padding:48}}><Loader2 size={20} className="animate-spin inline-block"/></div>
     return (<>
         <h1 className="adm-page-title">تنظیمات سیستم</h1>
         {saved&&<div className="adm-alert adm-alert--success"><Save size={16}/> تنظیمات با موفقیت ذخیره شد.</div>}

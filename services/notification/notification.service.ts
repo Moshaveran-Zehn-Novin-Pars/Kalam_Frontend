@@ -18,4 +18,7 @@ export const notificationService = {
     async cleanup(): Promise<void> {
         return apiPost('/notifications/cleanup')
     },
+    async sendNotification(dto: { title: string; message: string; target: string }): Promise<any> {
+        return apiPost('/notifications/send', dto)
+    },
 }
